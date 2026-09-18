@@ -38,6 +38,10 @@ export const router = createBrowserRouter([
         element: <OrgInsightsPage />,
       },
       {
+        path: "my-insights",
+        element: <OrgInsightsPage scope="personal" />,
+      },
+      {
         path: "*",
         element: (
           <div className="flex h-full items-center justify-center p-8 text-muted-foreground">

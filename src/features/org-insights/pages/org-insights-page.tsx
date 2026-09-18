@@ -103,6 +103,9 @@ const PROJECTS: ProjectPerf[] = [
   },
 ];
 
+// Projects the signed-in employee is staffed on, for the "My Insights" scope.
+const MY_PROJECT_IDS = ["p-1", "p-4"];
+
 const HEALTH_BADGE_CLASSES: Record<ProjectHealth, string> = {
   "On track":
     "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800",
@@ -127,7 +130,11 @@ const COMPLETION_TREND = [
   { label: "Week 4", value: 68.4 },
 ];
 
-function EstimatedVsActualChart() {
+interface EstimatedVsActualChartProps {
+  projects: ProjectPerf[];
+}
+
+function EstimatedVsActualChart({ projects }: EstimatedVsActualChartProps) {
   const width = 560;
   const height = 200;
   const padL = 8;
@@ -138,9 +145,9 @@ function EstimatedVsActualChart() {
   const plotH = height - padT - padB;
 
   const maxHours = Math.max(
-    ...PROJECTS.map((p) => Math.max(p.estimated, p.actual)),
+    ...projects.map((p) => Math.max(p.estimated, p.actual)),
   );
-  const groupW = plotW / PROJECTS.length;
+  const groupW = plotW / projects.length;
   const barW = groupW * 0.28;
 
   return (
@@ -157,7 +164,7 @@ function EstimatedVsActualChart() {
         />
       ))}
 
-      {PROJECTS.map((project, i) => {
+      {projects.map((project, i) => {
         const groupX = padL + i * groupW + groupW / 2;
         const estH = (project.estimated / maxHours) * plotH;
         const actH = (project.actual / maxHours) * plotH;
@@ -196,7 +203,16 @@ function EstimatedVsActualChart() {
   );
 }
 
-function CompletionTrendChart() {
+interface TrendPoint {
+  label: string;
+  value: number;
+}
+
+interface CompletionTrendChartProps {
+  trend: TrendPoint[];
+}
+
+function CompletionTrendChart({ trend }: CompletionTrendChartProps) {
   const width = 560;
   const height = 200;
   const padL = 10;
@@ -206,15 +222,12 @@ function CompletionTrendChart() {
   const plotW = width - padL - padR;
   const plotH = height - padT - padB;
 
-  const xFor = (i: number) =>
-    padL + (i / (COMPLETION_TREND.length - 1)) * plotW;
+  const xFor = (i: number) => padL + (i / (trend.length - 1)) * plotW;
   const yFor = (value: number) => padT + plotH - (value / 100) * plotH;
 
-  const points = COMPLETION_TREND.map(
-    (d, i) => `${xFor(i)},${yFor(d.value)}`,
-  ).join(" ");
+  const points = trend.map((d, i) => `${xFor(i)},${yFor(d.value)}`).join(" ");
   const areaPoints = `${xFor(0)},${padT + plotH} ${points} ${xFor(
-    COMPLETION_TREND.length - 1,
+    trend.length - 1,
   )},${padT + plotH}`;
 
   return (
@@ -242,7 +255,7 @@ function CompletionTrendChart() {
         className="stroke-teal-600 dark:stroke-teal-400"
         strokeWidth={2}
       />
-      {COMPLETION_TREND.map((d, i) => (
+      {trend.map((d, i) => (
         <circle
           key={d.label}
           cx={xFor(i)}
@@ -256,9 +269,15 @@ function CompletionTrendChart() {
   );
 }
 
-export function OrgInsightsPage() {
+interface OrgInsightsPageProps {
+  /** "personal" scopes everything to the signed-in employee's own projects. */
+  scope?: "org" | "personal";
+}
+
+export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
   const isLoading = useSimulatedLoading();
   const [period, setPeriod] = React.useState("30d");
+  const isPersonal = scope === "personal";
 
   if (isLoading) {
     return (
@@ -274,12 +293,30 @@ export function OrgInsightsPage() {
     );
   }
 
-  const activeProjects = PROJECTS.length;
-  const avgCompletion = 68.4;
-  const totalHoursLogged = PROJECTS.reduce((s, p) => s + p.actual, 0);
-  const atRisk = PROJECTS.filter((p) => p.health === "At risk").length;
-  const delayed = PROJECTS.filter((p) => p.health === "Delayed").length;
+  const scopedProjects = isPersonal
+    ? PROJECTS.filter((p) => MY_PROJECT_IDS.includes(p.id))
+    : PROJECTS;
+
+  const activeProjects = scopedProjects.length;
+  const avgCompletion = isPersonal
+    ? Math.round(
+        (scopedProjects.reduce((s, p) => s + p.progress, 0) /
+          scopedProjects.length) *
+          10,
+      ) / 10
+    : 68.4;
+  const totalHoursLogged = scopedProjects.reduce((s, p) => s + p.actual, 0);
+  const atRisk = scopedProjects.filter((p) => p.health === "At risk").length;
+  const delayed = scopedProjects.filter((p) => p.health === "Delayed").length;
   const needsAttention = atRisk + delayed;
+
+  const trend = isPersonal
+    ? COMPLETION_TREND.map((d, i) => ({
+        ...d,
+        value:
+          Math.round(avgCompletion * (0.55 + i * 0.15) * 10) / 10,
+      }))
+    : COMPLETION_TREND;
 
   return (
     <div className="space-y-6">
@@ -290,11 +327,11 @@ export function OrgInsightsPage() {
             <span>Insights</span>
             <Icon icon={ChevronRight} size={12} className="opacity-50" />
             <span className="text-foreground font-semibold">
-              Portfolio Performance
+              {isPersonal ? "My Performance" : "Portfolio Performance"}
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Project performance
+            {isPersonal ? "My performance" : "Project performance"}
           </h1>
         </div>
 
@@ -319,7 +356,7 @@ export function OrgInsightsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
           <p className="text-xs font-medium text-muted-foreground">
-            Active projects
+            {isPersonal ? "My active projects" : "Active projects"}
           </p>
           <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
             {activeProjects}
@@ -328,7 +365,7 @@ export function OrgInsightsPage() {
 
         <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
           <p className="text-xs font-medium text-muted-foreground">
-            Avg. completion
+            {isPersonal ? "My avg. completion" : "Avg. completion"}
           </p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight text-foreground">
@@ -339,7 +376,7 @@ export function OrgInsightsPage() {
 
         <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
           <p className="text-xs font-medium text-muted-foreground">
-            Total hours logged
+            {isPersonal ? "My hours logged" : "Total hours logged"}
           </p>
           <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
             {totalHoursLogged.toFixed(1)}h
@@ -361,7 +398,7 @@ export function OrgInsightsPage() {
                 : "text-muted-foreground",
             )}
           >
-            Needs attention
+            {isPersonal ? "Needs my attention" : "Needs attention"}
           </p>
           <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
             {needsAttention}
@@ -383,7 +420,7 @@ export function OrgInsightsPage() {
               HRS
             </span>
           </div>
-          <EstimatedVsActualChart />
+          <EstimatedVsActualChart projects={scopedProjects} />
           <div className="mt-3 flex items-center gap-4 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-sm bg-navy-500 dark:bg-foreground/70" />
@@ -405,9 +442,9 @@ export function OrgInsightsPage() {
               W1 – W4
             </span>
           </div>
-          <CompletionTrendChart />
+          <CompletionTrendChart trend={trend} />
           <div className="mt-1 grid grid-cols-4 text-center text-[10px] text-muted-foreground">
-            {COMPLETION_TREND.map((d) => (
+            {trend.map((d) => (
               <span key={d.label}>
                 {d.label} ({d.value}%)
               </span>
@@ -419,7 +456,7 @@ export function OrgInsightsPage() {
       {/* Project performance table */}
       <Card className="p-5 shadow-xs border-border-subtle bg-canvas-surface overflow-x-auto">
         <h3 className="text-sm font-bold text-foreground mb-3">
-          Project performance
+          {isPersonal ? "My projects" : "Project performance"}
         </h3>
         <Table>
           <TableHeader>
@@ -433,7 +470,7 @@ export function OrgInsightsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {PROJECTS.map((project) => {
+            {scopedProjects.map((project) => {
               const variance =
                 Math.round(
                   ((project.actual - project.estimated) / project.estimated) *

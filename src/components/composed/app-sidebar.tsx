@@ -36,7 +36,7 @@ const ROLE_NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { title: "Calendar", href: "#calendar", icon: Calendar },
     { title: "Projects", href: "/projects", icon: FolderKanban },
     { title: "Time Reporting", href: "#timesheets", icon: Clock },
-    { title: "My Insights", href: "#insights", icon: TrendingUp },
+    { title: "My Insights", href: "/my-insights", icon: TrendingUp },
   ],
   manager: [
     { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
