@@ -3,6 +3,10 @@ import { AppShell } from "@/app/app-shell";
 import { ProjectsListPage, ProjectDetailPage } from "@/features/projects";
 import { DashboardPage } from "@/features/dashboard";
 import { OrgInsightsPage } from "@/features/org-insights";
+import { TimesheetPage } from "@/features/timesheets";
+import { CalendarPage } from "@/features/calendar";
+
+
 
 export const router = createBrowserRouter([
   {
@@ -19,7 +23,19 @@ export const router = createBrowserRouter([
         path: "dashboard",
         element: <DashboardPage />,
       },
-      // 3. Projects Domain
+
+      // 3. Calendar Domain
+      {
+        path: "calendar",
+        element: <CalendarPage />,
+      },
+      // 4. Time Reporting Domain 
+      {
+      path: "timesheets",
+      element: <TimesheetPage />,
+      },
+
+      // 5. Projects Domain
       {
         path: "projects",
         children: [
