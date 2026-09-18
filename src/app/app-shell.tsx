@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Outlet } from "react-router-dom";
 import { AppHeader } from "@/components/composed/app-header";
 import { AppSidebar } from "@/components/composed/app-sidebar";

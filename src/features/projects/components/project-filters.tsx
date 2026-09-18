@@ -1,4 +1,3 @@
-import * as React from "react";
 import type { ProjectFilterTab } from "@/types/project";
 import { cn } from "@/lib/utils";
 

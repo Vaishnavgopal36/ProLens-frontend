@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useAuth } from "@/app/providers";
 import { AdminDashboardPage } from "./admin-dashboard-page";
 import { ManagerDashboardPage } from "./manager-dashboard-page";

@@ -1,19 +1,15 @@
 import * as React from "react";
 import {
   Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   Filter,
   Grid,
   List,
   Columns,
   LayoutGrid,
-  Plus,
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";

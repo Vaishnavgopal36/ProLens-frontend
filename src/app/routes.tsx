@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/app/app-shell";
 import { ProjectsListPage, ProjectDetailPage } from "@/features/projects";
 import { DashboardPage } from "@/features/dashboard";

@@ -461,7 +461,7 @@ export function AddTaskDialog({
         }}
       >
       <SheetContent className="sm:max-w-xl w-full overflow-y-auto p-5">
-        <SheetHeader className="space-y-1">
+        <SheetHeader className="space-y-1 pr-8">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">

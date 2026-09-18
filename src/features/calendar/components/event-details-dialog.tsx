@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";

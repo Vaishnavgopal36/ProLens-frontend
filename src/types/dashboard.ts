@@ -1,5 +1,3 @@
-import type { UserRole } from "@/app/providers";
-
 // 1. Top metric summary card
 export interface MetricCardData {
   id: string;
