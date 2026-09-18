@@ -6,6 +6,7 @@ import {
   Clock,
   TrendingUp,
   Users,
+  Activity,
   PanelLeftClose,
   PanelLeftOpen,
   LogOut,
@@ -31,27 +32,32 @@ interface NavItem {
 
 const ROLE_NAV_ITEMS: Record<UserRole, NavItem[]> = {
   employee: [
-    { title: "Dashboard", href: "#dashboard", icon: LayoutGrid },
-    { title: "Calendar", href: "#calendar", icon: Calendar },
+    { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+    { title: "Calendar", href: "/calendar", icon: Calendar },
     { title: "Projects", href: "/projects", icon: FolderKanban },
-    { title: "Time Reporting", href: "#timesheets", icon: Clock },
+    { title: "Activity", href: "#activity", icon: Activity },
+    { title: "Time Reporting", href: "/timesheets", icon: Clock },
     { title: "My Insights", href: "#insights", icon: TrendingUp },
   ],
   manager: [
-    { title: "Dashboard", href: "#dashboard", icon: LayoutGrid },
-    { title: "Calendar", href: "#calendar", icon: Calendar },
+    { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+    { title: "Teams", href: "#teams", icon: Users },
+    { title: "Calendar", href: "/calendar", icon: Calendar },
     { title: "Projects", href: "/projects", icon: FolderKanban },
-    { title: "Time Reporting", href: "#timesheets", icon: Clock },
+    { title: "Activity", href: "#activity", icon: Activity },
+    { title: "Time Reporting", href: "/timesheets", icon: Clock },
     { title: "Org Insights", href: "#org-insights", icon: TrendingUp },
   ],
   admin: [
-    { title: "Dashboard", href: "#dashboard", icon: LayoutGrid },
+    { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
     { title: "Teams", href: "#teams", icon: Users },
+    { title: "Activity", href: "#activity", icon: Activity },
     { title: "Org Insights", href: "#org-insights", icon: TrendingUp },
   ],
   super_admin: [
-    { title: "Dashboard", href: "#dashboard", icon: LayoutGrid },
+    { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
     { title: "Teams", href: "#teams", icon: Users },
+    { title: "Activity", href: "#activity", icon: Activity },
     { title: "Org Insights", href: "#org-insights", icon: TrendingUp },
   ],
 };
@@ -66,15 +72,16 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userRole: UserRole = user?.role ?? "manager";
-  const items = ROLE_NAV_ITEMS[userRole] ?? ROLE_NAV_ITEMS.manager;
+  // Directly derive items from AuthContext user role
+  const userRole: UserRole = user?.role ?? "employee";
+  const items = ROLE_NAV_ITEMS[userRole] ?? ROLE_NAV_ITEMS.employee;
 
   const renderNavList = (collapsed: boolean) => (
     <nav className="flex flex-col gap-1 px-2.5 py-2">
       {items.map((item) => {
         const isRoute = item.href.startsWith("/");
         const isActive = isRoute
-          ? location.pathname.startsWith(item.href)
+          ? location.pathname === item.href
           : activeHash === item.href;
 
         const navLink = (
@@ -99,7 +106,6 @@ export function AppSidebar() {
             )}
             aria-current={isActive ? "page" : undefined}
           >
-            {/* Active Gold Bar Indicator */}
             {isActive && (
               <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-gold-500" />
             )}
@@ -156,7 +162,6 @@ export function AppSidebar() {
 
   return (
     <>
-      {/* Mobile Drawer (Sheet) */}
       <Sheet open={isSidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent
           side="left"
@@ -172,21 +177,18 @@ export function AppSidebar() {
             {renderNavList(false)}
           </div>
 
-          {/* Mobile Bottom Logout */}
           <div className="p-3 border-t border-border-subtle">
             {logoutButton}
           </div>
         </SheetContent>
       </Sheet>
 
-      {/* Desktop Persistent Sidebar */}
       <aside
         className={cn(
           "hidden md:flex flex-col bg-navy-500 dark:bg-canvas-bg border-r border-border-subtle text-slate-300 transition-[width] duration-200 ease-in-out shrink-0 select-none",
           isCollapsed ? "w-16" : "w-56",
         )}
       >
-        {/* Top Header / Gemini-style Logo & Toggle */}
         <div className="flex h-14 shrink-0 items-center justify-between px-3.5">
           {!isCollapsed ? (
             <>
@@ -212,7 +214,6 @@ export function AppSidebar() {
               </Tooltip>
             </>
           ) : (
-            /* Collapsed State: Hovering over the logo reveals the Expand button */
             <div
               className="flex w-full justify-center"
               onMouseEnter={() => setIsLogoHovered(true)}
@@ -246,12 +247,10 @@ export function AppSidebar() {
           )}
         </div>
 
-        {/* Dynamic Navigation Items */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {renderNavList(isCollapsed)}
         </div>
 
-        {/* Bottom Quick Action Logout */}
         <div className="p-2.5 shrink-0">
           {isCollapsed ? (
             <Tooltip delayDuration={150}>

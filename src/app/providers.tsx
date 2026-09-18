@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     name: "Vaishnav Gopal",
     email: "vaishnav@tarento.com",
     initials: "VG",
-    role: "manager",
+    role: "employee",
   });
 
   const logout = React.useCallback(() => {
