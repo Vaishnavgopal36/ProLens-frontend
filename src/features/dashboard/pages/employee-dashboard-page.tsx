@@ -19,32 +19,11 @@ import {
 } from "../api/mock-data";
 import { MetricCard } from "../components/metric-card";
 import { UpcomingActivities } from "../components/upcoming-activities";
-import { useSimulatedLoading } from "@/lib/use-simulated-loading";
-import {
-  PageHeaderSkeleton,
-  MetricCardGridSkeleton,
-  TableSkeleton,
-  CardListSkeleton,
-} from "@/components/composed/skeletons";
+import { LogTimeDialog } from "../components/log-time-dialog";
 
 export function EmployeeDashboardPage() {
-  const isLoading = useSimulatedLoading();
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeaderSkeleton withAction />
-        <MetricCardGridSkeleton count={4} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-3">
-            <TableSkeleton columns={5} rows={4} />
-          </div>
-          <CardListSkeleton rows={5} />
-        </div>
-        <CardListSkeleton rows={3} />
-      </div>
-    );
-  }
+  // 1. STATE: Controls whether the modal is visible (true) or hidden (false)
+  const [logTimeOpen, setLogTimeOpen] = React.useState(false);
 
   return (
     <div className="space-y-6">
@@ -62,9 +41,11 @@ export function EmployeeDashboardPage() {
           </p>
         </div>
 
+        {/* 2. TRIGGER: Clicking this button sets logTimeOpen to true */}
         <Button
           variant="accent"
           size="sm"
+          onClick={() => setLogTimeOpen(true)}
           className="gap-1.5 font-semibold self-start sm:self-auto"
         >
           <Icon icon={Plus} size={15} />
@@ -192,8 +173,11 @@ export function EmployeeDashboardPage() {
           </Card>
         </div>
       </div>
-
+      
       <UpcomingActivities />
+
+      {/* 3. MODAL COMPONENT: Placed at the bottom so it renders on top when logTimeOpen is true */}
+      <LogTimeDialog open={logTimeOpen} onOpenChange={setLogTimeOpen} />
     </div>
   );
 }
