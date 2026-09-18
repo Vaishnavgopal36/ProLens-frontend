@@ -1,0 +1,149 @@
+import * as React from "react";
+import { Search, MoreHorizontal } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Icon } from "@/components/ui/icon";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { ProjectMember } from "@/types/project";
+
+interface TeamMembersTableProps {
+  members: ProjectMember[];
+  totalMembersCount: number;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  isManager: boolean;
+}
+
+export function TeamMembersTable({
+  members,
+  totalMembersCount,
+  searchQuery,
+  onSearchChange,
+  isManager,
+}: TeamMembersTableProps) {
+  return (
+    <div className="space-y-3">
+      {/* Controls Bar */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-foreground">
+            Active Team Members
+          </span>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+            {totalMembersCount}
+          </span>
+        </div>
+
+        <div className="relative w-full sm:w-64">
+          <Icon
+            icon={Search}
+            size={14}
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            type="text"
+            placeholder="Filter members..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="h-8 pl-8 text-xs bg-canvas-surface"
+          />
+        </div>
+      </div>
+
+      {/* Members Table */}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[280px]">Member</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Designation</TableHead>
+            <TableHead>Assignments</TableHead>
+            <TableHead className="text-right">Hours Logged</TableHead>
+            <TableHead className="text-center">Status</TableHead>
+            {isManager && (
+              <TableHead className="w-[50px] text-right">Actions</TableHead>
+            )}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {members.map((member) => (
+            <TableRow key={member.id} className="hover:bg-canvas-overlay/40">
+              <TableCell>
+                <div className="flex items-center gap-2.5">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={member.avatarUrl} alt={member.name} />
+                    <AvatarFallback className="text-[10px] font-bold bg-navy-500 text-white dark:bg-foreground dark:text-background">
+                      {member.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-semibold text-foreground leading-none">
+                      {member.name}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground leading-none">
+                      {member.email}
+                    </p>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <span className="text-xs font-medium capitalize text-foreground">
+                  {member.role}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span className="text-xs text-muted-foreground">
+                  {member.designation}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span className="text-xs text-muted-foreground">
+                  {member.assignedTasksCount} tasks •{" "}
+                  {member.assignedFeaturesCount} features
+                </span>
+              </TableCell>
+              <TableCell className="text-right">
+                <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 font-mono">
+                  {member.hoursLogged.toFixed(1)}h
+                </span>
+              </TableCell>
+              <TableCell className="text-center">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] uppercase font-bold text-teal-600 bg-teal-500/10 border-teal-500/30 dark:text-teal-400 px-2 py-0.5"
+                >
+                  {member.status}
+                </Badge>
+              </TableCell>
+              {isManager && (
+                <TableCell className="text-right">
+                  <button
+                    type="button"
+                    className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={`Actions for ${member.name}`}
+                  >
+                    <Icon icon={MoreHorizontal} size={15} />
+                  </button>
+                </TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      {/* Pagination Footer Context */}
+      <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1 pt-1">
+        <span>Showing {members.length} active members</span>
+        <span>Page 1 of 1</span>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,96 @@
+@layer base {
+  :root {
+    /* Brand Foundation Scale */
+    --navy-50: #f3f5f7;
+    --navy-100: #dee3e8;
+    --navy-200: #bcc7d2;
+    --navy-300: #8e9fb2;
+    --navy-400: #566d85;
+    --navy-500: #17283c;
+    --navy-600: #132233;
+    --navy-700: #0f1b29;
+    --navy-800: #0b131d;
+    --navy-900: #060b10;
+
+    --teal-50: #edf7f7;
+    --teal-100: #d2eceb;
+    --teal-200: #a8dada;
+    --teal-300: #71bfc0;
+    --teal-400: #3ea3a4;
+    --teal-500: #1e8f8e;
+    --teal-600: #187372;
+    --teal-700: #135b5a;
+    --teal-800: #0e4241;
+    --teal-900: #082424;
+
+    --gold-50: #fef8ec;
+    --gold-100: #fdf0d0;
+    --gold-200: #fbe2a5;
+    --gold-300: #f7ce6f;
+    --gold-400: #f3ba38;
+    --gold-500: #f0a500;
+    --gold-600: #c28500;
+    --gold-700: #996900;
+    --gold-800: #6b4900;
+    --gold-900: #422d00;
+
+    /* Light Theme (Clean Enterprise Canvas) */
+    --canvas-bg: #f6f7f9;
+    --canvas-surface: #ffffff;
+    --canvas-overlay: #ffffff;
+    --border-subtle: #e2e8f0;
+    --border-strong: #cbd5e1;
+
+    /* shadcn Dynamic HSL Tokens */
+    --background: 220 14% 97%;
+    --foreground: 213 30% 7%;
+    --card: 0 0% 100%;
+    --card-foreground: 213 30% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 30% 7%;
+    --primary: 212 45% 16%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 180 65% 34%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 215 16% 47%;
+    /* Generic hover/highlight surface — teal-tinted, never gold. Gold is reserved
+       for explicit bg-gold-500 usage (e.g. the Button "accent" variant) so it
+       stays a rare, deliberate signal instead of leaking into every hover state. */
+    --accent: 176 45% 95%;
+    --accent-foreground: 213 30% 7%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 180 65% 34%;
+    --radius: 0.5rem;
+  }
+
+  /* Dark Theme (Jira-style neutral slate — the canonical dark mode for this app) */
+  .dark {
+    --canvas-bg: #1d2125;
+    --canvas-surface: #22272b;
+    --canvas-overlay: #282e33;
+
+    --border-subtle: #38414a;
+    --border-strong: #454f59;
+
+    --background: 210 12% 13%;
+    --foreground: 211 21% 76%;
+    --card: 207 12% 15%;
+    --card-foreground: 211 21% 76%;
+    --popover: 207 12% 18%;
+    --popover-foreground: 211 21% 76%;
+    --primary: 211 21% 76%;
+    --primary-foreground: 210 12% 13%;
+    --secondary: 179 65% 42%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 207 12% 18%;
+    --muted-foreground: 211 16% 61%;
+    /* Teal-tinted, not gold — see :root comment above. */
+    --accent: 200 45% 21%;
+    --accent-foreground: 211 21% 76%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 211 21% 76%;
+    --ring: 200 45% 44%;
+  }
+}
