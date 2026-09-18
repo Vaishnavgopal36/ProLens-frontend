@@ -8,9 +8,15 @@ import { MOCK_PROJECTS } from "@/features/projects/api/mock-data";
 import { ProjectCard } from "@/features/projects/components/project-card";
 import { ProjectFilters } from "@/features/projects/components/project-filters";
 import { CreateProjectDialog } from "@/features/projects/components/create-project-dialog";
+import { useSimulatedLoading } from "@/lib/use-simulated-loading";
+import {
+  PageHeaderSkeleton,
+  ProjectCardGridSkeleton,
+} from "@/components/composed/skeletons";
 
 export function ProjectsListPage() {
   const { user } = useAuth();
+  const isLoading = useSimulatedLoading();
   const [activeFilter, setActiveFilter] =
     React.useState<ProjectFilterTab>("all");
   const [projects, setProjects] = React.useState<Project[]>(MOCK_PROJECTS);
@@ -48,6 +54,15 @@ export function ProjectsListPage() {
   const handleDeleteProject = (projectId: string) => {
     setProjects((prev) => prev.filter((item) => item.id !== projectId));
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeaderSkeleton withAction />
+        <ProjectCardGridSkeleton count={6} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

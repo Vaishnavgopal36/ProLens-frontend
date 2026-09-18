@@ -205,6 +205,7 @@ export function ProjectSettingsDialog({
                   Project Title *
                 </Label>
                 <Input
+                  autoFocus
                   id="edit-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}

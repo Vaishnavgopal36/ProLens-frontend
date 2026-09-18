@@ -34,15 +34,15 @@
     --gold-800: #6b4900;
     --gold-900: #422d00;
 
-    /* Light Theme (Clean Enterprise Canvas) */
-    --canvas-bg: #f6f7f9;
+    /* Light Theme (Elevated Enterprise Canvas with Enhanced Contrast) */
+    --canvas-bg: #eef1f5;
     --canvas-surface: #ffffff;
     --canvas-overlay: #ffffff;
-    --border-subtle: #e2e8f0;
-    --border-strong: #cbd5e1;
+    --border-subtle: #dce2ea;
+    --border-strong: #c2cbd6;
 
     /* shadcn Dynamic HSL Tokens */
-    --background: 220 14% 97%;
+    --background: 216 24% 95%;
     --foreground: 213 30% 7%;
     --card: 0 0% 100%;
     --card-foreground: 213 30% 7%;
@@ -52,11 +52,9 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 180 65% 34%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 20% 95%;
-    --muted-foreground: 215 16% 47%;
-    /* Generic hover/highlight surface — teal-tinted, never gold. Gold is reserved
-       for explicit bg-gold-500 usage (e.g. the Button "accent" variant) so it
-       stays a rare, deliberate signal instead of leaking into every hover state. */
+    --muted: 214 20% 90%;
+    --muted-foreground: 215 16% 45%;
+    /* Generic hover/highlight surface — teal-tinted, never gold. */
     --accent: 176 45% 95%;
     --accent-foreground: 213 30% 7%;
     --destructive: 0 84% 60%;
@@ -86,7 +84,7 @@
     --secondary-foreground: 0 0% 100%;
     --muted: 207 12% 18%;
     --muted-foreground: 211 16% 61%;
-    /* Teal-tinted, not gold — see :root comment above. */
+    /* Teal-tinted, not gold. */
     --accent: 200 45% 21%;
     --accent-foreground: 211 21% 76%;
     --destructive: 0 62% 40%;

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Link } from "react-router-dom";
 import { Plus, Briefcase, ChevronRight } from "lucide-react";
 import { useAuth } from "@/app/providers";
@@ -110,14 +109,13 @@ export function WorkspaceHeader({
           </div>
         </div>
 
-        {/* Right: Avatar Quick-Filters & Fixed Actions Column */}
+        {/* Right: Clean Avatar Filter & Action Button Stack */}
         <div className="flex flex-col items-end gap-2.5 shrink-0">
-          {/* Member Quick Filter Stack */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
               Filter by:
             </span>
-            <div className="flex -space-x-1.5 overflow-hidden">
+            <div className="flex items-center -space-x-1.5 overflow-visible py-1 px-1">
               {project.members.map((member) => {
                 const isSelected = selectedMemberId === member.id;
                 return (
@@ -128,14 +126,14 @@ export function WorkspaceHeader({
                       onSelectMember(isSelected ? null : member.id)
                     }
                     className={cn(
-                      "rounded-full transition-transform focus:outline-none",
+                      "relative rounded-full transition-all focus:outline-none shrink-0",
                       isSelected
-                        ? "ring-2 ring-gold-500 scale-110 z-10"
-                        : "hover:scale-105",
+                        ? "z-20 scale-110 ring-2 ring-gold-500 ring-offset-2 ring-offset-canvas-bg shadow-sm"
+                        : "z-0 hover:z-10 hover:scale-105 opacity-85 hover:opacity-100",
                     )}
                     title={`Filter by ${member.name}`}
                   >
-                    <Avatar className="h-7 w-7 border-2 border-canvas-surface">
+                    <Avatar className="h-7 w-7 border-2 border-canvas-bg">
                       <AvatarImage src={member.avatarUrl} alt={member.name} />
                       <AvatarFallback className="text-[10px] font-bold bg-navy-500 text-white dark:bg-foreground dark:text-background">
                         {member.initials}
@@ -147,14 +145,14 @@ export function WorkspaceHeader({
             </div>
           </div>
 
-          {/* Manager / Admin Exclusive Actions */}
+          {/* Manager Action Buttons */}
           {isManager && (
             <div className="flex items-center gap-2 whitespace-nowrap">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onAddFeature}
-                className="h-8 gap-1.5 text-xs font-semibold"
+                className="h-8 gap-1.5 text-xs font-semibold bg-canvas-surface hover:bg-canvas-overlay"
               >
                 <Icon icon={Plus} size={14} />
                 <span>Add Feature</span>
@@ -164,7 +162,7 @@ export function WorkspaceHeader({
                 variant="accent"
                 size="sm"
                 onClick={onAddTask}
-                className="h-8 gap-1.5 text-xs font-semibold"
+                className="h-8 gap-1.5 text-xs font-semibold bg-gold-500 hover:bg-gold-600 text-navy-900 dark:text-navy-950"
               >
                 <Icon icon={Plus} size={14} />
                 <span>Add Task</span>

@@ -118,7 +118,7 @@ export function ProjectCard({
           <div className="mt-3 space-y-1 min-w-0">
             <h3
               title={project.name}
-              className="text-base font-semibold text-foreground group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-2 break-all [word-break:break-word] leading-snug"
+              className="text-base font-semibold text-foreground group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-2 break-all leading-snug"
             >
               {project.name}
             </h3>

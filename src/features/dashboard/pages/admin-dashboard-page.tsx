@@ -19,8 +19,33 @@ import {
 } from "../api/mock-data";
 import { MetricCard } from "../components/metric-card";
 import { UpcomingActivities } from "../components/upcoming-activities";
+import { useSimulatedLoading } from "@/lib/use-simulated-loading";
+import {
+  PageHeaderSkeleton,
+  MetricCardGridSkeleton,
+  TableSkeleton,
+  CardListSkeleton,
+} from "@/components/composed/skeletons";
 
 export function AdminDashboardPage() {
+  const isLoading = useSimulatedLoading();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeaderSkeleton withAction />
+        <MetricCardGridSkeleton count={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-3">
+            <TableSkeleton columns={6} rows={5} />
+          </div>
+          <CardListSkeleton rows={4} />
+        </div>
+        <CardListSkeleton rows={3} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Top Header */}
