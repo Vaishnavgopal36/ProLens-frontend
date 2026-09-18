@@ -12,10 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ConfirmDialog } from "@/components/composed/confirm-dialog";
 
 export function AppHeader() {
   const { toggleSidebar, theme, cycleTheme } = useUI();
   const { user, logout } = useAuth();
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false);
 
   const getThemeIcon = (mode: ThemeMode) => {
     if (mode === "light") return Sun;
@@ -111,7 +113,7 @@ export function AppHeader() {
 
             {/* Log Out */}
             <DropdownMenuItem
-              onClick={logout}
+              onClick={() => setLogoutConfirmOpen(true)}
               className="gap-2.5 cursor-pointer text-destructive focus:text-destructive"
             >
               <Icon icon={LogOut} size={16} />
@@ -120,6 +122,15 @@ export function AppHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <ConfirmDialog
+        open={logoutConfirmOpen}
+        onOpenChange={setLogoutConfirmOpen}
+        title="Log Out"
+        description="Are you sure you want to log out of ProLens?"
+        confirmLabel="Log Out"
+        onConfirm={logout}
+      />
     </header>
   );
 }

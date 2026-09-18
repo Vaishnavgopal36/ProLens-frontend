@@ -179,7 +179,7 @@ function BurndownChart({ project }: { project: Project }) {
               y={padT + plotH - barH}
               width={16}
               height={barH}
-              className="fill-teal-500/15"
+              className="fill-teal-500 opacity-15"
               rx={2}
             />
           );

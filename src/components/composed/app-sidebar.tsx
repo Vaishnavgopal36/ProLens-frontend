@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { BrandMark } from "@/components/composed/brand-mark";
+import { ConfirmDialog } from "@/components/composed/confirm-dialog";
 
 interface NavItem {
   title: string;
@@ -31,28 +32,28 @@ interface NavItem {
 
 const ROLE_NAV_ITEMS: Record<UserRole, NavItem[]> = {
   employee: [
-    { title: "Dashboard", href: "#dashboard", icon: LayoutGrid },
+    { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
     { title: "Calendar", href: "#calendar", icon: Calendar },
     { title: "Projects", href: "/projects", icon: FolderKanban },
     { title: "Time Reporting", href: "#timesheets", icon: Clock },
     { title: "My Insights", href: "#insights", icon: TrendingUp },
   ],
   manager: [
-    { title: "Dashboard", href: "#dashboard", icon: LayoutGrid },
+    { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
     { title: "Calendar", href: "#calendar", icon: Calendar },
     { title: "Projects", href: "/projects", icon: FolderKanban },
     { title: "Time Reporting", href: "#timesheets", icon: Clock },
-    { title: "Org Insights", href: "#org-insights", icon: TrendingUp },
+    { title: "Org Insights", href: "/org-insights", icon: TrendingUp },
   ],
   admin: [
-    { title: "Dashboard", href: "#dashboard", icon: LayoutGrid },
+    { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
     { title: "Teams", href: "#teams", icon: Users },
-    { title: "Org Insights", href: "#org-insights", icon: TrendingUp },
+    { title: "Org Insights", href: "/org-insights", icon: TrendingUp },
   ],
   super_admin: [
-    { title: "Dashboard", href: "#dashboard", icon: LayoutGrid },
+    { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
     { title: "Teams", href: "#teams", icon: Users },
-    { title: "Org Insights", href: "#org-insights", icon: TrendingUp },
+    { title: "Org Insights", href: "/org-insights", icon: TrendingUp },
   ],
 };
 
@@ -62,6 +63,7 @@ export function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [activeHash, setActiveHash] = React.useState("#dashboard");
   const [isLogoHovered, setIsLogoHovered] = React.useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -69,13 +71,19 @@ export function AppSidebar() {
   const userRole: UserRole = user?.role ?? "manager";
   const items = ROLE_NAV_ITEMS[userRole] ?? ROLE_NAV_ITEMS.manager;
 
+  // Once any routed item matches the current URL, hash-based placeholder
+  // items (no page built yet) must never show as active alongside it.
+  const isOnKnownRoute = items.some(
+    (i) => i.href.startsWith("/") && location.pathname.startsWith(i.href),
+  );
+
   const renderNavList = (collapsed: boolean) => (
     <nav className="flex flex-col gap-1 px-2.5 py-2">
       {items.map((item) => {
         const isRoute = item.href.startsWith("/");
         const isActive = isRoute
           ? location.pathname.startsWith(item.href)
-          : activeHash === item.href;
+          : !isOnKnownRoute && activeHash === item.href;
 
         const navLink = (
           <a
@@ -135,10 +143,7 @@ export function AppSidebar() {
   const logoutButton = (
     <button
       type="button"
-      onClick={() => {
-        logout();
-        setSidebarOpen(false);
-      }}
+      onClick={() => setLogoutConfirmOpen(true)}
       className={cn(
         "group flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-destructive/80 hover:text-destructive hover:bg-destructive/10 transition-colors outline-none",
         isCollapsed && "justify-center px-0",
@@ -266,6 +271,18 @@ export function AppSidebar() {
           )}
         </div>
       </aside>
+
+      <ConfirmDialog
+        open={logoutConfirmOpen}
+        onOpenChange={setLogoutConfirmOpen}
+        title="Log Out"
+        description="Are you sure you want to log out of ProLens?"
+        confirmLabel="Log Out"
+        onConfirm={() => {
+          logout();
+          setSidebarOpen(false);
+        }}
+      />
     </>
   );
 }

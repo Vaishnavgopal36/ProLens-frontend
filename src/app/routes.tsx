@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppShell } from "@/app/app-shell";
 import { ProjectsListPage, ProjectDetailPage } from "@/features/projects";
 import { DashboardPage } from "@/features/dashboard";
+import { OrgInsightsPage } from "@/features/org-insights";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
             element: <ProjectDetailPage />,
           },
         ],
+      },
+      {
+        path: "org-insights",
+        element: <OrgInsightsPage />,
       },
       {
         path: "*",

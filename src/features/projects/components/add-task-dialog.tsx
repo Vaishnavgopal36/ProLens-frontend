@@ -42,6 +42,7 @@ import {
   AttachmentUploadField,
   type AttachmentEntry,
 } from "@/features/projects/components/attachment-upload-field";
+import { ConfirmDialog } from "@/components/composed/confirm-dialog";
 
 const FEATURE_OPTIONS = [
   "Design System",
@@ -169,6 +170,7 @@ export function AddTaskDialog({
   const [isAddingSubtask, setIsAddingSubtask] = React.useState(false);
   const [isStartCalendarOpen, setIsStartCalendarOpen] = React.useState(false);
   const [isDueCalendarOpen, setIsDueCalendarOpen] = React.useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const applyValues = (values: TaskFormValues) => {
@@ -450,13 +452,14 @@ export function AddTaskDialog({
   const isViewing = isEditMode && mode === "view";
 
   return (
-    <Sheet
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) resetForm();
-        onOpenChange(next);
-      }}
-    >
+    <>
+      <Sheet
+        open={open}
+        onOpenChange={(next) => {
+          if (!next) resetForm();
+          onOpenChange(next);
+        }}
+      >
       <SheetContent className="sm:max-w-xl w-full overflow-y-auto p-5">
         <SheetHeader className="space-y-1">
           <div className="flex items-center justify-between gap-2">
@@ -589,7 +592,7 @@ export function AddTaskDialog({
                 type="button"
                 variant="destructive"
                 size="sm"
-                onClick={handleDelete}
+                onClick={() => setDeleteConfirmOpen(true)}
                 className="gap-1.5"
               >
                 <Icon icon={Trash2} size={13} />
@@ -946,7 +949,7 @@ export function AddTaskDialog({
                   type="button"
                   variant="destructive"
                   size="sm"
-                  onClick={handleDelete}
+                  onClick={() => setDeleteConfirmOpen(true)}
                   className="gap-1.5"
                 >
                   <Icon icon={Trash2} size={13} />
@@ -975,6 +978,24 @@ export function AddTaskDialog({
           </form>
         )}
       </SheetContent>
-    </Sheet>
+      </Sheet>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete Task"
+        description={
+          <>
+            Are you sure you want to delete{" "}
+            <strong className="text-foreground font-semibold break-all">
+              {title.trim() || "this task"}
+            </strong>
+            ? This action cannot be undone.
+          </>
+        }
+        confirmLabel="Delete Task"
+        onConfirm={handleDelete}
+      />
+    </>
   );
 }
