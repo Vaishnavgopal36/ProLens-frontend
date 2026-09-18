@@ -89,7 +89,7 @@ export function AppSidebar() {
         const isRoute = item.href.startsWith("/");
         const isActive = isRoute
           ? location.pathname === item.href
-          : activeHash === item.href;
+          : !isOnKnownRoute && activeHash === item.href;
 
         const navLink = (
           <a

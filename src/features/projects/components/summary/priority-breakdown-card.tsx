@@ -54,7 +54,6 @@ export function PriorityBreakdownCard({
 
       <div className="flex items-end justify-between gap-3 h-20 px-1 pt-2">
         {counts.map(({ priority, count }) => {
-          const meta = PRIORITY_META[priority];
           const heightPercent = (count / maxCount) * 100;
           return (
             <button
