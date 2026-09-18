@@ -1,10 +1,16 @@
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -14,8 +20,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Project } from "@/types/project";
+import { AddTaskDialog, type TaskFormValues } from "../add-task-dialog";
 import {
   MOCK_LIST_TASKS,
+  type ListTask,
   type TaskPriority,
   type TaskStatus,
 } from "./mock-data";
@@ -27,43 +35,139 @@ interface ListTabProps {
 
 const PRIORITY_BADGE_CLASS: Record<TaskPriority, string> = {
   High: "bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400",
-  Medium:
-    "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
+  Medium: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
   Low: "bg-muted text-muted-foreground",
 };
 
 const STATUS_BADGE_CLASS: Record<TaskStatus, string> = {
   "In Progress":
     "bg-teal-500/10 text-teal-600 dark:bg-teal-500/10 dark:text-teal-400",
-  Done: "bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400",
+  Delivered: "bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400",
   Backlog: "bg-muted text-muted-foreground",
 };
 
-export function ListTab({ project, selectedMemberId: _selectedMemberId }: ListTabProps) {
+const ALL_VALUE = "all";
+const LIST_FEATURES = ["Design System", "Authentication", "Reporting"];
+const LIST_ASSIGNEES = ["Sarah Jenkins", "John Doe", "Mike Ross"];
+
+function taskToFormValues(task: ListTask): Partial<TaskFormValues> {
+  return {
+    title: task.title,
+    description: "",
+    feature: task.feature,
+    status: task.status,
+    priority: task.priority,
+    assignee: task.assignee,
+    estimatedHours: String(task.estimatedHours),
+    loggedHours: String(task.loggedHours),
+    labels: [],
+    subtasks: Array.from({ length: task.subtasksTotal }, (_, i) => ({
+      id: `${task.id}-sub-${i}`,
+      title: `Sub-task ${i + 1}`,
+      done: i < task.subtasksCompleted,
+    })),
+  };
+}
+
+export function ListTab({
+  project,
+  selectedMemberId: _selectedMemberId,
+}: ListTabProps) {
+  const [tasks, setTasks] = useState<ListTask[]>(MOCK_LIST_TASKS);
   const [searchQuery, setSearchQuery] = useState("");
+  const [featureFilter, setFeatureFilter] = useState(ALL_VALUE);
+  const [assigneeFilter, setAssigneeFilter] = useState(ALL_VALUE);
+  const [priorityFilter, setPriorityFilter] = useState(ALL_VALUE);
+  const [statusFilter, setStatusFilter] = useState(ALL_VALUE);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [isTaskSheetOpen, setIsTaskSheetOpen] = useState(false);
+
+  const editingTask = tasks.find((task) => task.id === editingTaskId);
 
   const filteredTasks = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return MOCK_LIST_TASKS;
-    return MOCK_LIST_TASKS.filter((task) =>
-      task.title.toLowerCase().includes(query) ||
-      task.code.toLowerCase().includes(query),
+
+    return tasks.filter((task) => {
+      const matchesSearch =
+        query.length === 0 ||
+        task.title.toLowerCase().includes(query) ||
+        task.code.toLowerCase().includes(query);
+
+      const matchesFeature =
+        featureFilter === ALL_VALUE || task.feature === featureFilter;
+
+      const matchesAssignee =
+        assigneeFilter === ALL_VALUE || task.assignee === assigneeFilter;
+
+      const matchesPriority =
+        priorityFilter === ALL_VALUE || task.priority === priorityFilter;
+
+      const matchesStatus =
+        statusFilter === ALL_VALUE || task.status === statusFilter;
+
+      return (
+        matchesSearch &&
+        matchesFeature &&
+        matchesAssignee &&
+        matchesPriority &&
+        matchesStatus
+      );
+    });
+  }, [
+    tasks,
+    searchQuery,
+    featureFilter,
+    assigneeFilter,
+    priorityFilter,
+    statusFilter,
+  ]);
+
+  const handleRowClick = (taskId: string) => {
+    setEditingTaskId(taskId);
+    setIsTaskSheetOpen(true);
+  };
+
+  const handleSaveTask = (values: TaskFormValues, taskId?: string) => {
+    if (!taskId) return;
+    setTasks((prev) =>
+      prev.map((task) => {
+        if (task.id !== taskId) return task;
+        return {
+          ...task,
+          title: values.title,
+          feature: values.feature,
+          assignee: values.assignee,
+          priority: values.priority,
+          status: values.status,
+          subtasksTotal: values.subtasks.length,
+          subtasksCompleted: values.subtasks.filter((s) => s.done).length,
+          loggedHours: Number(values.loggedHours) || 0,
+          estimatedHours: Number(values.estimatedHours) || 0,
+        };
+      }),
     );
-  }, [searchQuery]);
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+  };
 
   return (
     <div className="flex flex-col gap-4">
       <Card className="overflow-hidden p-0 shadow-xs">
-        <div className="flex flex-col gap-3 border-b border-border-subtle p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-foreground">
-              All Tasks ({filteredTasks.length})
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {project.name} Stream
-            </span>
+        <div className="flex flex-col gap-3 border-b border-border-subtle p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-bold text-foreground">
+                All Tasks ({filteredTasks.length})
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {project.name} Stream
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex flex-wrap items-center gap-2">
             <div className="relative w-full sm:w-56">
               <Icon
                 icon={Search}
@@ -78,10 +182,58 @@ export function ListTab({ project, selectedMemberId: _selectedMemberId }: ListTa
                 className="h-8 bg-canvas-surface pl-8 text-xs"
               />
             </div>
-            <Button variant="accent" size="sm" className="h-8 gap-1 text-xs">
-              <Icon icon={Plus} size={15} />
-              Add Task
-            </Button>
+
+            <Select value={featureFilter} onValueChange={setFeatureFilter}>
+              <SelectTrigger className="h-8 w-auto px-2 text-xs gap-1">
+                <SelectValue placeholder="All Features" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_VALUE}>All Features</SelectItem>
+                {LIST_FEATURES.map((feature) => (
+                  <SelectItem key={feature} value={feature}>
+                    {feature}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+              <SelectTrigger className="h-8 w-auto px-2 text-xs gap-1">
+                <SelectValue placeholder="All Assignees" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_VALUE}>All Assignees</SelectItem>
+                {LIST_ASSIGNEES.map((assignee) => (
+                  <SelectItem key={assignee} value={assignee}>
+                    {assignee}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="h-8 w-auto px-2 text-xs gap-1">
+                <SelectValue placeholder="All Priorities" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_VALUE}>All Priorities</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-8 w-auto px-2 text-xs gap-1">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_VALUE}>All Statuses</SelectItem>
+                <SelectItem value="Backlog">Backlog</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Delivered">Delivered</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -101,10 +253,11 @@ export function ListTab({ project, selectedMemberId: _selectedMemberId }: ListTa
             </TableHeader>
             <TableBody>
               {filteredTasks.map((task) => {
-                const isDone = task.status === "Done";
+                const isDelivered = task.status === "Delivered";
                 return (
                   <TableRow
                     key={task.id}
+                    onClick={() => handleRowClick(task.id)}
                     className="cursor-pointer hover:bg-canvas-overlay/40"
                   >
                     <TableCell className="pl-4">
@@ -114,7 +267,7 @@ export function ListTab({ project, selectedMemberId: _selectedMemberId }: ListTa
                         </span>
                         <span
                           className={`text-xs font-semibold ${
-                            isDone
+                            isDelivered
                               ? "text-muted-foreground line-through"
                               : "text-foreground"
                           }`}
@@ -158,7 +311,7 @@ export function ListTab({ project, selectedMemberId: _selectedMemberId }: ListTa
                       className={`text-xs font-medium ${
                         task.isOverdue
                           ? "text-rose-600 dark:text-rose-400"
-                          : isDone
+                          : isDelivered
                             ? "text-teal-600 dark:text-teal-400"
                             : "text-muted-foreground"
                       }`}
@@ -188,6 +341,21 @@ export function ListTab({ project, selectedMemberId: _selectedMemberId }: ListTa
           </Table>
         </div>
       </Card>
+
+      {editingTask && (
+        <AddTaskDialog
+          project={project}
+          open={isTaskSheetOpen}
+          onOpenChange={(next) => {
+            setIsTaskSheetOpen(next);
+            if (!next) setEditingTaskId(null);
+          }}
+          taskId={editingTask.id}
+          initialValues={taskToFormValues(editingTask)}
+          onSave={handleSaveTask}
+          onDelete={handleDeleteTask}
+        />
+      )}
     </div>
   );
 }

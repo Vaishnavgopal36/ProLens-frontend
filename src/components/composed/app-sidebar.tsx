@@ -163,7 +163,7 @@ export function AppSidebar() {
           className="flex flex-col justify-between w-64 p-0 bg-navy-500 dark:bg-canvas-bg border-r border-border-subtle text-white"
         >
           <div>
-            <div className="flex h-14 shrink-0 items-center gap-2.5 px-4 border-b border-border-subtle">
+            <div className="flex h-14 shrink-0 items-center gap-2.5 px-4">
               <BrandMark size={22} />
               <span className="text-base font-semibold tracking-tight text-white truncate">
                 ProLens
@@ -173,9 +173,7 @@ export function AppSidebar() {
           </div>
 
           {/* Mobile Bottom Logout */}
-          <div className="p-3 border-t border-border-subtle">
-            {logoutButton}
-          </div>
+          <div className="p-3">{logoutButton}</div>
         </SheetContent>
       </Sheet>
 

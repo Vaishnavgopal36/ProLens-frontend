@@ -14,7 +14,8 @@ export function MetricCard({ data }: MetricCardProps) {
       className={cn(
         "p-4 sm:p-5 transition-all border-border-subtle bg-canvas-surface",
         // When highlight is true (the amber "Tasks needing attention" card in manager view)
-        data.highlight && "border-amber-400/40 bg-amber-500/10 dark:bg-amber-500/15"
+        data.highlight &&
+          "border-amber-400/40 bg-amber-500/10 dark:bg-amber-500/15",
       )}
     >
       {/* Top row: Label and optional Badge */}

@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -12,13 +11,46 @@ import {
 } from "@/components/ui/select";
 import type { Project } from "@/types/project";
 import { KanbanColumn } from "./kanban-column";
+import { AddTaskDialog, type TaskFormValues } from "../add-task-dialog";
 import {
   BOARD_ASSIGNEES,
   BOARD_COLUMNS,
   BOARD_FEATURES,
   MOCK_BOARD_TASKS,
+  type BoardColumnId,
   type BoardTask,
 } from "./mock-data";
+
+const STATUS_TO_COLUMN: Record<TaskFormValues["status"], BoardColumnId> = {
+  Backlog: "backlog",
+  "In Progress": "in_progress",
+  Delivered: "delivered",
+};
+
+const COLUMN_TO_STATUS: Record<BoardColumnId, TaskFormValues["status"]> = {
+  backlog: "Backlog",
+  in_progress: "In Progress",
+  delivered: "Delivered",
+};
+
+function taskToFormValues(task: BoardTask): Partial<TaskFormValues> {
+  return {
+    title: task.title,
+    description: task.description ?? "",
+    feature: task.feature,
+    status: COLUMN_TO_STATUS[task.column],
+    priority: task.priority,
+    assignee: task.assigneeName,
+    estimatedHours: "16",
+    loggedHours: "0",
+    labels: [],
+    subtasks: Array.from({ length: task.subtasksTotal ?? 0 }, (_, i) => ({
+      id: `${task.id}-sub-${i}`,
+      title: `Sub-task ${i + 1}`,
+      done: i < (task.subtasksDone ?? 0),
+    })),
+  };
+}
 
 interface BoardTabProps {
   project: Project;
@@ -27,16 +59,86 @@ interface BoardTabProps {
 
 const ALL_VALUE = "all";
 
-export function BoardTab({ project, selectedMemberId: _selectedMemberId }: BoardTabProps) {
+function formatToday() {
+  return new Date().toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function BoardTab({
+  project,
+  selectedMemberId: _selectedMemberId,
+}: BoardTabProps) {
+  const [tasks, setTasks] = useState<BoardTask[]>(MOCK_BOARD_TASKS);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [featureFilter, setFeatureFilter] = useState(ALL_VALUE);
   const [assigneeFilter, setAssigneeFilter] = useState(ALL_VALUE);
   const [priorityFilter, setPriorityFilter] = useState(ALL_VALUE);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [isTaskSheetOpen, setIsTaskSheetOpen] = useState(false);
+
+  const editingTask = tasks.find((task) => task.id === editingTaskId);
+
+  const handleCardClick = (taskId: string) => {
+    setEditingTaskId(taskId);
+    setIsTaskSheetOpen(true);
+  };
+
+  const handleSaveTask = (values: TaskFormValues, taskId?: string) => {
+    if (!taskId) return;
+    setTasks((prev) =>
+      prev.map((task) => {
+        if (task.id !== taskId) return task;
+        const nextColumn = STATUS_TO_COLUMN[values.status];
+        return {
+          ...task,
+          title: values.title,
+          description: values.description || undefined,
+          feature: values.feature,
+          priority: values.priority,
+          assigneeName: values.assignee,
+          column: nextColumn,
+          completedDate:
+            nextColumn === "delivered"
+              ? (task.completedDate ?? formatToday())
+              : undefined,
+          subtasksTotal: values.subtasks.length || undefined,
+          subtasksDone:
+            values.subtasks.length > 0
+              ? values.subtasks.filter((s) => s.done).length
+              : undefined,
+        };
+      }),
+    );
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+  };
+
+  const handleDropTask = (taskId: string, columnId: BoardColumnId) => {
+    setDraggedTaskId(null);
+    setTasks((prev) =>
+      prev.map((task) => {
+        if (task.id !== taskId || task.column === columnId) return task;
+        return {
+          ...task,
+          column: columnId,
+          completedDate:
+            columnId === "delivered"
+              ? (task.completedDate ?? formatToday())
+              : task.completedDate,
+        };
+      }),
+    );
+  };
 
   const filteredTasks = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    return MOCK_BOARD_TASKS.filter((task: BoardTask) => {
+    return tasks.filter((task: BoardTask) => {
       const matchesSearch =
         query.length === 0 ||
         task.title.toLowerCase().includes(query) ||
@@ -56,7 +158,7 @@ export function BoardTab({ project, selectedMemberId: _selectedMemberId }: Board
         matchesSearch && matchesFeature && matchesAssignee && matchesPriority
       );
     });
-  }, [search, featureFilter, assigneeFilter, priorityFilter]);
+  }, [tasks, search, featureFilter, assigneeFilter, priorityFilter]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -118,15 +220,7 @@ export function BoardTab({ project, selectedMemberId: _selectedMemberId }: Board
         </div>
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="hidden sm:inline">Drag cards across columns</span>
-          <Button
-            variant="accent"
-            size="sm"
-            className="h-8 gap-1 text-xs font-bold bg-gold-500 hover:bg-gold-600 text-navy-900 dark:text-navy-950"
-          >
-            <Icon icon={Plus} size={15} />
-            Add Task
-          </Button>
+          <span>Drag cards across columns</span>
         </div>
       </div>
 
@@ -136,9 +230,29 @@ export function BoardTab({ project, selectedMemberId: _selectedMemberId }: Board
             key={column.id}
             column={column}
             tasks={filteredTasks.filter((task) => task.column === column.id)}
+            draggedTaskId={draggedTaskId}
+            onDragStart={setDraggedTaskId}
+            onDragEnd={() => setDraggedTaskId(null)}
+            onDropTask={handleDropTask}
+            onCardClick={handleCardClick}
           />
         ))}
       </div>
+
+      {editingTask && (
+        <AddTaskDialog
+          project={project}
+          open={isTaskSheetOpen}
+          onOpenChange={(next) => {
+            setIsTaskSheetOpen(next);
+            if (!next) setEditingTaskId(null);
+          }}
+          taskId={editingTask.id}
+          initialValues={taskToFormValues(editingTask)}
+          onSave={handleSaveTask}
+          onDelete={handleDeleteTask}
+        />
+      )}
     </div>
   );
 }

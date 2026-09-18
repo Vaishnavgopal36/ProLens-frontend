@@ -36,6 +36,10 @@ import type { Project, ProjectStatus } from "@/types/project";
 import { useAuth } from "@/app/providers";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  AttachmentUploadField,
+  type AttachmentEntry,
+} from "@/features/projects/components/attachment-upload-field";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -85,6 +89,7 @@ export function CreateProjectDialog({
   );
   const [quarterValue, setQuarterValue] = React.useState("Q1 2027");
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
+  const [attachments, setAttachments] = React.useState<AttachmentEntry[]>([]);
 
   const availableQuarters = React.useMemo(
     () => generateForwardQuarterOptions(12),
@@ -168,6 +173,7 @@ export function CreateProjectDialog({
     setClient("");
     setDescription("");
     setStatus("ongoing");
+    setAttachments([]);
     setErrors({});
     onOpenChange(false);
   };
@@ -444,6 +450,14 @@ export function CreateProjectDialog({
               </SelectContent>
             </Select>
           </div>
+
+          <AttachmentUploadField
+            attachments={attachments}
+            onAdd={(entries) => setAttachments((prev) => [...prev, ...entries])}
+            onRemove={(id) =>
+              setAttachments((prev) => prev.filter((a) => a.id !== id))
+            }
+          />
 
           <DialogFooter className="pt-1.5">
             <Button

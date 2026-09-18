@@ -1,12 +1,36 @@
-import { Link } from "react-router-dom";
-import { Plus, Briefcase, ChevronRight } from "lucide-react";
+import * as React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Plus,
+  Briefcase,
+  ChevronRight,
+  MoreHorizontal,
+  Archive,
+  Trash2,
+} from "lucide-react";
 import { useAuth } from "@/app/providers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import type { Project } from "@/types/project";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface WorkspaceHeaderProps {
   project: Project;
@@ -24,6 +48,8 @@ export function WorkspaceHeader({
   onAddTask,
 }: WorkspaceHeaderProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
   const isManager =
     user?.role === "manager" ||
@@ -31,6 +57,16 @@ export function WorkspaceHeader({
     user?.role === "super_admin";
 
   const isOngoing = project.status === "ongoing";
+
+  const handleArchive = () => {
+    toast.success(`"${project.name}" has been archived.`);
+  };
+
+  const handleDelete = () => {
+    setDeleteDialogOpen(false);
+    toast.success(`Project "${project.name}" has been deleted.`);
+    navigate("/projects");
+  };
 
   return (
     <div className="space-y-4 pb-2">
@@ -68,7 +104,7 @@ export function WorkspaceHeader({
       </div>
 
       {/* Main Title & Action Bar */}
-      <div className="flex items-start justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
         {/* Left: Project Icon, Title & Tags */}
         <div className="flex items-start gap-3.5 min-w-0 flex-1">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/30">
@@ -110,8 +146,8 @@ export function WorkspaceHeader({
         </div>
 
         {/* Right: Clean Avatar Filter & Action Button Stack */}
-        <div className="flex flex-col items-end gap-2.5 shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col items-start sm:items-end gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
               Filter by:
             </span>
@@ -147,7 +183,7 @@ export function WorkspaceHeader({
 
           {/* Manager Action Buttons */}
           {isManager && (
-            <div className="flex items-center gap-2 whitespace-nowrap">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -167,10 +203,75 @@ export function WorkspaceHeader({
                 <Icon icon={Plus} size={14} />
                 <span>Add Task</span>
               </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 bg-canvas-surface hover:bg-canvas-overlay"
+                    aria-label="More project actions"
+                  >
+                    <Icon icon={MoreHorizontal} size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuItem
+                    onClick={handleArchive}
+                    className="gap-2 cursor-pointer text-xs"
+                  >
+                    <Icon icon={Archive} size={14} />
+                    <span>Archive Project</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setDeleteDialogOpen(true)}
+                    className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+                  >
+                    <Icon icon={Trash2} size={14} />
+                    <span>Delete Project</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Delete Project</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete{" "}
+              <strong className="text-foreground font-semibold break-all">
+                {project.name}
+              </strong>
+              ? This action cannot be undone and will remove all associated
+              sprints, tasks, and logged hours.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              className="gap-1.5"
+            >
+              <Icon icon={Trash2} size={15} />
+              <span>Delete Project</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

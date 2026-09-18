@@ -133,8 +133,8 @@ export function AdminDashboardPage() {
                         row.status === "Active"
                           ? "success"
                           : row.status === "On-hold"
-                          ? "warning"
-                          : "destructive"
+                            ? "warning"
+                            : "destructive"
                       }
                       className="text-[10px] uppercase font-bold px-2 py-0.5"
                     >
@@ -160,9 +160,13 @@ export function AdminDashboardPage() {
           <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
             <span>Showing 5 of 14 projects</span>
             <div className="flex gap-2">
-              <button type="button" className="hover:text-foreground">Previous</button>
+              <button type="button" className="hover:text-foreground">
+                Previous
+              </button>
               <span>•</span>
-              <button type="button" className="hover:text-foreground">Next</button>
+              <button type="button" className="hover:text-foreground">
+                Next
+              </button>
             </div>
           </div>
         </div>
@@ -182,7 +186,10 @@ export function AdminDashboardPage() {
 
             <div className="divide-y divide-border-subtle">
               {ADMIN_TEAM_DISTRIBUTION.map((team, idx) => (
-                <div key={idx} className="py-2.5 first:pt-0 last:pb-0 space-y-0.5">
+                <div
+                  key={idx}
+                  className="py-2.5 first:pt-0 last:pb-0 space-y-0.5"
+                >
                   <p className="text-xs font-semibold text-foreground">
                     {team.department}
                   </p>
@@ -194,7 +201,11 @@ export function AdminDashboardPage() {
             </div>
 
             <div className="rounded-lg border border-border-subtle bg-canvas-bg/50 p-3 flex items-start gap-2.5">
-              <Icon icon={CheckCircle2} size={15} className="text-teal-500 mt-0.5" />
+              <Icon
+                icon={CheckCircle2}
+                size={15}
+                className="text-teal-500 mt-0.5"
+              />
               <div className="space-y-0.5 text-xs">
                 <p className="font-semibold text-foreground">
                   Target capacity nominal

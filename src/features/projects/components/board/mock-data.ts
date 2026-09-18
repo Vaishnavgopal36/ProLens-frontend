@@ -1,6 +1,6 @@
 export type BoardPriority = "High" | "Medium" | "Low";
 
-export type BoardColumnId = "backlog" | "in_progress" | "done";
+export type BoardColumnId = "backlog" | "in_progress" | "delivered";
 
 export interface BoardTask {
   id: string;
@@ -42,8 +42,8 @@ export const BOARD_COLUMNS: BoardColumnMeta[] = [
       "bg-teal-50 text-teal-600 border border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800",
   },
   {
-    id: "done",
-    title: "Done",
+    id: "delivered",
+    title: "Delivered",
     dotClassName: "bg-teal-600",
     countBadgeClassName:
       "bg-canvas-surface text-teal-700 border border-teal-200 dark:text-teal-300 dark:border-teal-800",
@@ -126,7 +126,7 @@ export const MOCK_BOARD_TASKS: BoardTask[] = [
     assigneeName: "John Doe",
     assigneeInitials: "JD",
     completedDate: "Sep 4",
-    column: "done",
+    column: "delivered",
   },
   {
     id: "t-08",
@@ -137,7 +137,7 @@ export const MOCK_BOARD_TASKS: BoardTask[] = [
     assigneeName: "Mike Ross",
     assigneeInitials: "MR",
     completedDate: "Sep 8",
-    column: "done",
+    column: "delivered",
   },
   {
     id: "t-01",
@@ -148,6 +148,6 @@ export const MOCK_BOARD_TASKS: BoardTask[] = [
     assigneeName: "Sarah Jenkins",
     assigneeInitials: "SJ",
     completedDate: "Sep 1",
-    column: "done",
+    column: "delivered",
   },
 ];

@@ -1,23 +1,45 @@
-import { CalendarDays, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  ArrowLeftRight,
+  Check,
+} from "lucide-react";
 import { Icon } from "@/components/ui/icon";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import type { BoardTask } from "./mock-data";
+import { BOARD_COLUMNS, type BoardColumnId, type BoardTask } from "./mock-data";
 
 const PRIORITY_BADGE_CLASSES: Record<BoardTask["priority"], string> = {
-  High:
-    "bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300",
-  Medium:
-    "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
-  Low:
-    "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+  High: "bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300",
+  Medium: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
+  Low: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
 };
 
 interface KanbanCardProps {
   task: BoardTask;
-  isDone: boolean;
+  isDelivered: boolean;
+  onDragStart: (taskId: string) => void;
+  onDragEnd: () => void;
+  onClick: (taskId: string) => void;
+  onMoveTask: (taskId: string, columnId: BoardColumnId) => void;
 }
 
-export function KanbanCard({ task, isDone }: KanbanCardProps) {
+export function KanbanCard({
+  task,
+  isDelivered,
+  onDragStart,
+  onDragEnd,
+  onClick,
+  onMoveTask,
+}: KanbanCardProps) {
+  const [isDragging, setIsDragging] = useState(false);
+
   const hasSubtasks =
     typeof task.subtasksDone === "number" &&
     typeof task.subtasksTotal === "number" &&
@@ -30,32 +52,81 @@ export function KanbanCard({ task, isDone }: KanbanCardProps) {
   return (
     <div
       draggable
-      className="bg-canvas-surface p-3.5 rounded-lg border border-border-subtle shadow-xs hover:shadow-md cursor-grab active:cursor-grabbing transition group"
+      onDragStart={(event) => {
+        event.dataTransfer.setData("text/plain", task.id);
+        event.dataTransfer.effectAllowed = "move";
+        setIsDragging(true);
+        onDragStart(task.id);
+      }}
+      onDragEnd={() => {
+        setIsDragging(false);
+        onDragEnd();
+      }}
+      onClick={() => onClick(task.id)}
+      className={cn(
+        "bg-canvas-surface p-3.5 rounded-lg border border-border-subtle shadow-xs hover:shadow-md cursor-grab active:cursor-grabbing transition group",
+        isDragging && "opacity-40",
+      )}
     >
       <div className="flex items-center justify-between gap-2">
         <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-canvas-overlay text-muted-foreground">
           {task.feature}
         </span>
-        {isDone ? (
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-teal-50 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300">
-            Completed
-          </span>
-        ) : (
-          <span
-            className={cn(
-              "px-2 py-0.5 rounded text-[10px] font-semibold",
-              PRIORITY_BADGE_CLASSES[task.priority],
-            )}
-          >
-            {task.priority}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isDelivered ? (
+            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-teal-50 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300">
+              Completed
+            </span>
+          ) : (
+            <span
+              className={cn(
+                "px-2 py-0.5 rounded text-[10px] font-semibold",
+                PRIORITY_BADGE_CLASSES[task.priority],
+              )}
+            >
+              {task.priority}
+            </span>
+          )}
+
+          {/* Touch-friendly move control — native HTML5 drag-and-drop
+              (used below) has no touch support on mobile browsers. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                onClick={(event) => event.stopPropagation()}
+                aria-label="Move card to another column"
+                className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-canvas-overlay hover:text-foreground transition-colors"
+              >
+                <Icon icon={ArrowLeftRight} size={13} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-40"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {BOARD_COLUMNS.map((col) => (
+                <DropdownMenuItem
+                  key={col.id}
+                  className="gap-2 cursor-pointer text-xs justify-between"
+                  onClick={() => onMoveTask(task.id, col.id)}
+                >
+                  <span>{col.title}</span>
+                  {col.id === task.column && <Icon icon={Check} size={13} />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <h4
         className={cn(
           "font-semibold text-sm mt-2 group-hover:text-teal-600 dark:group-hover:text-teal-400",
-          isDone ? "line-through text-muted-foreground" : "text-foreground",
+          isDelivered
+            ? "line-through text-muted-foreground"
+            : "text-foreground",
         )}
       >
         {task.title}
@@ -67,7 +138,7 @@ export function KanbanCard({ task, isDone }: KanbanCardProps) {
         </p>
       )}
 
-      {isDone ? (
+      {isDelivered ? (
         task.completedDate && (
           <div className="flex items-center gap-1.5 mt-3 text-xs text-teal-600 dark:text-teal-400">
             <Icon icon={CheckCircle2} size={13} />

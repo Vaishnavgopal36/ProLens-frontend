@@ -11,9 +11,7 @@ export function PageHeaderSkeleton({ withAction }: { withAction?: boolean }) {
         <Skeleton className="h-7 w-56" />
         <Skeleton className="h-3.5 w-72 max-w-full" />
       </div>
-      {withAction && (
-        <Skeleton className="h-8 w-32 self-start sm:self-auto" />
-      )}
+      {withAction && <Skeleton className="h-8 w-32 self-start sm:self-auto" />}
     </div>
   );
 }

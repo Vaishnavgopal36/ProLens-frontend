@@ -1,7 +1,15 @@
+import * as React from "react";
 import { History } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ActivityEvent {
   id: string;
@@ -50,32 +58,65 @@ const ACTIVITIES: ActivityEvent[] = [
     target: "Sprint 3",
     timeAgo: "Yesterday at 5:14 PM",
   },
+  {
+    id: "a-5",
+    user: "Sarah Jenkins",
+    initials: "SJ",
+    avatarBg: "bg-navy-500",
+    action: "closed sprint retrospective",
+    target: "Sprint 3",
+    timeAgo: "Yesterday at 5:14 PM",
+  },
 ];
 
 export function RecentActivityCard() {
+  const [userFilter, setUserFilter] = React.useState("all");
+
+  const uniqueUsers = React.useMemo(
+    () => Array.from(new Set(ACTIVITIES.map((a) => a.user))),
+    [],
+  );
+
+  const visibleActivities = React.useMemo(() => {
+    if (userFilter === "all") return ACTIVITIES;
+    return ACTIVITIES.filter((a) => a.user === userFilter);
+  }, [userFilter]);
+
   return (
     <Card className="border-border-subtle bg-canvas-surface p-5 space-y-3.5 shadow-xs">
-      <div className="flex items-center justify-between border-b border-border-subtle pb-3">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between border-b border-border-subtle pb-3 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <Icon
             icon={History}
             size={15}
-            className="text-teal-600 dark:text-teal-400"
+            className="text-teal-600 dark:text-teal-400 shrink-0"
           />
-          <h3 className="text-sm font-semibold text-foreground">
+          <h3 className="text-sm font-semibold text-foreground truncate">
             Recent Activity
           </h3>
         </div>
-        <button
-          type="button"
-          className="text-xs font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:underline"
-        >
-          View all activity
-        </button>
+        <Select value={userFilter} onValueChange={setUserFilter}>
+          <SelectTrigger className="h-7 w-auto text-[11px] bg-canvas-bg border-border-subtle px-2 gap-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Everyone</SelectItem>
+            {uniqueUsers.map((name) => (
+              <SelectItem key={name} value={name}>
+                {name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-3">
-        {ACTIVITIES.map((item) => (
+        {visibleActivities.length === 0 && (
+          <p className="py-4 text-center text-xs text-muted-foreground">
+            No activity from {userFilter}.
+          </p>
+        )}
+        {visibleActivities.map((item) => (
           <div key={item.id} className="flex items-start gap-3">
             <Avatar className="h-7 w-7 shrink-0 border border-border-subtle mt-0.5">
               <AvatarFallback

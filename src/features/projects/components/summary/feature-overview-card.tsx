@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icon";
 interface FeatureStream {
   id: string;
   name: string;
-  status: "ACTIVE" | "PLANNING";
+  status: "ACTIVE" | "COMPLETED";
   progress: number;
   tasksCount: number;
 }
@@ -29,7 +29,7 @@ const DEFAULT_STREAMS: FeatureStream[] = [
   {
     id: "f-3",
     name: "Reporting",
-    status: "PLANNING",
+    status: "COMPLETED",
     progress: 25,
     tasksCount: 4,
   },

@@ -5,9 +5,8 @@ export interface FeatureStreamAvatar {
 
 export interface FeatureStream {
   id: string;
-  code: string;
   name: string;
-  status: "ACTIVE" | "PLANNING";
+  status: "ACTIVE" | "COMPLETED ";
   progress: number;
   description: string;
   tasksCount: number;
@@ -18,7 +17,6 @@ export interface FeatureStream {
 export const MOCK_FEATURE_STREAMS: FeatureStream[] = [
   {
     id: "f-101",
-    code: "FEAT-101",
     name: "Design System",
     status: "ACTIVE",
     progress: 75,
@@ -33,7 +31,6 @@ export const MOCK_FEATURE_STREAMS: FeatureStream[] = [
   },
   {
     id: "f-102",
-    code: "FEAT-102",
     name: "Authentication",
     status: "ACTIVE",
     progress: 52,
@@ -48,9 +45,8 @@ export const MOCK_FEATURE_STREAMS: FeatureStream[] = [
   },
   {
     id: "f-103",
-    code: "FEAT-103",
     name: "Reporting",
-    status: "PLANNING",
+    status: "ACTIVE",
     progress: 25,
     description:
       "Mixpanel and GA4 unified ingestion pipeline with GDPR consent handling.",

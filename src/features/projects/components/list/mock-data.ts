@@ -1,5 +1,5 @@
 export type TaskPriority = "High" | "Medium" | "Low";
-export type TaskStatus = "In Progress" | "Done" | "Backlog";
+export type TaskStatus = "In Progress" | "Delivered" | "Backlog";
 
 export interface ListTask {
   id: string;
@@ -70,7 +70,7 @@ export const MOCK_LIST_TASKS: ListTask[] = [
     feature: "Design System",
     assignee: "John Doe",
     priority: "Medium",
-    status: "Done",
+    status: "Delivered",
     dueDate: "Sep 12, 2026",
     isOverdue: false,
     subtasksCompleted: 2,

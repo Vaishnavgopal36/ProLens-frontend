@@ -1,5 +1,5 @@
 import * as React from "react";
-import { UserPlus, Mail, Shield, Briefcase, Clock } from "lucide-react";
+import { UserPlus, Mail, Shield, Clock } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Icon } from "@/components/ui/icon";
 import type { ProjectInvite, UserRole } from "@/types/project";
+import { useAuth } from "@/app/providers";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -29,16 +30,54 @@ interface InviteMemberDialogProps {
   onSendInvite: (newInvite: ProjectInvite) => void;
 }
 
+// Ordered lowest to highest. An inviter can only grant a role that ranks
+// strictly below their own — a manager can't hand out manager/admin access.
+const ROLE_HIERARCHY: UserRole[] = [
+  "employee",
+  "manager",
+  "admin",
+  "super_admin",
+];
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  employee: "Employee (Contributor)",
+  manager: "Manager (Lead)",
+  admin: "Administrator",
+  super_admin: "Super Administrator",
+};
+
+function getGrantableRoles(inviterRole: UserRole | undefined): UserRole[] {
+  const inviterRank = ROLE_HIERARCHY.indexOf(inviterRole ?? "employee");
+  // Always leave at least "employee" selectable, even for an employee-rank
+  // inviter (who shouldn't reach this dialog in practice, but stay safe).
+  const cap = inviterRank > 0 ? inviterRank : 1;
+  return ROLE_HIERARCHY.slice(0, cap);
+}
+
 export function InviteMemberDialog({
   open,
   onOpenChange,
   onSendInvite,
 }: InviteMemberDialogProps) {
+  const { user } = useAuth();
+  const grantableRoles = React.useMemo(
+    () => getGrantableRoles(user?.role),
+    [user?.role],
+  );
+
   const [email, setEmail] = React.useState("");
-  const [role, setRole] = React.useState<UserRole>("employee");
-  const [designation, setDesignation] = React.useState("");
+  const [role, setRole] = React.useState<UserRole>(grantableRoles[0]);
   const [expiresInDays, setExpiresInDays] = React.useState("7");
   const [error, setError] = React.useState<string | null>(null);
+
+  // Keep the selected role valid if the inviter's own role changes underneath
+  // (e.g. dev role-switcher) or the dialog opens with a stale selection.
+  React.useEffect(() => {
+    if (!grantableRoles.includes(role)) {
+      setRole(grantableRoles[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grantableRoles]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +107,6 @@ export function InviteMemberDialog({
 
     // Reset Form State
     setEmail("");
-    setDesignation("");
     setRole("employee");
     setExpiresInDays("7");
     setError(null);
@@ -161,13 +199,18 @@ export function InviteMemberDialog({
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="employee">
-                    Employee (Contributor)
-                  </SelectItem>
-                  <SelectItem value="manager">Manager (Lead)</SelectItem>
-                  <SelectItem value="admin">Administrator</SelectItem>
+                  {grantableRoles.map((grantableRole) => (
+                    <SelectItem key={grantableRole} value={grantableRole}>
+                      {ROLE_LABELS[grantableRole]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              {grantableRoles.length === 1 && (
+                <p className="text-[11px] text-muted-foreground">
+                  You can only grant {ROLE_LABELS[grantableRoles[0]]} access.
+                </p>
+              )}
             </div>
 
             {/* Expiration Window */}
@@ -199,26 +242,10 @@ export function InviteMemberDialog({
             </div>
           </div>
 
-          {/* Operational Title / Designation */}
-          <div className="space-y-1">
-            <Label htmlFor="invite-designation" className="text-xs font-medium">
-              Operational Designation (Optional)
-            </Label>
-            <div className="relative">
-              <Icon
-                icon={Briefcase}
-                size={14}
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                id="invite-designation"
-                placeholder="e.g. Senior Frontend Engineer"
-                value={designation}
-                onChange={(e) => setDesignation(e.target.value)}
-                className="h-8 pl-8 text-xs bg-canvas-surface"
-              />
-            </div>
-          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Designation is pulled from employee records once the invite is
+            accepted — no need to enter it here.
+          </p>
 
           <DialogFooter className="pt-2">
             <Button

@@ -43,7 +43,7 @@ export function SummaryKpiBar({
 
   return (
     <Card className="border-border-subtle bg-canvas-surface p-5 shadow-xs">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-y sm:divide-y-0 sm:divide-x divide-border-subtle gap-y-4 sm:gap-y-0">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 sm:divide-x divide-border-subtle gap-y-4 sm:gap-y-0">
         {/* 1. PROGRESS */}
         <div className="flex flex-col justify-between pr-4">
           <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
@@ -52,9 +52,6 @@ export function SummaryKpiBar({
           <div className="mt-1 flex items-baseline gap-1.5">
             <span className="text-2xl font-bold tracking-tight text-foreground">
               {project.completionPercentage}%
-            </span>
-            <span className="text-xs text-muted-foreground font-medium">
-              Overall
             </span>
           </div>
           <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
@@ -76,9 +73,6 @@ export function SummaryKpiBar({
                 ? selectedMember.assignedFeaturesCount
                 : project.coreFeaturesCount || 5}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">
-              Streams
-            </span>
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground truncate">
             {isEmployeeMode ? "Assigned tracks" : "4 Active • 1 Planning"}
@@ -88,20 +82,15 @@ export function SummaryKpiBar({
         {/* 3. TASKS BREAKDOWN */}
         <div className="flex flex-col justify-between px-0 sm:px-4 pt-3 sm:pt-0">
           <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-            Tasks Breakdown
+            Tasks
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
             <span className="text-2xl font-bold tracking-tight text-foreground">
               {totalTasks}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">
-              Total
-            </span>
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground truncate">
-            {isEmployeeMode
-              ? `${totalTasks} sprint assignments`
-              : "16 Done • 6 In Prog • 2 Backlog"}
+            {totalTasks} sprint assignments
           </p>
         </div>
 

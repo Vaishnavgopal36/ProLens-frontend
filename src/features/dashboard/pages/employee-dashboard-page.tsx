@@ -111,8 +111,8 @@ export function EmployeeDashboardPage() {
                         row.priority === "Urgent"
                           ? "destructive"
                           : row.priority === "High"
-                          ? "accent"
-                          : "neutral"
+                            ? "accent"
+                            : "neutral"
                       }
                       className="text-[10px] uppercase font-bold px-2 py-0.5"
                     >

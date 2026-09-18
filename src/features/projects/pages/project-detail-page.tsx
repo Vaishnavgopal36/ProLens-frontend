@@ -18,6 +18,16 @@ import { MOCK_PROJECTS } from "@/features/projects/api/mock-data";
 import { WorkspaceHeader } from "@/features/projects/components/workspace-header";
 import { TeamsTab } from "@/features/projects/components/teams-tab";
 import { SummaryTab } from "@/features/projects/components/summary/summary-tab";
+import { BoardTab } from "@/features/projects/components/board/board-tab";
+import { FeaturesTab } from "@/features/projects/components/features/features-tab";
+import { ListTab } from "@/features/projects/components/list/list-tab";
+import { CalendarTab } from "@/features/projects/components/calendar/calendar-tab";
+import { TimelineTab } from "@/features/projects/components/timeline/timeline-tab";
+import { AttachmentsTab } from "@/features/projects/components/attachments/attachments-tab";
+import { ReportsTab } from "@/features/projects/components/reports/reports-tab";
+import { TimeTab } from "@/features/projects/components/time/time-tab";
+import { AddTaskDialog } from "@/features/projects/components/add-task-dialog";
+import { AddFeatureDialog } from "@/features/projects/components/add-feature-dialog";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import {
   WorkspaceHeaderSkeleton,
@@ -47,6 +57,8 @@ export function ProjectDetailPage() {
   );
   // 1. Declare activeTab and setActiveTab state
   const [activeTab, setActiveTab] = React.useState("summary");
+  const [addTaskOpen, setAddTaskOpen] = React.useState(false);
+  const [addFeatureOpen, setAddFeatureOpen] = React.useState(false);
 
   const project = React.useMemo(() => {
     return MOCK_PROJECTS.find((p) => p.id === projectId);
@@ -84,6 +96,8 @@ export function ProjectDetailPage() {
         project={project}
         selectedMemberId={selectedMemberId}
         onSelectMember={setSelectedMemberId}
+        onAddFeature={() => setAddFeatureOpen(true)}
+        onAddTask={() => setAddTaskOpen(true)}
       />
 
       {/* 2. Bind value and onValueChange to controlled state */}
@@ -116,34 +130,78 @@ export function ProjectDetailPage() {
           />
         </TabsContent>
 
+        {/* Tab 2: Board */}
+        <TabsContent value="board" className="m-0 focus-visible:outline-none">
+          <BoardTab project={project} selectedMemberId={selectedMemberId} />
+        </TabsContent>
+
         {/* Tab 3: Teams & Governance */}
         <TabsContent value="teams" className="m-0 focus-visible:outline-none">
           <TeamsTab project={project} selectedMemberId={selectedMemberId} />
         </TabsContent>
 
-        {/* Remaining Tab Placeholders */}
-        {WORKSPACE_TABS.filter(
-          (t) => t.value !== "summary" && t.value !== "teams",
-        ).map((tab) => (
-          <TabsContent
-            key={tab.value}
-            value={tab.value}
-            className="m-0 focus-visible:outline-none"
-          >
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border-subtle bg-canvas-surface/40 p-12 text-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-canvas-overlay text-muted-foreground mb-3">
-                <Icon icon={tab.icon} size={20} />
-              </div>
-              <h3 className="text-sm font-semibold text-foreground">
-                {tab.label} View
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                This section for {project.name} is ready to connect.
-              </p>
-            </div>
-          </TabsContent>
-        ))}
+        {/* Tab 4: Features */}
+        <TabsContent
+          value="features"
+          className="m-0 focus-visible:outline-none"
+        >
+          <FeaturesTab project={project} selectedMemberId={selectedMemberId} />
+        </TabsContent>
+
+        {/* Tab 5: List */}
+        <TabsContent value="list" className="m-0 focus-visible:outline-none">
+          <ListTab project={project} selectedMemberId={selectedMemberId} />
+        </TabsContent>
+
+        {/* Tab 6: Calendar */}
+        <TabsContent
+          value="calendar"
+          className="m-0 focus-visible:outline-none"
+        >
+          <CalendarTab project={project} selectedMemberId={selectedMemberId} />
+        </TabsContent>
+
+        {/* Tab 7: Timeline */}
+        <TabsContent
+          value="timeline"
+          className="m-0 focus-visible:outline-none"
+        >
+          <TimelineTab project={project} selectedMemberId={selectedMemberId} />
+        </TabsContent>
+
+        {/* Tab 8: Attachments */}
+        <TabsContent
+          value="attachments"
+          className="m-0 focus-visible:outline-none"
+        >
+          <AttachmentsTab
+            project={project}
+            selectedMemberId={selectedMemberId}
+          />
+        </TabsContent>
+
+        {/* Tab 9: Reports */}
+        <TabsContent value="reports" className="m-0 focus-visible:outline-none">
+          <ReportsTab project={project} selectedMemberId={selectedMemberId} />
+        </TabsContent>
+
+        {/* Tab 10: Time */}
+        <TabsContent value="time" className="m-0 focus-visible:outline-none">
+          <TimeTab project={project} selectedMemberId={selectedMemberId} />
+        </TabsContent>
       </Tabs>
+
+      {/* Global Add Task / Add Feature Modals */}
+      <AddTaskDialog
+        project={project}
+        open={addTaskOpen}
+        onOpenChange={setAddTaskOpen}
+      />
+      <AddFeatureDialog
+        project={project}
+        open={addFeatureOpen}
+        onOpenChange={setAddFeatureOpen}
+      />
     </div>
   );
 }

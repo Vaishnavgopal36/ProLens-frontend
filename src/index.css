@@ -8,6 +8,9 @@
   * {
     @apply border-border;
   }
+  html {
+    @apply bg-canvas-bg;
+  }
   body {
     @apply bg-canvas-bg text-foreground font-sans antialiased min-h-screen;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";

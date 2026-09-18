@@ -1,21 +1,30 @@
+import * as React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Project } from "@/types/project";
-import { MOCK_FEATURE_STREAMS } from "./mock-data";
+import { MOCK_FEATURE_STREAMS, type FeatureStream } from "./mock-data";
+import { FeatureDetailDialog } from "./feature-detail-dialog";
 
 interface FeaturesTabProps {
   project: Project;
   selectedMemberId?: string | null;
 }
 
-export function FeaturesTab({ project, selectedMemberId: _selectedMemberId }: FeaturesTabProps) {
+export function FeaturesTab({
+  project,
+  selectedMemberId: _selectedMemberId,
+}: FeaturesTabProps) {
+  const [selectedFeature, setSelectedFeature] =
+    React.useState<FeatureStream | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = React.useState(false);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold tracking-wider text-muted-foreground">
-          Feature Milestone Streams for {project.name} (Click to view
-          allocated tasks)
+          Feature Milestone Streams for {project.name} (Click to view allocated
+          tasks)
         </span>
       </div>
 
@@ -28,10 +37,19 @@ export function FeaturesTab({ project, selectedMemberId: _selectedMemberId }: Fe
               key={stream.id}
               role="button"
               tabIndex={0}
+              onClick={() => {
+                setSelectedFeature(stream);
+                setIsDetailOpen(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelectedFeature(stream);
+                  setIsDetailOpen(true);
+                }
+              }}
               className={`group flex cursor-pointer flex-col justify-between p-5 shadow-xs transition hover:shadow-md ${
-                isActive
-                  ? "hover:border-teal-500"
-                  : "hover:border-amber-500"
+                isActive ? "hover:border-teal-500" : "hover:border-amber-500"
               }`}
             >
               <div className="flex items-start justify-between">
@@ -55,9 +73,6 @@ export function FeaturesTab({ project, selectedMemberId: _selectedMemberId }: Fe
                   >
                     {stream.name}
                   </h4>
-                  <span className="font-mono text-[11px] text-muted-foreground">
-                    {stream.code}
-                  </span>
                 </div>
                 <span
                   className={`text-sm font-bold ${
@@ -106,6 +121,12 @@ export function FeaturesTab({ project, selectedMemberId: _selectedMemberId }: Fe
           );
         })}
       </div>
+
+      <FeatureDetailDialog
+        feature={selectedFeature}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+      />
     </div>
   );
 }

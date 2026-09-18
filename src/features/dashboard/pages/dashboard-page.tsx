@@ -16,7 +16,7 @@ export function DashboardPage() {
 
   // Initialize with the logged-in user's role, defaulting to 'employee'
   const [activeRole, setActiveRole] = React.useState<UserRole>(
-    user?.role ?? "employee"
+    user?.role ?? "employee",
   );
 
   // Sync state if the auth context updates

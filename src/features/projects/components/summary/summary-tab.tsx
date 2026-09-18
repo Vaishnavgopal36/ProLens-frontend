@@ -6,6 +6,9 @@ import { FeatureOverviewCard } from "./feature-overview-card";
 import { UpcomingMilestonesCard } from "./upcoming-milestones-card";
 import { RecentActivityCard } from "./recent-activity-card";
 import { ProjectTeamWidget } from "./project-team-widget";
+import { TypesOfWorkCard } from "./types-of-work-card";
+import { PriorityBreakdownCard } from "./priority-breakdown-card";
+import { TeamWorkloadCard } from "./team-workload-card";
 
 interface SummaryTabProps {
   project: Project;
@@ -19,6 +22,10 @@ export function SummaryTab({
   onNavigateTab,
 }: SummaryTabProps) {
   const { user } = useAuth();
+  const isManager =
+    user?.role === "manager" ||
+    user?.role === "admin" ||
+    user?.role === "super_admin";
 
   // Find active member entity if header avatar filter is clicked
   const selectedMember = React.useMemo(() => {
@@ -43,6 +50,7 @@ export function SummaryTab({
           <UpcomingMilestonesCard
             selectedMember={selectedMember}
             activeSprintName={project.activeSprint}
+            onNavigateTab={onNavigateTab}
           />
         </div>
 
@@ -56,6 +64,18 @@ export function SummaryTab({
           />
         </div>
       </div>
+
+      {/* Analytics Row: work composition & priority mix, side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <TypesOfWorkCard
+          coreFeaturesCount={project.coreFeaturesCount}
+          onNavigateTab={onNavigateTab}
+        />
+        <PriorityBreakdownCard onNavigateTab={onNavigateTab} />
+      </div>
+
+      {/* Manager-only: per-person workload is not shown to employees */}
+      {isManager && <TeamWorkloadCard members={project.members} />}
     </div>
   );
 }

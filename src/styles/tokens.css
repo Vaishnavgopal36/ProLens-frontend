@@ -63,32 +63,59 @@
     --radius: 0.5rem;
   }
 
-  /* Dark Theme (Jira-style neutral slate — the canonical dark mode for this app) */
+  /* Dark Theme — Stripe Connect's own dark-mode appearance tokens, used
+     as-is instead of a derived version of the light-mode brand palette.
+     The brand scales (--teal-*, --gold-*) are also overridden here so
+     every existing bg-teal-500 / text-gold-400 etc. class site-wide
+     picks up Stripe's blue/orange instead of the light-mode teal/gold. */
   .dark {
-    --canvas-bg: #1d2125;
-    --canvas-surface: #22272b;
-    --canvas-overlay: #282e33;
+    --canvas-bg: #14171d;
+    --canvas-surface: #1b1e25;
+    --canvas-overlay: #2b3039;
 
-    --border-subtle: #38414a;
-    --border-strong: #454f59;
+    --border-subtle: #2b3039;
+    --border-strong: #3d4552;
 
-    --background: 210 12% 13%;
-    --foreground: 211 21% 76%;
-    --card: 207 12% 15%;
-    --card-foreground: 211 21% 76%;
-    --popover: 207 12% 18%;
-    --popover-foreground: 211 21% 76%;
-    --primary: 211 21% 76%;
-    --primary-foreground: 210 12% 13%;
-    --secondary: 179 65% 42%;
+    --background: 220 17% 10%;
+    --foreground: 220 13% 82%;
+    --card: 225 15% 12%;
+    --card-foreground: 220 13% 82%;
+    --popover: 220 14% 17%;
+    --popover-foreground: 220 13% 82%;
+    --primary: 220 13% 82%;
+    --primary-foreground: 220 17% 10%;
+    --secondary: 210 100% 50%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 207 12% 18%;
-    --muted-foreground: 211 16% 61%;
-    /* Teal-tinted, not gold. */
-    --accent: 200 45% 21%;
-    --accent-foreground: 211 21% 76%;
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 211 21% 76%;
-    --ring: 200 45% 44%;
+    --muted: 225 15% 12%;
+    --muted-foreground: 217 20% 62%;
+    --accent: 210 45% 18%;
+    --accent-foreground: 220 13% 82%;
+    --destructive: 349 88% 57%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 210 100% 50%;
+
+    /* Brand scale overrides: Stripe blue in place of teal. */
+    --teal-50: #e6f3ff;
+    --teal-100: #cce7ff;
+    --teal-200: #99ceff;
+    --teal-300: #66b6ff;
+    --teal-400: #339dff;
+    --teal-500: #0085ff;
+    --teal-600: #006dd6;
+    --teal-700: #0057ad;
+    --teal-800: #004184;
+    --teal-900: #002b5b;
+
+    /* Brand scale overrides: Stripe warning-orange in place of gold. */
+    --gold-50: #fff1e6;
+    --gold-100: #ffe0c2;
+    --gold-200: #ffc285;
+    --gold-300: #ffa347;
+    --gold-400: #ff8a1a;
+    --gold-500: #f27400;
+    --gold-600: #cc6100;
+    --gold-700: #a34d00;
+    --gold-800: #7a3a00;
+    --gold-900: #522600;
   }
 }

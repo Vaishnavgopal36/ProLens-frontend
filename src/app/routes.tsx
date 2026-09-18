@@ -3,7 +3,6 @@ import { AppShell } from "@/app/app-shell";
 import { ProjectsListPage, ProjectDetailPage } from "@/features/projects";
 import { DashboardPage } from "@/features/dashboard";
 
-
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -31,7 +30,6 @@ export const router = createBrowserRouter([
             path: ":projectId",
             element: <ProjectDetailPage />,
           },
-          
         ],
       },
       {

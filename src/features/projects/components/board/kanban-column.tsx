@@ -1,14 +1,49 @@
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { KanbanCard } from "./kanban-card";
-import type { BoardColumnMeta, BoardTask } from "./mock-data";
+import type { BoardColumnId, BoardColumnMeta, BoardTask } from "./mock-data";
 
 interface KanbanColumnProps {
   column: BoardColumnMeta;
   tasks: BoardTask[];
+  draggedTaskId: string | null;
+  onDragStart: (taskId: string) => void;
+  onDragEnd: () => void;
+  onDropTask: (taskId: string, columnId: BoardColumnId) => void;
+  onCardClick: (taskId: string) => void;
 }
 
-export function KanbanColumn({ column, tasks }: KanbanColumnProps) {
+export function KanbanColumn({
+  column,
+  tasks,
+  draggedTaskId,
+  onDragStart,
+  onDragEnd,
+  onDropTask,
+  onCardClick,
+}: KanbanColumnProps) {
+  const [isDragOver, setIsDragOver] = useState(false);
+
   return (
-    <div className="bg-canvas-overlay/70 border border-border-subtle rounded-xl p-3 flex flex-col min-h-[520px]">
+    <div
+      onDragOver={(event) => {
+        if (!draggedTaskId) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        setIsDragOver(true);
+      }}
+      onDragLeave={() => setIsDragOver(false)}
+      onDrop={(event) => {
+        event.preventDefault();
+        setIsDragOver(false);
+        const taskId = event.dataTransfer.getData("text/plain");
+        if (taskId) onDropTask(taskId, column.id);
+      }}
+      className={cn(
+        "bg-canvas-overlay/70 border border-border-subtle rounded-xl p-3 flex flex-col min-h-[520px] transition-colors",
+        isDragOver && "border-teal-500 bg-teal-500/5",
+      )}
+    >
       <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-border-subtle">
         <div className="flex items-center gap-2">
           <span className={`w-2.5 h-2.5 rounded-full ${column.dotClassName}`} />
@@ -31,7 +66,11 @@ export function KanbanColumn({ column, tasks }: KanbanColumnProps) {
             <KanbanCard
               key={task.id}
               task={task}
-              isDone={column.id === "done"}
+              isDelivered={column.id === "delivered"}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              onClick={onCardClick}
+              onMoveTask={onDropTask}
             />
           ))
         )}
