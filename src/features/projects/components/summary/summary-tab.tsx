@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useAuth } from "@/app/providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import type { Project } from "@/types/project";
-import { PeopleFilter } from "@/components/composed/filters/people-filter";
+import { PeopleFilter } from "@/components/composed/filters";
 import { SummaryKpiBar } from "./summary-kpi-bar";
 import { FeatureOverviewCard } from "./feature-overview-card";
 import { UpcomingMilestonesCard } from "./upcoming-milestones-card";
@@ -18,10 +19,8 @@ interface SummaryTabProps {
 
 export function SummaryTab({ project, onNavigateTab }: SummaryTabProps) {
   const { user } = useAuth();
-  const isManager =
-    user?.role === "manager" ||
-    user?.role === "admin" ||
-    user?.role === "super_admin";
+  const { isEmployee, hasMinimumRole } = usePermissions();
+  const isManager = hasMinimumRole("manager");
 
   // Employees always see their own numbers. Managers and above can pick a
   // teammate with the people filter to see theirs instead.
@@ -29,14 +28,14 @@ export function SummaryTab({ project, onNavigateTab }: SummaryTabProps) {
     null,
   );
   const selectedMember = React.useMemo(() => {
-    if (user?.role === "employee")
-      return project.members.find((m) => m.email === user.email) ?? null;
+    if (isEmployee)
+      return project.members.find((m) => m.email === user?.email) ?? null;
     return project.members.find((m) => m.id === pickedMemberId) ?? null;
-  }, [project.members, pickedMemberId, user]);
+  }, [project.members, pickedMemberId, isEmployee, user?.email]);
 
   return (
     <div className="space-y-5">
-      {user?.role !== "employee" && (
+      {!isEmployee && (
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground">
             Filter by person

@@ -6,13 +6,13 @@ import type { AuthUser, UserRole } from "@/app/providers";
  * members in the mock project directory, so their project and insight views
  * are populated (employee → 5 projects; manager → full portfolio).
  */
-export const DEMO_PASSWORD = "password";
+const DEMO_PASSWORD = "password";
 
-export interface DemoAccount extends AuthUser {
+interface DemoAccount extends AuthUser {
   label: string;
 }
 
-export const DEMO_ACCOUNTS: DemoAccount[] = [
+const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     id: "mem-3",
     name: "Marcus Chen",

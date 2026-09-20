@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { usePermissions } from "@/hooks/use-permissions";
+import { DeleteProjectDialog } from "./delete-project-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
@@ -17,14 +18,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  ModalDescription,
-  ModalFooter,
-} from "@/components/ui/modal";
 import type { Project } from "@/types/project";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -191,40 +184,12 @@ export function WorkspaceHeader({
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      <Modal open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <ModalContent className="sm:max-w-[420px]">
-          <ModalHeader>
-            <ModalTitle>Delete Project</ModalTitle>
-            <ModalDescription>
-              Are you sure you want to delete{" "}
-              <strong className="text-foreground font-semibold break-all">
-                {project.name}
-              </strong>
-              ? This action cannot be undone and will remove all associated
-              sprints, tasks, and logged hours.
-            </ModalDescription>
-          </ModalHeader>
-          <ModalFooter className="gap-2 sm:gap-0 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              className="gap-1.5"
-            >
-              <Icon icon={Trash2} size={15} />
-              <span>Delete Project</span>
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <DeleteProjectDialog
+        project={project}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
 import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/components/ui/field-error";
 import { Label } from "@/components/ui/label";
 import {
@@ -177,7 +178,7 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
             >
               Work summary
             </Label>
-            <textarea
+            <Textarea
               id="work-summary"
               rows={3}
               value={summary}

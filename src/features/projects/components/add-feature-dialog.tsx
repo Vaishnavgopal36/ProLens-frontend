@@ -18,6 +18,7 @@ import {
 import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -167,7 +168,7 @@ export function AddFeatureDialog({
                 size={13}
                 className="absolute left-2.5 top-2 text-muted-foreground"
               />
-              <textarea
+              <Textarea
                 id="feature-desc"
                 rows={4}
                 placeholder="Summary of scope and deliverables..."

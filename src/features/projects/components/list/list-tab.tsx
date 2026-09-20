@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FilterBar } from "@/components/composed/filters/filter-bar";
-import { useFilters } from "@/components/composed/filters/use-filters";
-import type { FilterFieldDef } from "@/components/composed/filters/types";
+import { FilterBar } from "@/components/composed/filters";
+import { useFilters } from "@/components/composed/filters";
+import type { FilterFieldDef } from "@/components/composed/filters";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import {
   Table,

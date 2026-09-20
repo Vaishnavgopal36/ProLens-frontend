@@ -8,7 +8,7 @@ import {
   Building2,
   FileText,
 } from "lucide-react";
-import { useAuth } from "@/app/providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   Modal,
   ModalContent,
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/components/ui/field-error";
 import { Label } from "@/components/ui/label";
 import {
@@ -38,6 +39,7 @@ import { Icon } from "@/components/ui/icon";
 import type { Project, ProjectStatus } from "@/types/project";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { generateForwardQuarterOptions } from "@/lib/quarters";
 
 interface ProjectSettingsDialogProps {
   project: Project;
@@ -46,34 +48,14 @@ interface ProjectSettingsDialogProps {
   onUpdateProject?: (updated: Project) => void;
 }
 
-function generateForwardQuarterOptions(numQuarters = 12): string[] {
-  const now = new Date();
-  let currentQuarter = Math.floor(now.getMonth() / 3) + 1;
-  let currentYear = now.getFullYear();
-
-  const quarters: string[] = [];
-  for (let i = 0; i < numQuarters; i++) {
-    quarters.push(`Q${currentQuarter} ${currentYear}`);
-    currentQuarter++;
-    if (currentQuarter > 4) {
-      currentQuarter = 1;
-      currentYear++;
-    }
-  }
-  return quarters;
-}
-
 export function ProjectSettingsDialog({
   project,
   open,
   onOpenChange,
   onUpdateProject,
 }: ProjectSettingsDialogProps) {
-  const { user } = useAuth();
-  const isManager =
-    user?.role === "manager" ||
-    user?.role === "admin" ||
-    user?.role === "super_admin";
+  const { hasMinimumRole } = usePermissions();
+  const isManager = hasMinimumRole("manager");
 
   // Editable Form States
   const [name, setName] = React.useState(project.name);
@@ -274,7 +256,7 @@ export function ProjectSettingsDialog({
                   size={13}
                   className="absolute left-2.5 top-2 text-muted-foreground"
                 />
-                <textarea
+                <Textarea
                   id="edit-desc"
                   rows={2}
                   value={description}

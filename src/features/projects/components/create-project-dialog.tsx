@@ -18,6 +18,7 @@ import {
 import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -37,6 +38,7 @@ import type { Project, ProjectStatus } from "@/types/project";
 import { useAuth } from "@/app/providers";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { generateForwardQuarterOptions } from "@/lib/quarters";
 import {
   AttachmentUploadField,
   type AttachmentEntry,
@@ -51,23 +53,6 @@ interface CreateProjectDialogProps {
 interface FormErrors {
   name?: string;
   client?: string;
-}
-
-function generateForwardQuarterOptions(numQuarters = 12): string[] {
-  const now = new Date();
-  let currentQuarter = Math.floor(now.getMonth() / 3) + 1;
-  let currentYear = now.getFullYear();
-
-  const quarters: string[] = [];
-  for (let i = 0; i < numQuarters; i++) {
-    quarters.push(`Q${currentQuarter} ${currentYear}`);
-    currentQuarter++;
-    if (currentQuarter > 4) {
-      currentQuarter = 1;
-      currentYear++;
-    }
-  }
-  return quarters;
 }
 
 export function CreateProjectDialog({
@@ -288,7 +273,7 @@ export function CreateProjectDialog({
                 size={13}
                 className="absolute left-2.5 top-2 text-muted-foreground"
               />
-              <textarea
+              <Textarea
                 id="proj-desc"
                 rows={2}
                 placeholder="Briefly describe objectives, integrations, or compliance requirements..."

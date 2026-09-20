@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { toLocalISODate } from "@/lib/date";
 import { useModalHotkey } from "@/hooks/use-hotkey";
 import {
   INITIAL_TIME_ENTRIES,
@@ -82,12 +83,7 @@ export function TimesheetPage() {
     return arr;
   }, [weekOffset]);
 
-  const formatDateISO = (d: Date) => {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
+  const formatDateISO = toLocalISODate;
 
   // Ctrl/⌘ + K toggles the add-time modal, defaulting to today.
   useModalHotkey({

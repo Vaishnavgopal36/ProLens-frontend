@@ -17,7 +17,7 @@ export function PageHeaderSkeleton({ withAction }: { withAction?: boolean }) {
 }
 
 /** Matches MetricCard / KPI tile: label, big value, subtext. */
-export function MetricCardSkeleton() {
+function MetricCardSkeleton() {
   return (
     <Card className="p-4 sm:p-5 border-border-subtle bg-canvas-surface space-y-3">
       <div className="flex items-center justify-between">
@@ -99,7 +99,7 @@ export function CardListSkeleton({
 }
 
 /** Matches ProjectCard grid item: badge, title, progress bar, stat row. */
-export function ProjectCardSkeleton() {
+function ProjectCardSkeleton() {
   return (
     <Card className="border-border-subtle bg-canvas-surface p-5 space-y-4">
       <div className="flex items-center justify-between">

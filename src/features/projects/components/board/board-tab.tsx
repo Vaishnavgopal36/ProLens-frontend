@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { FilterBar } from "@/components/composed/filters/filter-bar";
-import { useFilters } from "@/components/composed/filters/use-filters";
-import type { FilterFieldDef } from "@/components/composed/filters/types";
+import { FilterBar } from "@/components/composed/filters";
+import { useFilters } from "@/components/composed/filters";
+import type { FilterFieldDef } from "@/components/composed/filters";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import type { Project } from "@/types/project";
 import { KanbanColumn } from "./kanban-column";

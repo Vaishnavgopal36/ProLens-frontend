@@ -18,5 +18,4 @@ export interface CalendarEvent {
   overflowCount?: number;
 }
 
-export type CalendarViewMode = "month" | "week" | "day" | "agenda";
-export type TimeScope = "today" | "week" | "month" | "year";
+export type CalendarViewMode = "month" | "week" | "day";

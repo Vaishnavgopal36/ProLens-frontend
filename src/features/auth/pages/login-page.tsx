@@ -37,7 +37,7 @@ export function LoginPage() {
   return (
     <Ribbon palette={BRAND_LIGHT_PALETTE} className="font-sans text-foreground">
       <header className="flex items-center gap-2.5 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
-        <BrandMark size={24} />
+        <BrandMark size={24} tone="on-light" />
         <span className="text-base font-semibold tracking-tight sm:text-lg">
           ProLens
         </span>

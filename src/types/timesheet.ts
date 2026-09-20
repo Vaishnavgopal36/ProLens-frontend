@@ -12,7 +12,7 @@ export interface TimeEntry {
   location: WorkLocation;
 }
 
-export type WorkKind = "project" | "activity";
+type WorkKind = "project" | "activity";
 
 export interface ProjectMetadata {
   /** "project" = delivery work assigned to the user; "activity" = everything else (leave, training…). */

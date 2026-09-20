@@ -10,7 +10,7 @@ interface HotkeyOptions {
  * preventDefault stops the browser's own binding (Ctrl+K focuses Firefox's
  * search bar). The latest handler is always used, so callers needn't memoise.
  */
-export function useModHotkey(
+function useModHotkey(
   key: string,
   handler: () => void,
   { disabled = false }: HotkeyOptions = {},

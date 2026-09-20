@@ -3,9 +3,21 @@ import { cn } from "@/lib/utils";
 
 interface BrandMarkProps extends React.SVGAttributes<SVGSVGElement> {
   size?: number;
+  /**
+   * Which background the mark sits on. "on-dark" (default) draws the top
+   * planes white, for the navy sidebar. "on-light" draws them navy, for light
+   * pages such as sign-in, matching the brand's light-background logo.
+   */
+  tone?: "on-dark" | "on-light";
 }
 
-export function BrandMark({ size = 24, className, ...props }: BrandMarkProps) {
+export function BrandMark({
+  size = 24,
+  tone = "on-dark",
+  className,
+  ...props
+}: BrandMarkProps) {
+  const planeFill = tone === "on-light" ? "#17283c" : "#ffffff";
   return (
     <svg
       viewBox="85 88 145 150"
@@ -25,11 +37,11 @@ export function BrandMark({ size = 24, className, ...props }: BrandMarkProps) {
       {/* Top Floating Diamond Planes */}
       <polygon
         points="143.47 137.61 157.06 146.79 201.57 116.42 187.96 107.23 143.47 137.61"
-        className="fill-white"
+        fill={planeFill}
       />
       <polygon
         points="128.59 127.56 114.98 118.38 159.5 88 173.08 97.18 128.59 127.56"
-        className="fill-white"
+        fill={planeFill}
       />
     </svg>
   );

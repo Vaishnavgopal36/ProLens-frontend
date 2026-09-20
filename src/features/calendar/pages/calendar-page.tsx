@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { toLocalISODate } from "@/lib/date";
 import { useModalHotkey } from "@/hooks/use-hotkey";
 import { INITIAL_EVENTS } from "../api/mock-data";
 import { ScheduleEventDialog } from "../components/schedule-event-dialog";
@@ -37,8 +38,7 @@ const VIEWS: { key: CalendarViewMode; label: string }[] = [
 /* ---------- date helpers ---------- */
 
 const pad = (n: number) => String(n).padStart(2, "0");
-const toISO = (d: Date) =>
-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const toISO = toLocalISODate;
 const addDays = (d: Date, n: number) =>
   new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 const startOfWeek = (d: Date) => addDays(d, -d.getDay());

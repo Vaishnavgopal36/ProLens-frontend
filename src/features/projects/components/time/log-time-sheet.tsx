@@ -10,6 +10,7 @@ import {
 import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -20,15 +21,9 @@ import {
 } from "@/components/ui/select";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
+import { toLocalISODate } from "@/lib/date";
 import { toast } from "sonner";
 import type { TimeFeatureGroup } from "./mock-data";
-
-/** Today in the user's local timezone as YYYY-MM-DD (toISOString would be UTC). */
-function formatToday() {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
 
 interface LogTimeSheetProps {
   open: boolean;
@@ -46,13 +41,13 @@ export function LogTimeSheet({
   const [featureId, setFeatureId] = React.useState("");
   const [taskId, setTaskId] = React.useState("");
   const [hours, setHours] = React.useState("");
-  const [date, setDate] = React.useState(formatToday());
+  const [date, setDate] = React.useState(toLocalISODate());
   const [notes, setNotes] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
 
   // Always start on today's date when the sheet opens.
   React.useEffect(() => {
-    if (open) setDate(formatToday());
+    if (open) setDate(toLocalISODate());
   }, [open]);
 
   const selectedFeature = features.find((f) => f.id === featureId);
@@ -62,7 +57,7 @@ export function LogTimeSheet({
     setFeatureId("");
     setTaskId("");
     setHours("");
-    setDate(formatToday());
+    setDate(toLocalISODate());
     setNotes("");
     setError(null);
   };
@@ -236,7 +231,7 @@ export function LogTimeSheet({
             <Label htmlFor="log-time-notes" className="text-xs font-medium">
               Notes (optional)
             </Label>
-            <textarea
+            <Textarea
               id="log-time-notes"
               rows={3}
               placeholder="What did you work on?"

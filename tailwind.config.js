@@ -88,47 +88,6 @@ export default {
           overlay: "var(--canvas-overlay)",
         },
       },
-      // Ribbon backdrop (components/composed/ribbon.tsx): transform-only loops
-      // so the blurred blobs animate on the GPU without repainting.
-      animation: {
-        "ribbon-a": "ribbonA 20s ease-in-out infinite alternate",
-        "ribbon-b": "ribbonB 24s ease-in-out infinite alternate",
-        "ribbon-c": "ribbonC 18s ease-in-out infinite alternate",
-        "ribbon-d": "ribbonD 25s ease-in-out infinite alternate",
-        "ribbon-e": "ribbonE 22s ease-in-out infinite alternate",
-      },
-      keyframes: {
-        ribbonA: {
-          "0%": { transform: "translate3d(0,0,0) rotate(0deg) scale(1)" },
-          "100%": {
-            transform: "translate3d(-7vw,-6vh,0) rotate(18deg) scale(1.12)",
-          },
-        },
-        ribbonB: {
-          "0%": { transform: "translate3d(0,0,0) rotate(0deg) scale(1.05)" },
-          "100%": {
-            transform: "translate3d(-9vw,-8vh,0) rotate(-22deg) scale(0.92)",
-          },
-        },
-        ribbonC: {
-          "0%": { transform: "translate3d(0,0,0) rotate(0deg) scale(0.95)" },
-          "100%": {
-            transform: "translate3d(-6vw,-9vh,0) rotate(28deg) scale(1.15)",
-          },
-        },
-        ribbonD: {
-          "0%": { transform: "translate3d(0,0,0) rotate(0deg) scale(1)" },
-          "100%": {
-            transform: "translate3d(-8vw,-5vh,0) rotate(-16deg) scale(1.1)",
-          },
-        },
-        ribbonE: {
-          "0%": { transform: "translate3d(0,0,0) rotate(0deg) scale(1.1)" },
-          "100%": {
-            transform: "translate3d(-5vw,-7vh,0) rotate(24deg) scale(0.9)",
-          },
-        },
-      },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],

@@ -1,13 +1,11 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-media-query";
@@ -25,8 +23,6 @@ import { cn } from "@/lib/utils";
  * mobile navigation drawer in the app sidebar.
  */
 const Modal = DialogPrimitive.Root;
-const ModalTrigger = DialogTrigger;
-const ModalClose = DialogClose;
 const ModalHeader = DialogHeader;
 const ModalFooter = DialogFooter;
 const ModalTitle = DialogTitle;
@@ -68,8 +64,6 @@ ModalContent.displayName = "ModalContent";
 
 export {
   Modal,
-  ModalTrigger,
-  ModalClose,
   ModalContent,
   ModalHeader,
   ModalFooter,

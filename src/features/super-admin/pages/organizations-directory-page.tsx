@@ -1,4 +1,5 @@
 import * as React from "react";
+import { toLocalISODate } from "@/lib/date";
 import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,7 @@ export function OrganizationsDirectoryPage() {
       },
       activeProjects: 0,
       totalMembers: 1,
-      createdAt: new Date().toISOString().slice(0, 10),
+      createdAt: toLocalISODate(),
     };
     setOrganizations((prev) => [newOrg, ...prev]);
   };

@@ -36,7 +36,7 @@ function iconFor(name: string) {
   return FileIcon;
 }
 
-export function filesToAttachments(files: FileList): AttachmentEntry[] {
+function filesToAttachments(files: FileList): AttachmentEntry[] {
   return Array.from(files).map((file) => ({
     id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     name: file.name,

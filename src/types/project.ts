@@ -13,8 +13,6 @@ export interface ProjectInvite {
 }
 
 // Alias for backward compatibility across pending invite components
-export type PendingInvite = ProjectInvite;
-
 export interface ProjectMember {
   id: string;
   name: string;
@@ -27,14 +25,6 @@ export interface ProjectMember {
   assignedFeaturesCount: number;
   hoursLogged: number;
   status: "active" | "inactive";
-}
-
-export interface SprintConfig {
-  cadenceWeeks: 1 | 2 | 3 | 4;
-  currentSprintGoal: string;
-  startDate: string;
-  endDate: string;
-  velocityEstimatePts?: number;
 }
 
 export interface Project {

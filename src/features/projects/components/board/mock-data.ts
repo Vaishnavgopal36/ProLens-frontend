@@ -52,8 +52,6 @@ export const BOARD_COLUMNS: BoardColumnMeta[] = [
 
 export const BOARD_FEATURES = ["Design System", "Authentication", "Reporting"];
 
-export const BOARD_ASSIGNEES = ["Sarah Jenkins", "Marcus Chen", "Alex Morgan"];
-
 export const MOCK_BOARD_TASKS: BoardTask[] = [
   {
     id: "t-24",

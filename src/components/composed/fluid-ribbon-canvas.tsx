@@ -66,9 +66,9 @@ vec3 surface(float a, float c) {
   float W = uWidth * mix(1.0, 0.55, a) * min(uExtent.x, uExtent.y) * 1.55;
 
   // Folds: big slow swells, tighter ripples, and a little noise.
-  float z = 0.22 * sin(a * 8.0 + c * 3.0 - t * 4.0 + uPhase)
-          + 0.12 * sin(a * 15.0 - c * 5.0 + t * 5.5)
-          + 0.16 * (vnoise(vec3(a * 4.0, c * 2.0, t * 2.0 + uPhase)) - 0.5);
+  float z = 0.30 * sin(a * 5.0 + c * 2.6 - t * 3.0 + uPhase)
+          + 0.10 * sin(a * 10.0 - c * 4.0 + t * 4.0)
+          + 0.10 * (vnoise(vec3(a * 3.0, c * 1.5, t * 1.5 + uPhase)) - 0.5);
 
   vec2 pos = Bw + N * ((c - 0.5 + uOffset) * W + z * 0.10 * W);
 
@@ -90,8 +90,8 @@ void main() {
 
   vec3 L = normalize(vec3(-0.45, 0.65, 0.75));
   vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
-  vLight = 0.66 + 0.50 * max(dot(n, L), 0.0)
-         + 0.22 * pow(max(dot(n, H), 0.0), 22.0);
+  vLight = 0.56 + 0.70 * max(dot(n, L), 0.0)
+         + 0.28 * pow(max(dot(n, H), 0.0), 18.0);
 
   vA = aUv.x;
   vC = aUv.y;
@@ -136,19 +136,19 @@ vec3 palette(float t) {
 
 void main() {
   // Colour flows across the ribbon and ripples along it.
-  float k = clamp(vC * 0.86 + 0.07 + 0.10 * sin(vA * 7.0 - uTime * 0.15 + uShift), 0.0, 1.0);
+  float k = clamp(vC * 0.9 + 0.05 + 0.06 * sin(vA * 4.0 - uTime * 0.12 + uShift), 0.0, 1.0);
   vec3 col = palette(k) * vLight;
 
   // Fine silk threads running along the ribbon.
-  float thread = noise(vec2(vA * 6.0, vC * 150.0));
+  float thread = noise(vec2(vA * 5.0, vC * 320.0));
   float coarse = noise(vec2(vA * 3.0 - uTime * 0.05, vC * 60.0));
-  col *= 0.90 + 0.16 * thread + 0.08 * coarse;
+  col *= 0.95 + 0.09 * thread + 0.04 * coarse;
   col = mix(col, vec3(1.0), uMix);
 
   // Crisp near edge, frayed far edge.
-  float hair = noise(vec2(vA * 4.0 + 7.0, vC * 120.0));
-  float edge = smoothstep(0.0, 0.03, vC)
-             * (1.0 - smoothstep(0.90, 1.0, vC + (hair - 0.5) * 0.12));
+  float hair = noise(vec2(vA * 4.0 + 7.0, vC * 240.0));
+  float edge = smoothstep(0.0, 0.012, vC + (hair - 0.5) * 0.02)
+             * (1.0 - smoothstep(0.94, 1.0, vC + (hair - 0.5) * 0.07));
 
   // Keep the far left calm so the logo stays clear.
   float left = smoothstep(0.04, 0.30, gl_FragCoord.x / uRes.x);
@@ -166,11 +166,18 @@ interface Layer {
   shift: number;
 }
 
-// Back to front: a wide pale veil, the saturated main ribbon, a thin highlight.
+// Back to front: three opaque overlapping sheets, like Stripe's fan of silk.
 const LAYERS: Layer[] = [
-  { width: 1.22, offset: 0.02, phase: 3.0, alpha: 0.7, mix: 0.4, shift: 1.0 },
-  { width: 1.0, offset: 0.0, phase: 0.0, alpha: 1.0, mix: 0.0, shift: 0.0 },
-  { width: 0.26, offset: 0.14, phase: 1.5, alpha: 0.75, mix: 0.2, shift: 2.0 },
+  { width: 1.15, offset: 0.06, phase: 3.0, alpha: 0.95, mix: 0.18, shift: 1.6 },
+  { width: 0.92, offset: 0.0, phase: 0.0, alpha: 1.0, mix: 0.0, shift: 0.0 },
+  {
+    width: 0.42,
+    offset: -0.16,
+    phase: 1.5,
+    alpha: 0.95,
+    mix: 0.08,
+    shift: 3.0,
+  },
 ];
 
 function buildMesh() {

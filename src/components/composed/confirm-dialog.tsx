@@ -18,6 +18,11 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   onConfirm: () => void;
   variant?: "destructive" | "default";
+  /**
+   * Focus the confirm button so Enter confirms straight away (great for
+   * logout). Turn off for destructive, hard-to-undo actions.
+   */
+  autoFocusConfirm?: boolean;
 }
 
 export function ConfirmDialog({
@@ -29,6 +34,7 @@ export function ConfirmDialog({
   cancelLabel = "Cancel",
   onConfirm,
   variant = "destructive",
+  autoFocusConfirm = true,
 }: ConfirmDialogProps) {
   const confirmRef = React.useRef<HTMLButtonElement>(null);
 
@@ -38,6 +44,7 @@ export function ConfirmDialog({
         className="sm:max-w-[420px]"
         // Focus the confirm action so Enter confirms straight away.
         onOpenAutoFocus={(e) => {
+          if (!autoFocusConfirm) return;
           e.preventDefault();
           confirmRef.current?.focus();
         }}
