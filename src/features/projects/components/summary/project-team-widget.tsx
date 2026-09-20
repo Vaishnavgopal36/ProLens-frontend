@@ -1,29 +1,25 @@
 import { Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import type { Project } from "@/types/project";
-import type { UserRole } from "@/app/providers";
 
 interface ProjectTeamWidgetProps {
   project: Project;
   onManageClick: () => void;
-  userRole?: UserRole;
 }
 
 export function ProjectTeamWidget({
   project,
   onManageClick,
-  userRole,
 }: ProjectTeamWidgetProps) {
   const members = project.members || [];
   const displayMembers = members.slice(0, 3);
   const remainingCount = members.length > 3 ? members.length - 3 : 0;
-  const isManager =
-    userRole === "manager" ||
-    userRole === "admin" ||
-    userRole === "super_admin";
+  const { hasMinimumRole } = usePermissions();
+  const isManager = hasMinimumRole("manager");
 
   return (
     <Card className="border-border-subtle bg-canvas-surface p-5 space-y-3 shadow-xs">
@@ -68,7 +64,7 @@ export function ProjectTeamWidget({
         </div>
 
         <Button
-          variant="outline"
+          variant="sweep"
           size="sm"
           onClick={onManageClick}
           className="h-8 text-xs font-semibold px-3"

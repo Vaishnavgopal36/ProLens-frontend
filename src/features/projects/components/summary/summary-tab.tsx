@@ -88,7 +88,6 @@ export function SummaryTab({ project, onNavigateTab }: SummaryTabProps) {
           <ProjectTeamWidget
             project={project}
             onManageClick={() => onNavigateTab("teams")}
-            userRole={user?.role}
           />
         </div>
       </div>

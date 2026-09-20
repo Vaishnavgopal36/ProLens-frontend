@@ -238,11 +238,7 @@ export function TimesheetPage() {
           {/* Filter Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1.5 text-xs"
-              >
+              <Button variant="sweep" size="sm" className="h-9 gap-1.5 text-xs">
                 <Icon
                   icon={Filter}
                   size={15}
@@ -319,11 +315,7 @@ export function TimesheetPage() {
           {/* Export Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1.5 text-xs"
-              >
+              <Button variant="sweep" size="sm" className="h-9 gap-1.5 text-xs">
                 <Icon
                   icon={Download}
                   size={15}
@@ -377,11 +369,6 @@ export function TimesheetPage() {
           <h1 className="text-xl font-bold tracking-tight text-foreground">
             {activeTab === "tracking" ? "Time Reporting" : "Project Report"}
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {activeTab === "tracking"
-              ? "Weekly timesheet compliance, project billable effort, and work location verification."
-              : "Track, review, and allocate weekly project and task breakdown hours."}
-          </p>
         </div>
 
         {/* Date Navigator */}
@@ -468,7 +455,7 @@ export function TimesheetPage() {
               </div>
               <div>
                 <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
-                  Difference / Status
+                  Variance
                 </span>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span
@@ -482,16 +469,6 @@ export function TimesheetPage() {
                     {diffMins >= 0
                       ? `+${Math.floor(diffMins / 60)}h ${diffMins % 60}m`
                       : `-${Math.floor(Math.abs(diffMins) / 60)}h ${Math.abs(diffMins) % 60}m`}
-                  </span>
-                  <span
-                    className={cn(
-                      "px-2 py-0.5 rounded text-3xs font-semibold border",
-                      diffMins >= 0
-                        ? "bg-teal-500/10 text-teal-600 border-teal-500/30"
-                        : "bg-amber-500/10 text-amber-600 border-amber-500/30",
-                    )}
-                  >
-                    {diffMins >= 0 ? "In Compliance" : "Under Target"}
                   </span>
                 </div>
               </div>
@@ -582,7 +559,7 @@ export function TimesheetPage() {
                     </div>
 
                     <Button
-                      variant="ghost"
+                      variant="sweep"
                       size="sm"
                       onClick={() => {
                         setSelectedDateForAdd(iso);
@@ -590,7 +567,7 @@ export function TimesheetPage() {
                         setPresetTaskForAdd("");
                         setAddModalOpen(true);
                       }}
-                      className="w-full mt-2 h-8 text-xs font-semibold gap-1.5 bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/30 hover:bg-teal-500/20 hover:text-teal-800 dark:hover:text-teal-200"
+                      className="mt-2 h-8 w-full gap-1.5 text-xs font-semibold"
                     >
                       <Icon icon={Plus} size={16} />
                       <span>Add Time</span>

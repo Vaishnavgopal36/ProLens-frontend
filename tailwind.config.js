@@ -1,3 +1,25 @@
+/**
+ * Colours defined as plain CSS variables (`var(--teal-500)`) can't take a
+ * Tailwind opacity modifier, so classes like `bg-teal-500/10` silently produced
+ * no CSS at all. Wrapping them with color-mix makes every modifier work while
+ * `bg-teal-500` (no modifier) stays a plain `var()`.
+ */
+const withAlpha =
+  (variable) =>
+  ({ opacityValue }) =>
+    opacityValue === undefined || String(opacityValue).startsWith("var(")
+      ? `var(${variable})`
+      : `color-mix(in srgb, var(${variable}) calc(${opacityValue} * 100%), transparent)`;
+
+/** A 50..900 brand scale backed by --<name>-<step> variables. */
+const scale = (name) =>
+  Object.fromEntries(
+    [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((step) => [
+      step,
+      withAlpha(`--${name}-${step}`),
+    ]),
+  );
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
@@ -10,11 +32,11 @@ export default {
     extend: {
       colors: {
         border: {
-          DEFAULT: "var(--border-subtle)",
-          subtle: "var(--border-subtle)",
-          strong: "var(--border-strong)",
+          DEFAULT: withAlpha("--border-subtle"),
+          subtle: withAlpha("--border-subtle"),
+          strong: withAlpha("--border-strong"),
         },
-        input: "var(--border-subtle)",
+        input: withAlpha("--border-subtle"),
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -46,47 +68,20 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        navy: {
-          50: "var(--navy-50)",
-          100: "var(--navy-100)",
-          200: "var(--navy-200)",
-          300: "var(--navy-300)",
-          400: "var(--navy-400)",
-          500: "var(--navy-500)",
-          600: "var(--navy-600)",
-          700: "var(--navy-700)",
-          800: "var(--navy-800)",
-          900: "var(--navy-900)",
-        },
-        teal: {
-          50: "var(--teal-50)",
-          100: "var(--teal-100)",
-          200: "var(--teal-200)",
-          300: "var(--teal-300)",
-          400: "var(--teal-400)",
-          500: "var(--teal-500)",
-          600: "var(--teal-600)",
-          700: "var(--teal-700)",
-          800: "var(--teal-800)",
-          900: "var(--teal-900)",
-        },
-        gold: {
-          50: "var(--gold-50)",
-          100: "var(--gold-100)",
-          200: "var(--gold-200)",
-          300: "var(--gold-300)",
-          400: "var(--gold-400)",
-          500: "var(--gold-500)",
-          600: "var(--gold-600)",
-          700: "var(--gold-700)",
-          800: "var(--gold-800)",
-          900: "var(--gold-900)",
-        },
+        navy: scale("navy"),
+        teal: scale("teal"),
+        gold: scale("gold"),
         canvas: {
-          bg: "var(--canvas-bg)",
-          surface: "var(--canvas-surface)",
-          overlay: "var(--canvas-overlay)",
+          bg: withAlpha("--canvas-bg"),
+          surface: withAlpha("--canvas-surface"),
+          overlay: withAlpha("--canvas-overlay"),
         },
+      },
+      animation: {
+        "checkbox-wave": "checkboxWave 0.4s ease",
+      },
+      keyframes: {
+        checkboxWave: { "50%": { transform: "scale(0.9)" } },
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],

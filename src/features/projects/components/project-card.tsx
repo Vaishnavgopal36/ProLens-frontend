@@ -212,8 +212,9 @@ export function ProjectCard({
       />
 
       {/* The dialog is portaled, but React events still bubble to the card, so
-          stop clicks here from triggering the card's own navigation. */}
-      <div onClick={(e) => e.stopPropagation()}>
+          stop clicks here from triggering the card's own navigation.
+          `contents` keeps this wrapper out of the parent grid's layout. */}
+      <div className="contents" onClick={(e) => e.stopPropagation()}>
         <DeleteProjectDialog
           project={project}
           open={deleteDialogOpen}

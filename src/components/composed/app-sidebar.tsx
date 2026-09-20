@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { BrandMark } from "@/components/composed/brand-mark";
+import { SWEEP_BASE } from "@/components/ui/sweep";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
 
 interface NavItem {
@@ -104,10 +105,11 @@ export function AppSidebar() {
               setSidebarOpen(false);
             }}
             className={cn(
-              "group relative flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors outline-none",
+              SWEEP_BASE,
+              "group flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium outline-none transition-colors",
               isActive
                 ? "bg-navy-700/60 dark:bg-canvas-overlay text-white font-semibold"
-                : "text-slate-400 hover:text-white hover:bg-white/5 dark:hover:bg-canvas-surface",
+                : "text-slate-400 before:bg-white/10 hover:text-white",
               collapsed && "justify-center px-0",
             )}
             aria-current={isActive ? "page" : undefined}

@@ -135,10 +135,10 @@ export function WorkspaceHeader({
               {canManageWork && (
                 <>
                   <Button
-                    variant="outline"
+                    variant="sweep"
                     size="sm"
                     onClick={onAddFeature}
-                    className="h-8 gap-1.5 text-xs font-semibold bg-canvas-surface hover:bg-canvas-overlay"
+                    className="h-8 gap-1.5 text-xs font-semibold"
                   >
                     <Icon icon={Plus} size={14} />
                     <span>Add Feature</span>

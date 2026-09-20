@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/modal";
 import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -376,11 +377,11 @@ export function AddTaskDialog({
             key={sub.id}
             className="flex items-center gap-2 rounded px-1 py-1 hover:bg-canvas-surface group"
           >
-            <input
-              type="checkbox"
+            <Checkbox
+              size="sm"
               checked={sub.done}
-              onChange={() => toggleSubtask(sub.id)}
-              className="h-3.5 w-3.5 accent-teal-500 shrink-0 cursor-pointer"
+              onCheckedChange={() => toggleSubtask(sub.id)}
+              aria-label={`Mark "${sub.title}" as done`}
             />
             <span
               className={cn(

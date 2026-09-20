@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FieldError } from "@/components/ui/field-error";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
@@ -171,12 +172,6 @@ export function LoginForm({
           <Label htmlFor="password" className="text-sm font-medium">
             Password
           </Label>
-          <a
-            href="#"
-            className="text-sm font-medium text-teal-700 underline-offset-4 hover:underline dark:text-teal-400"
-          >
-            Forgot your password?
-          </a>
         </div>
         <div className="relative">
           <Input
@@ -207,22 +202,27 @@ export function LoginForm({
         <FieldError id="password-error" message={fieldErrors.password} />
       </div>
 
-      <label
+      <div
         className={cn(
-          "flex cursor-pointer items-center gap-2.5 text-sm text-foreground",
+          "flex items-center justify-between text-sm",
           REVEAL_CLASS,
         )}
         style={reveal(2)}
       >
-        <input
-          type="checkbox"
+        <Checkbox
+          label="Remember me"
           checked={remember}
-          onChange={(e) => setRemember(e.target.checked)}
+          onCheckedChange={setRemember}
           disabled={busy}
-          className="h-4 w-4 cursor-pointer rounded border-border-subtle accent-teal-600"
         />
-        Remember me on this device
-      </label>
+
+        <a
+          href="#"
+          className="font-medium text-teal-700 underline-offset-4 hover:underline dark:text-teal-400"
+        >
+          Forgot your password?
+        </a>
+      </div>
 
       {formError && (
         <p
@@ -263,7 +263,7 @@ export function LoginForm({
           <div key={provider} className={REVEAL_CLASS} style={reveal(5 + i)}>
             <Button
               type="button"
-              variant="outline"
+              variant="sweep-soft"
               size="lg"
               className="h-11 w-full gap-2 rounded-lg px-3 text-sm font-semibold"
               disabled={busy}
