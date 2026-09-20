@@ -26,7 +26,7 @@ export const MOCK_FEATURE_STREAMS: FeatureStream[] = [
     tasksCompleted: 6,
     avatars: [
       { initials: "SJ", colorClass: "bg-navy-800" },
-      { initials: "JD", colorClass: "bg-teal-600" },
+      { initials: "MC", colorClass: "bg-teal-600" },
     ],
   },
   {
@@ -39,8 +39,8 @@ export const MOCK_FEATURE_STREAMS: FeatureStream[] = [
     tasksCount: 5,
     tasksCompleted: 3,
     avatars: [
-      { initials: "JD", colorClass: "bg-teal-600" },
-      { initials: "MR", colorClass: "bg-navy-800" },
+      { initials: "MC", colorClass: "bg-teal-600" },
+      { initials: "AM", colorClass: "bg-navy-800" },
     ],
   },
   {

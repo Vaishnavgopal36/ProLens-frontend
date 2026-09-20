@@ -1,25 +1,11 @@
 import * as React from "react";
-import {
-  Calendar as CalendarIcon,
-  Clock,
-  Filter,
-  Grid,
-  List,
-  Columns,
-  LayoutGrid,
-  Search,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 import { INITIAL_EVENTS } from "../api/mock-data";
 import { ScheduleEventDialog } from "../components/schedule-event-dialog";
 import { EventDetailsDialog } from "../components/event-details-dialog";
@@ -28,897 +14,635 @@ import type {
   CalendarEvent,
   CalendarViewMode,
   EventCategory,
-  TimeScope,
 } from "@/types/calendar";
 
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MAX_PILLS_PER_DAY = 2;
+const HOUR_ROW_PX = 56;
+
+const CATEGORIES: { key: EventCategory; label: string; dot: string }[] = [
+  { key: "Meeting", label: "Meetings", dot: "bg-blue-400" },
+  { key: "Client", label: "Clients", dot: "bg-emerald-400" },
+  { key: "Workshop", label: "Workshops", dot: "bg-purple-400" },
+  { key: "Launch", label: "Launches", dot: "bg-rose-400" },
+  { key: "Marketing", label: "Marketing", dot: "bg-yellow-400" },
 ];
 
-const WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const VIEWS: { key: CalendarViewMode; label: string }[] = [
+  { key: "month", label: "Month" },
+  { key: "week", label: "Week" },
+  { key: "day", label: "Day" },
+];
+
+/* ---------- date helpers ---------- */
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const toISO = (d: Date) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const addDays = (d: Date, n: number) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const startOfWeek = (d: Date) => addDays(d, -d.getDay());
+const isSameDay = (a: Date, b: Date) => toISO(a) === toISO(b);
+const onDate = (e: CalendarEvent, d: Date) =>
+  e.day === d.getDate() &&
+  e.month === d.getMonth() &&
+  e.year === d.getFullYear();
+const isAllDay = (e: CalendarEvent) =>
+  e.startTime === "00:00" && e.endTime === "23:59";
+const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) =>
+  d.toLocaleDateString("en-US", opts);
+
+function viewTitle(view: CalendarViewMode, cursor: Date) {
+  if (view === "day")
+    return fmt(cursor, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  if (view === "week") {
+    const start = startOfWeek(cursor);
+    const end = addDays(start, 6);
+    const sameMonth = start.getMonth() === end.getMonth();
+    return `${fmt(start, { day: "numeric", month: sameMonth ? undefined : "short" })} – ${fmt(end, { day: "numeric", month: "short" })} ${end.getFullYear()}`;
+  }
+  return fmt(cursor, { month: "long", year: "numeric" });
+}
+
+/* ---------- small shared pieces ---------- */
+
+function DateBadge({ date, today }: { date: Date; today: Date }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-semibold tabular-nums",
+        isSameDay(date, today) ? "bg-navy-500 text-white" : "text-foreground",
+      )}
+    >
+      {date.getDate()}
+    </span>
+  );
+}
+
+/* ---------- page ---------- */
 
 export function CalendarPage() {
+  const today = React.useMemo(() => new Date(), []);
   const [events, setEvents] = React.useState<CalendarEvent[]>(INITIAL_EVENTS);
-  const [currentYear, setCurrentYear] = React.useState(2026);
-  const [currentMonth, setCurrentMonth] = React.useState(8); // 8 = September
-  const [viewType, setViewType] = React.useState<CalendarViewMode>("month");
-  const [timeScope, setTimeScope] = React.useState<TimeScope>("month");
-  const [is24HourMode, setIs24HourMode] = React.useState(true);
+  const [cursor, setCursor] = React.useState<Date>(today);
+  const [view, setView] = React.useState<CalendarViewMode>("month");
+  const [is24Hour, setIs24Hour] = React.useState(true);
   const [activeCategories, setActiveCategories] = React.useState<
     Set<EventCategory>
-  >(new Set(["Marketing", "Meeting", "Client", "Workshop", "Launch"]));
-  const [searchQuery, setSearchQuery] = React.useState("");
+  >(new Set(CATEGORIES.map((c) => c.key)));
+  const [query, setQuery] = React.useState("");
 
-  // Modals & Selection state
-  const [addModalOpen, setAddModalOpen] = React.useState(false);
-  const [selectedDateForAdd, setSelectedDateForAdd] =
-    React.useState("2026-09-12");
-  const [selectedEvent, setSelectedEvent] =
-    React.useState<CalendarEvent | null>(null);
+  const [addOpen, setAddOpen] = React.useState(false);
+  const [addDate, setAddDate] = React.useState(toISO(today));
+  const [selected, setSelected] = React.useState<CalendarEvent | null>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
-  const [overflowOpen, setOverflowOpen] = React.useState(false);
-  const [overflowDay, setOverflowDay] = React.useState(12);
+  const [overflowDate, setOverflowDate] = React.useState<Date | null>(null);
 
-  // Week View pagination offset
-  const [weekStartDay, setWeekStartDay] = React.useState(8);
+  const [draggedId, setDraggedId] = React.useState<string | null>(null);
+  const [dragOverISO, setDragOverISO] = React.useState<string | null>(null);
 
-  // Drag and Drop tracking
-  const [draggedEventId, setDraggedEventId] = React.useState<string | null>(
-    null,
-  );
-  const [dragOverDay, setDragOverDay] = React.useState<number | null>(null);
-
-  // Time formatter helper
-  const formatTime = (timeStr: string) => {
-    if (!timeStr || is24HourMode) return timeStr;
-    const parts = timeStr.split(":");
-    let h = parseInt(parts[0], 10);
-    const m = parts[1] || "00";
-    const ampm = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12;
-    return `${h}:${m} ${ampm}`;
+  const formatTime = (t: string) => {
+    if (is24Hour) return t;
+    const [h, m] = t.split(":");
+    const hour = Number(h);
+    return `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
   };
+  const formatWindow = (e: CalendarEvent) =>
+    isAllDay(e)
+      ? "All day"
+      : `${formatTime(e.startTime)} – ${formatTime(e.endTime)}`;
 
-  const formatWindow = (start: string, end: string) => {
-    if (start === "00:00" && end === "23:59")
-      return is24HourMode ? "00:00 - 23:59" : "All Day";
-    return `${formatTime(start)} - ${formatTime(end)}`;
+  const visible = React.useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return events
+      .filter(
+        (e) =>
+          activeCategories.has(e.category) &&
+          (!q ||
+            e.title.toLowerCase().includes(q) ||
+            e.category.toLowerCase().includes(q) ||
+            e.desc?.toLowerCase().includes(q)),
+      )
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }, [events, activeCategories, query]);
+
+  const eventsOn = (d: Date) => visible.filter((e) => onDate(e, d));
+
+  /* navigation */
+  const step = (dir: 1 | -1) =>
+    setCursor((c) => {
+      if (view === "day") return addDays(c, dir);
+      if (view === "week") return addDays(c, 7 * dir);
+      return new Date(c.getFullYear(), c.getMonth() + dir, 1);
+    });
+
+  /* actions */
+  const openAdd = (d: Date) => {
+    setAddDate(toISO(d));
+    setAddOpen(true);
   };
-
-  // Month navigation
-  const changeMonth = (delta: number) => {
-    let nextMonth = currentMonth + delta;
-    let nextYear = currentYear;
-    if (nextMonth < 0) {
-      nextMonth = 11;
-      nextYear--;
-    } else if (nextMonth > 11) {
-      nextMonth = 0;
-      nextYear++;
-    }
-    setCurrentMonth(nextMonth);
-    setCurrentYear(nextYear);
+  const openEvent = (e: CalendarEvent) => {
+    setSelected(e);
+    setDetailsOpen(true);
   };
-
-  // Filter handlers
-  const toggleCategory = (cat: EventCategory) => {
+  const toggleCategory = (key: EventCategory) =>
     setActiveCategories((prev) => {
       const next = new Set(prev);
-      if (next.has(cat)) next.delete(cat);
-      else next.add(cat);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
-  };
 
-  // Drag and drop handlers
-  const handleDragStart = (e: React.DragEvent, id: string) => {
-    setDraggedEventId(id);
-    e.dataTransfer.setData("text/plain", id);
-    e.dataTransfer.effectAllowed = "move";
-  };
+  // Ctrl/⌘ + K toggles "new event" on the day being viewed (today in
+  // month/week views).
+  useModalHotkey({
+    open: addOpen,
+    onOpen: () => openAdd(view === "day" ? cursor : today),
+    onClose: () => setAddOpen(false),
+  });
 
-  const handleDrop = (targetDay: number) => {
-    if (!draggedEventId) return;
-    setEvents((prev) =>
-      prev.map((ev) =>
-        ev.id === draggedEventId ? { ...ev, day: targetDay } : ev,
-      ),
-    );
-    const found = events.find((e) => e.id === draggedEventId);
-    toast.success(`Event "${found?.title ?? ""}" moved to Sep ${targetDay}!`);
-    setDraggedEventId(null);
-    setDragOverDay(null);
-  };
+  const dragProps = (e: CalendarEvent) => ({
+    draggable: true,
+    onDragStart: (ev: React.DragEvent) => {
+      setDraggedId(e.id);
+      ev.dataTransfer.setData("text/plain", e.id);
+      ev.dataTransfer.effectAllowed = "move";
+    },
+    onDragEnd: () => {
+      setDraggedId(null);
+      setDragOverISO(null);
+    },
+  });
 
-  // Compute Days for current Month
-  const gridCells = React.useMemo(() => {
-    const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    const totalCells = Math.ceil((firstDayIndex + daysInMonth) / 7) * 7;
-
-    const cells: { day: number | null; isCurrent: boolean }[] = [];
-    for (let i = 0; i < totalCells; i++) {
-      const dayNum = i - firstDayIndex + 1;
-      if (dayNum > 0 && dayNum <= daysInMonth) {
-        cells.push({ day: dayNum, isCurrent: true });
-      } else {
-        cells.push({ day: null, isCurrent: false });
-      }
-    }
-    return cells;
-  }, [currentYear, currentMonth]);
-
-  const visibleEvents = React.useMemo(() => {
-    return events.filter(
-      (e) =>
-        e.month === currentMonth &&
-        e.year === currentYear &&
-        activeCategories.has(e.category) &&
-        (searchQuery === "" ||
-          e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          e.category.toLowerCase().includes(searchQuery.toLowerCase())),
-    );
-  }, [events, currentMonth, currentYear, activeCategories, searchQuery]);
-
-  return (
-    <section className="max-w-[1340px] mx-auto bg-canvas-surface border border-border-subtle rounded-lg shadow-sm p-5 md:p-6 mb-8 text-foreground">
-      {/* Top Title & Global Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 gap-3">
-        <h2 className="text-xl font-bold tracking-tight text-foreground">
-          Event Calendar
-        </h2>
-        <div className="relative w-full sm:w-80">
-          <Icon
-            icon={Search}
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder="Search events, clients, tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-8 text-xs bg-canvas-bg border-border-subtle"
-          />
-        </div>
-      </div>
-
-      {/* Main Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-6 pt-1 border-b border-border-subtle">
-        {/* Left: Date navigation */}
-        <div className="flex items-center space-x-2">
-          <button
-            type="button"
-            onClick={() => changeMonth(-1)}
-            aria-label="Previous month"
-            className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle bg-canvas-surface hover:bg-canvas-bg text-muted-foreground text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            &lt;
-          </button>
-
-          <div className="flex items-center pl-2.5 pr-2 py-1 border border-border-subtle rounded bg-canvas-surface text-xs font-semibold text-foreground space-x-1.5">
-            <Icon
-              icon={CalendarIcon}
-              size={14}
-              className="text-muted-foreground"
-            />
-            <select
-              aria-label="Month"
-              value={currentMonth}
-              onChange={(e) => setCurrentMonth(Number(e.target.value))}
-              className="border-0 bg-transparent py-0 pl-1 pr-5 text-xs font-semibold text-foreground cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {MONTH_NAMES.map((name, idx) => (
-                <option key={name} value={idx}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <select
-            aria-label="Year"
-            value={currentYear}
-            onChange={(e) => setCurrentYear(Number(e.target.value))}
-            className="py-1 px-3 border border-border-subtle rounded bg-canvas-surface text-xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-            <option value="2027">2027</option>
-          </select>
-
-          <button
-            type="button"
-            onClick={() => changeMonth(1)}
-            aria-label="Next month"
-            className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle bg-canvas-surface hover:bg-canvas-bg text-muted-foreground text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            &gt;
-          </button>
-        </div>
-
-        {/* Right: Actions, filters & view switchers */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* 24h Toggle */}
-          <button
-            type="button"
-            onClick={() => setIs24HourMode((prev) => !prev)}
-            className="px-3 py-1.5 border border-border-subtle rounded bg-canvas-surface hover:bg-canvas-bg text-xs font-medium text-foreground flex items-center space-x-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Icon icon={Clock} size={14} className="text-muted-foreground" />
-            <span>{is24HourMode ? "24h" : "12h"}</span>
-          </button>
-
-          {/* Filter Popover Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="px-3 py-1.5 border border-border-subtle rounded bg-canvas-surface hover:bg-canvas-bg text-xs font-medium text-foreground flex items-center space-x-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Icon
-                  icon={Filter}
-                  size={14}
-                  className="text-muted-foreground"
-                />
-                <span>Filter</span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-56 p-3 bg-canvas-surface border border-border-subtle shadow-xl"
-            >
-              <p className="text-xs font-bold text-foreground mb-2">
-                Filter Categories
-              </p>
-              <div className="space-y-2 text-xs">
-                {[
-                  {
-                    key: "Marketing" as EventCategory,
-                    label: "Ads & Marketing",
-                    color: "bg-yellow-400",
-                  },
-                  {
-                    key: "Meeting" as EventCategory,
-                    label: "Internal Meetings",
-                    color: "bg-blue-400",
-                  },
-                  {
-                    key: "Client" as EventCategory,
-                    label: "Clients & External",
-                    color: "bg-emerald-400",
-                  },
-                  {
-                    key: "Workshop" as EventCategory,
-                    label: "Workshops & Training",
-                    color: "bg-purple-400",
-                  },
-                  {
-                    key: "Launch" as EventCategory,
-                    label: "Sprints & Launches",
-                    color: "bg-rose-400",
-                  },
-                ].map((item) => (
-                  <label
-                    key={item.key}
-                    className="flex items-center space-x-2 cursor-pointer select-none"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={activeCategories.has(item.key)}
-                      onChange={() => toggleCategory(item.key)}
-                      className="rounded text-teal-600 dark:text-teal-400 focus:ring-teal-500 h-3.5 w-3.5"
-                    />
-                    <span
-                      className={cn(
-                        "inline-block w-2.5 h-2.5 rounded-full",
-                        item.color,
-                      )}
-                    />
-                    <span className="text-foreground">{item.label}</span>
-                  </label>
-                ))}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Time Scope Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="px-3 py-1.5 border border-border-subtle rounded bg-canvas-surface hover:bg-canvas-bg text-xs font-medium text-foreground flex items-center space-x-1.5 transition capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Icon
-                  icon={CalendarIcon}
-                  size={14}
-                  className="text-muted-foreground"
-                />
-                <span>
-                  {timeScope === "today"
-                    ? "Today"
-                    : timeScope === "week"
-                      ? "This Week"
-                      : timeScope === "month"
-                        ? "This Month"
-                        : "This Year"}
-                </span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-44 bg-canvas-surface border border-border-subtle shadow-xl py-1"
-            >
-              <DropdownMenuItem
-                onClick={() => {
-                  setTimeScope("today");
-                  setViewType("day");
-                }}
-              >
-                <span>Today</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setTimeScope("week");
-                  setViewType("week");
-                }}
-              >
-                <span>This Week</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setTimeScope("month");
-                  setViewType("month");
-                }}
-              >
-                <span>This Month</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTimeScope("year")}>
-                <span>This Year (2026)</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* View Toggles */}
-          <div className="flex items-center space-x-1">
-            <button
-              type="button"
-              onClick={() => setViewType("agenda")}
-              title="Agenda List View"
-              aria-label="Agenda list view"
-              aria-pressed={viewType === "agenda"}
-              className={cn(
-                "p-1.5 border border-border-subtle rounded hover:bg-canvas-bg text-muted-foreground transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                viewType === "agenda" &&
-                  "bg-muted font-semibold text-foreground",
-              )}
-            >
-              <Icon icon={List} size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewType("week")}
-              title="Week Column View"
-              aria-label="Week column view"
-              aria-pressed={viewType === "week"}
-              className={cn(
-                "p-1.5 border border-border-subtle rounded hover:bg-canvas-bg text-muted-foreground transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                viewType === "week" && "bg-muted font-semibold text-foreground",
-              )}
-            >
-              <Icon icon={Columns} size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewType("month")}
-              title="Month Grid View"
-              aria-pressed={viewType === "month"}
-              className={cn(
-                "px-2.5 py-1.5 border border-border-subtle rounded text-xs flex items-center space-x-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                viewType === "month"
-                  ? "bg-muted font-semibold text-foreground"
-                  : "bg-canvas-surface text-muted-foreground hover:bg-canvas-bg",
-              )}
-            >
-              <Icon icon={Grid} size={14} />
-              <span>Month</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewType("day")}
-              title="Day Schedule View"
-              aria-label="Day schedule view"
-              aria-pressed={viewType === "day"}
-              className={cn(
-                "p-1.5 border border-border-subtle rounded hover:bg-canvas-bg text-muted-foreground transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                viewType === "day" && "bg-muted font-semibold text-foreground",
-              )}
-            >
-              <Icon icon={LayoutGrid} size={15} />
-            </button>
-          </div>
-
-          {/* + Add Event Primary Button */}
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedDateForAdd("2026-09-12");
-              setAddModalOpen(true);
-            }}
-            className="ml-1 px-3.5 py-1.5 rounded bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold flex items-center space-x-1.5 shadow-sm border border-amber-500/40 hover:border-amber-400 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <span className="text-amber-400 font-bold">+</span>
-            <span>Add Event</span>
-          </button>
-        </div>
-      </div>
-
-      {/* VIEW 1: MONTH VIEW (Canonical Default) */}
-      {viewType === "month" && (
-        <div className="mt-4">
-          <div className="grid grid-cols-7 border-b border-border-subtle pb-2 text-center text-xs font-semibold text-foreground">
-            {WEEKDAY_HEADERS.map((day) => (
-              <div key={day}>{day}</div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 border-l border-t border-border-subtle bg-canvas-surface rounded-b-md">
-            {gridCells.map((cell, idx) => {
-              if (!cell.isCurrent || cell.day === null) {
-                return (
-                  <div
-                    key={idx}
-                    className="calendar-grid-cell p-2 bg-canvas-bg/60 opacity-40 min-h-[118px] border-r border-b border-border-subtle"
-                  />
-                );
+  const dropProps = (d: Date) => ({
+    onDragOver: (ev: React.DragEvent) => {
+      if (!draggedId) return;
+      ev.preventDefault();
+      setDragOverISO(toISO(d));
+    },
+    onDragLeave: () => setDragOverISO(null),
+    onDrop: (ev: React.DragEvent) => {
+      ev.preventDefault();
+      const moved = events.find((x) => x.id === draggedId);
+      setDraggedId(null);
+      setDragOverISO(null);
+      if (!moved || onDate(moved, d)) return;
+      setEvents((prev) =>
+        prev.map((x) =>
+          x.id === moved.id
+            ? {
+                ...x,
+                day: d.getDate(),
+                month: d.getMonth(),
+                year: d.getFullYear(),
               }
+            : x,
+        ),
+      );
+      toast.success(
+        `"${moved.title}" moved to ${fmt(d, { month: "short", day: "numeric" })}`,
+      );
+    },
+  });
 
-              const dayEvents = visibleEvents.filter((e) => e.day === cell.day);
-              const primaryEvent = dayEvents[0];
-              const isToday =
-                cell.day === 12 && currentMonth === 8 && currentYear === 2026;
-              const isOver = dragOverDay === cell.day;
+  /* event chip used in month cells */
+  const renderPill = (e: CalendarEvent) => (
+    <button
+      key={e.id}
+      type="button"
+      {...dragProps(e)}
+      onClick={(ev) => {
+        ev.stopPropagation();
+        openEvent(e);
+      }}
+      title={`${e.title} · ${formatWindow(e)}`}
+      className={cn(
+        "flex w-full items-center gap-1 rounded border px-1.5 py-0.5 text-left text-2xs font-semibold leading-tight transition hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        e.colorBg,
+        e.colorBorder,
+        e.colorText,
+        draggedId === e.id && "opacity-40",
+      )}
+    >
+      {!isAllDay(e) && (
+        <span className="shrink-0 font-medium tabular-nums opacity-70">
+          {formatTime(e.startTime)}
+        </span>
+      )}
+      <span className="truncate">{e.title}</span>
+    </button>
+  );
 
-              return (
-                <div
-                  key={idx}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverDay(cell.day);
+  /* ---------- views ---------- */
+
+  const monthCells = React.useMemo(() => {
+    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    const gridStart = startOfWeek(first);
+    const daysInMonth = new Date(
+      cursor.getFullYear(),
+      cursor.getMonth() + 1,
+      0,
+    ).getDate();
+    const weeks = Math.ceil((first.getDay() + daysInMonth) / 7);
+    return Array.from({ length: weeks * 7 }, (_, i) => addDays(gridStart, i));
+  }, [cursor]);
+
+  const monthView = (
+    <div className="overflow-hidden rounded-lg border border-border-subtle">
+      <div className="grid grid-cols-7 border-b border-border-subtle bg-canvas-bg">
+        {WEEKDAYS.map((d) => (
+          <div
+            key={d}
+            className="py-2 text-center text-2xs font-semibold uppercase tracking-wider text-muted-foreground"
+          >
+            {d}
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7">
+        {monthCells.map((date) => {
+          const dayEvents = eventsOn(date);
+          const inMonth = date.getMonth() === cursor.getMonth();
+          const shown = dayEvents.slice(0, MAX_PILLS_PER_DAY);
+          const hidden = dayEvents.length - shown.length;
+          return (
+            <div
+              key={toISO(date)}
+              {...dropProps(date)}
+              onClick={() => openAdd(date)}
+              className={cn(
+                "group relative min-h-[116px] cursor-pointer border-b border-r border-border-subtle p-1.5 transition-colors [&:nth-child(7n)]:border-r-0",
+                inMonth
+                  ? "bg-canvas-surface hover:bg-canvas-bg/60"
+                  : "bg-canvas-bg/50 text-muted-foreground",
+                dragOverISO === toISO(date) &&
+                  "bg-teal-500/10 ring-2 ring-inset ring-teal-500",
+              )}
+            >
+              <div className="mb-1 flex items-center justify-between">
+                <span className={cn(!inMonth && "opacity-50")}>
+                  <DateBadge date={date} today={today} />
+                </span>
+                <button
+                  type="button"
+                  aria-label={`Add event on ${fmt(date, { month: "short", day: "numeric" })}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openAdd(date);
                   }}
-                  onDragLeave={() => setDragOverDay(null)}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    handleDrop(cell.day!);
-                  }}
-                  className={cn(
-                    "calendar-grid-cell p-2 flex flex-col justify-between bg-canvas-surface relative hover:bg-canvas-bg/60 cursor-pointer min-h-[118px] border-r border-b border-border-subtle transition-colors",
-                    isOver &&
-                      "bg-emerald-50! border-dashed border-2 border-teal-500!",
-                  )}
-                  onClick={() => {
-                    const dStr = String(cell.day).padStart(2, "0");
-                    const mStr = String(currentMonth + 1).padStart(2, "0");
-                    setSelectedDateForAdd(`${currentYear}-${mStr}-${dStr}`);
-                    setAddModalOpen(true);
-                  }}
+                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground opacity-0 transition hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100"
                 >
-                  <div className="flex items-center justify-between mb-1 w-full">
-                    {isToday ? (
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-navy-900 text-white font-bold text-xs shadow-sm">
-                        12
-                      </span>
-                    ) : (
-                      <span className="text-xs font-semibold text-foreground ml-0.5">
-                        {cell.day}
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const dStr = String(cell.day).padStart(2, "0");
-                        const mStr = String(currentMonth + 1).padStart(2, "0");
-                        setSelectedDateForAdd(`${currentYear}-${mStr}-${dStr}`);
-                        setAddModalOpen(true);
-                      }}
-                      className="text-muted-foreground hover:text-teal-600 dark:hover:text-teal-400 hover:bg-muted p-1 rounded transition-colors text-sm font-semibold leading-none flex items-center justify-center w-5 h-5"
-                      aria-label="Add event"
-                    >
-                      +
-                    </button>
-                  </div>
+                  <Icon icon={Plus} size={14} />
+                </button>
+              </div>
+              <div className="space-y-1">
+                {shown.map(renderPill)}
+                {hidden > 0 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOverflowDate(date);
+                    }}
+                    className="px-1 text-2xs font-medium text-teal-700 hover:underline dark:text-teal-300"
+                  >
+                    +{hidden} more
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 
-                  {/* Primary Event Chip */}
-                  <div className="space-y-1 my-auto">
-                    {primaryEvent && (
-                      <div
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, primaryEvent.id)}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedEvent(primaryEvent);
-                          setDetailsOpen(true);
-                        }}
+  const weekDays = Array.from({ length: 7 }, (_, i) =>
+    addDays(startOfWeek(cursor), i),
+  );
+
+  const weekView = (
+    <div className="overflow-hidden rounded-lg border border-border-subtle">
+      <div className="grid grid-cols-1 divide-y divide-border-subtle sm:grid-cols-7 sm:divide-x sm:divide-y-0">
+        {weekDays.map((date) => {
+          const dayEvents = eventsOn(date);
+          return (
+            <div
+              key={toISO(date)}
+              {...dropProps(date)}
+              className={cn(
+                "flex min-h-[360px] flex-col bg-canvas-surface transition-colors",
+                dragOverISO === toISO(date) && "bg-teal-500/10",
+              )}
+            >
+              <div className="flex items-center justify-between border-b border-border-subtle bg-canvas-bg px-2.5 py-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {WEEKDAYS[date.getDay()]}
+                  </span>
+                  <DateBadge date={date} today={today} />
+                </div>
+                <button
+                  type="button"
+                  aria-label={`Add event on ${fmt(date, { month: "short", day: "numeric" })}`}
+                  onClick={() => openAdd(date)}
+                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Icon icon={Plus} size={14} />
+                </button>
+              </div>
+              <div className="flex-1 space-y-1.5 p-2">
+                {dayEvents.length === 0 ? (
+                  <p className="pt-6 text-center text-2xs text-muted-foreground/60">
+                    No events
+                  </p>
+                ) : (
+                  dayEvents.map((e) => (
+                    <button
+                      key={e.id}
+                      type="button"
+                      {...dragProps(e)}
+                      onClick={() => openEvent(e)}
+                      className={cn(
+                        "block w-full rounded-md border p-2 text-left transition hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        e.colorBg,
+                        e.colorBorder,
+                        draggedId === e.id && "opacity-40",
+                      )}
+                    >
+                      <span
                         className={cn(
-                          "p-1.5 rounded-md border cursor-pointer hover:opacity-90 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition select-none",
-                          primaryEvent.colorBg,
-                          primaryEvent.colorBorder,
+                          "block text-xs font-semibold leading-snug",
+                          e.colorText,
                         )}
                       >
-                        <div
-                          className={cn(
-                            "text-xs font-bold leading-tight truncate",
-                            primaryEvent.colorText,
-                          )}
-                        >
-                          {primaryEvent.title}
-                        </div>
-                        <div className="text-3xs text-muted-foreground truncate mt-0.5">
-                          {primaryEvent.category === "Marketing"
-                            ? primaryEvent.desc || "AdSense + FB, Target ..."
-                            : formatWindow(
-                                primaryEvent.startTime,
-                                primaryEvent.endTime,
-                              )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Overflow footer */}
-                  <div className="mt-1 text-center">
-                    {dayEvents.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOverflowDay(cell.day!);
-                          setOverflowOpen(true);
-                        }}
-                        className="text-2xs text-muted-foreground hover:text-foreground font-medium hover:underline"
-                      >
-                        +{dayEvents.length - 1} more
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 2: WEEK TIMELINE VIEW */}
-      {viewType === "week" && (
-        <div className="mt-4">
-          <div className="flex items-center justify-between pb-3">
-            <div className="flex items-center space-x-3">
-              <h3 className="text-sm font-bold text-foreground">
-                Week Timeline (Tuesday - Monday)
-              </h3>
-              <span className="text-xs text-muted-foreground font-normal">
-                Sep {weekStartDay} – Sep {Math.min(weekStartDay + 6, 30)},{" "}
-                {currentYear}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1.5">
-              <button
-                type="button"
-                onClick={() => setWeekStartDay((prev) => Math.max(1, prev - 7))}
-                aria-label="Previous week"
-                className="w-7 h-7 flex items-center justify-center rounded border border-border-subtle bg-canvas-surface hover:bg-muted text-foreground text-xs font-bold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                &lt;
-              </button>
-              <button
-                type="button"
-                onClick={() => setWeekStartDay(8)}
-                className="px-2.5 py-1 text-xs font-semibold rounded border border-border-subtle bg-canvas-surface hover:bg-muted text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                This Week
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setWeekStartDay((prev) => Math.min(24, prev + 7))
-                }
-                aria-label="Next week"
-                className="w-7 h-7 flex items-center justify-center rounded border border-border-subtle bg-canvas-surface hover:bg-muted text-foreground text-xs font-bold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                &gt;
-              </button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto border border-border-subtle rounded-lg">
-            <div className="grid grid-cols-7 bg-canvas-bg border-b border-border-subtle text-center text-xs font-semibold py-2">
-              {[0, 1, 2, 3, 4, 5, 6].map((i) => {
-                const dayNum = weekStartDay + i;
-                const isToday = dayNum === 12;
-                return (
-                  <div
-                    key={i}
-                    className={
-                      isToday
-                        ? "text-teal-600 dark:text-teal-400 font-bold"
-                        : "text-foreground"
-                    }
-                  >
-                    Day {dayNum} {isToday && "(Today)"}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="grid grid-cols-7 divide-x divide-border-subtle bg-canvas-surface min-h-[400px]">
-              {[0, 1, 2, 3, 4, 5, 6].map((i) => {
-                const dayNum = weekStartDay + i;
-                const dayEvts = visibleEvents.filter((e) => e.day === dayNum);
-                return (
-                  <div key={i} className="p-2 space-y-2">
-                    {dayEvts.length === 0 ? (
-                      <div className="text-2xs text-muted-foreground text-center pt-8">
-                        No events
-                      </div>
-                    ) : (
-                      dayEvts.map((ev) => (
-                        <div
-                          key={ev.id}
-                          onClick={() => {
-                            setSelectedEvent(ev);
-                            setDetailsOpen(true);
-                          }}
-                          className={cn(
-                            "p-2 rounded border text-xs cursor-pointer shadow-sm hover:opacity-95",
-                            ev.colorBg,
-                            ev.colorBorder,
-                          )}
-                        >
-                          <span className={cn("font-bold block", ev.colorText)}>
-                            {ev.title}
-                          </span>
-                          <span className="text-3xs text-muted-foreground block mt-0.5">
-                            {formatWindow(ev.startTime, ev.endTime)}
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 3: DAY TIMELINE VIEW */}
-      {viewType === "day" && (
-        <div className="mt-4">
-          <div className="flex items-center justify-between pb-3">
-            <h3 className="text-sm font-bold text-foreground">
-              Daily Schedule - September 12, {currentYear}
-            </h3>
-            <span className="text-xs text-teal-600 dark:text-teal-400 font-medium bg-teal-500/10 px-2 py-0.5 rounded">
-              Selected Date View
-            </span>
-          </div>
-
-          <div className="border border-border-subtle rounded-lg bg-canvas-surface divide-y divide-border-subtle max-h-[600px] overflow-y-auto">
-            {[
-              "08:00",
-              "09:00",
-              "10:00",
-              "11:00",
-              "12:00",
-              "13:00",
-              "14:00",
-              "15:00",
-              "16:00",
-              "17:00",
-              "18:00",
-            ].map((hour) => {
-              const matched = visibleEvents.filter(
-                (e) =>
-                  e.day === 12 && e.startTime.startsWith(hour.split(":")[0]),
-              );
-              return (
-                <div
-                  key={hour}
-                  className="flex items-start p-3 hover:bg-canvas-bg transition"
-                >
-                  <span className="w-20 text-xs font-semibold text-muted-foreground shrink-0">
-                    {formatTime(hour)}
-                  </span>
-                  <div className="flex-1 space-y-1.5">
-                    {matched.length > 0 ? (
-                      matched.map((ev) => (
-                        <div
-                          key={ev.id}
-                          onClick={() => {
-                            setSelectedEvent(ev);
-                            setDetailsOpen(true);
-                          }}
-                          className={cn(
-                            "border p-2 rounded text-xs cursor-pointer shadow-sm flex items-center justify-between",
-                            ev.colorBg,
-                            ev.colorBorder,
-                          )}
-                        >
-                          <div>
-                            <span className={cn("font-bold", ev.colorText)}>
-                              {ev.title}
-                            </span>
-                            <p className="text-2xs text-muted-foreground">
-                              {ev.desc}
-                            </p>
-                          </div>
-                          <span
-                            className={cn(
-                              "text-3xs font-semibold",
-                              ev.colorText,
-                            )}
-                          >
-                            {formatWindow(ev.startTime, ev.endTime)}
-                          </span>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="text-xs text-muted-foreground/70 italic">
-                        Available slot
+                        {e.title}
                       </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 4: AGENDA LIST VIEW */}
-      {viewType === "agenda" && (
-        <div className="mt-4">
-          <div className="flex items-center justify-between pb-3">
-            <h3 className="text-sm font-bold text-foreground">
-              Month Agenda &amp; Key Deadlines
-            </h3>
-            <span className="text-xs text-muted-foreground">
-              Chronological Event Stream
-            </span>
-          </div>
-
-          <div className="space-y-3">
-            {visibleEvents
-              .sort((a, b) => a.day - b.day)
-              .map((ev) => (
-                <div
-                  key={ev.id}
-                  onClick={() => {
-                    setSelectedEvent(ev);
-                    setDetailsOpen(true);
-                  }}
-                  className="bg-canvas-surface p-3 rounded-lg border border-border-subtle shadow-sm flex items-center justify-between hover:border-teal-500 cursor-pointer transition"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded bg-muted flex flex-col items-center justify-center text-foreground font-bold shrink-0">
-                      <span className="text-3xs uppercase font-semibold text-muted-foreground">
-                        Sep
+                      <span className="mt-0.5 block text-3xs tabular-nums text-muted-foreground">
+                        {formatWindow(e)}
                       </span>
-                      <span className="text-sm">{ev.day}</span>
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-foreground">
-                        {ev.title}
-                      </h4>
-                      <p className="text-2xs text-muted-foreground">
-                        {ev.desc || "General scheduled item"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span
-                      className={cn(
-                        "inline-block text-2xs font-semibold px-2 py-0.5 rounded",
-                        ev.colorBg,
-                        ev.colorText,
-                      )}
-                    >
-                      {formatWindow(ev.startTime, ev.endTime)}
-                    </span>
-                    <span className="block text-3xs text-muted-foreground mt-1">
-                      {ev.category}
-                    </span>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 
-      {/* Annual Overview 2026 Grid Cards */}
-      <div className="mt-6 pt-4 border-t border-border-subtle">
-        <div className="flex items-center justify-between pb-3">
-          <h3 className="text-sm font-bold text-foreground">
-            Annual Overview - 2026
-          </h3>
-          <span className="text-xs text-muted-foreground">
-            12-Month Calendar Schedule
+  const dayScrollRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (view === "day" && dayScrollRef.current)
+      dayScrollRef.current.scrollTop = 8 * HOUR_ROW_PX;
+  }, [view]);
+
+  const dayEvents = eventsOn(cursor);
+  const allDayEvents = dayEvents.filter(isAllDay);
+  const dayView = (
+    <div className="overflow-hidden rounded-lg border border-border-subtle">
+      {allDayEvents.length > 0 && (
+        <div className="flex items-start gap-3 border-b border-border-subtle bg-canvas-bg px-3 py-2">
+          <span className="w-16 shrink-0 pt-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+            All day
           </span>
+          <div className="flex flex-1 flex-wrap gap-1.5">
+            {allDayEvents.map(renderPill)}
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-3 border-border-subtle bg-canvas-surface">
-            <div className="text-xs font-bold text-foreground mb-1">
-              Q1 (Jan - Mar)
+      )}
+      <div ref={dayScrollRef} className="max-h-[620px] overflow-y-auto">
+        {Array.from({ length: 24 }, (_, hour) => {
+          const key = pad(hour);
+          const inHour = dayEvents.filter(
+            (e) => !isAllDay(e) && e.startTime.startsWith(key),
+          );
+          return (
+            <div
+              key={hour}
+              style={{ minHeight: HOUR_ROW_PX }}
+              className="group flex border-b border-border-subtle last:border-b-0"
+            >
+              <span className="w-16 shrink-0 border-r border-border-subtle px-3 py-2 text-2xs tabular-nums text-muted-foreground">
+                {formatTime(`${key}:00`)}
+              </span>
+              <div
+                onClick={() => openAdd(cursor)}
+                className="flex-1 cursor-pointer space-y-1.5 p-1.5 transition-colors hover:bg-canvas-bg/60"
+              >
+                {inHour.map((e) => (
+                  <button
+                    key={e.id}
+                    type="button"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      openEvent(e);
+                    }}
+                    className={cn(
+                      "flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left transition hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      e.colorBg,
+                      e.colorBorder,
+                    )}
+                  >
+                    <span className="min-w-0">
+                      <span
+                        className={cn(
+                          "block text-xs font-semibold",
+                          e.colorText,
+                        )}
+                      >
+                        {e.title}
+                      </span>
+                      {e.desc && (
+                        <span className="block truncate text-2xs text-muted-foreground">
+                          {e.desc}
+                        </span>
+                      )}
+                    </span>
+                    <span className="shrink-0 text-2xs font-medium tabular-nums text-muted-foreground">
+                      {formatWindow(e)}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="text-2xs text-muted-foreground">
-              18 Events • 4 Projects
-            </div>
-          </Card>
-          <Card className="p-3 border-border-subtle bg-canvas-surface">
-            <div className="text-xs font-bold text-foreground mb-1">
-              Q2 (Apr - Jun)
-            </div>
-            <div className="text-2xs text-muted-foreground">
-              24 Events • 6 Projects
-            </div>
-          </Card>
-          <Card className="p-3 border-teal-500 bg-teal-500/5">
-            <div className="text-xs font-bold text-teal-600 dark:text-teal-400 mb-1">
-              Q3 (Jul - Sep) • Current
-            </div>
-            <div className="text-2xs text-muted-foreground">
-              32 Events • Active Sprint
-            </div>
-          </Card>
-          <Card className="p-3 border-border-subtle bg-canvas-surface">
-            <div className="text-xs font-bold text-foreground mb-1">
-              Q4 (Oct - Dec)
-            </div>
-            <div className="text-2xs text-muted-foreground">
-              15 Scheduled Deadlines
-            </div>
-          </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <section className="mx-auto mb-8 max-w-[1340px] space-y-4 rounded-lg border border-border-subtle bg-canvas-surface p-5 text-foreground shadow-sm md:p-6">
+      {/* Header: title + navigation, primary action right-aligned */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="min-w-[13rem] text-xl font-bold tracking-tight">
+            {viewTitle(view, cursor)}
+          </h2>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => step(-1)}
+              aria-label="Previous"
+            >
+              <Icon icon={ChevronLeft} size={16} />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setCursor(today)}
+            >
+              Today
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => step(1)}
+              aria-label="Next"
+            >
+              <Icon icon={ChevronRight} size={16} />
+            </Button>
+          </div>
+        </div>
+
+        <Button
+          variant="accent"
+          size="sm"
+          className="ml-auto h-9 gap-1.5 text-xs font-semibold"
+          title="Add event (Ctrl+K)"
+          onClick={() => openAdd(view === "day" ? cursor : today)}
+        >
+          <Icon icon={Plus} size={16} />
+          Add Event
+        </Button>
+      </div>
+
+      {/* Controls: search + filters on the left, display options on the right */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border-subtle py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:w-56">
+            <Icon
+              icon={Search}
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              placeholder="Search events…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="h-8 border-border-subtle bg-canvas-bg pl-9 text-xs"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {CATEGORIES.map((c) => {
+              const on = activeCategories.has(c.key);
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => toggleCategory(c.key)}
+                  aria-pressed={on}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-2xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    on
+                      ? "border-border-subtle bg-canvas-surface text-foreground"
+                      : "border-transparent bg-muted/60 text-muted-foreground",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "h-2 w-2 rounded-full",
+                      on ? c.dot : "bg-muted-foreground/30",
+                    )}
+                  />
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-xs tabular-nums"
+            onClick={() => setIs24Hour((v) => !v)}
+            aria-label="Toggle 12 or 24 hour time"
+          >
+            <Icon icon={Clock} size={14} className="text-muted-foreground" />
+            {is24Hour ? "24h" : "12h"}
+          </Button>
+          <div
+            role="group"
+            aria-label="Calendar view"
+            className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5"
+          >
+            {VIEWS.map((v) => (
+              <button
+                key={v.key}
+                type="button"
+                onClick={() => setView(v.key)}
+                aria-pressed={view === v.key}
+                className={cn(
+                  "rounded-md px-3 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  view === v.key
+                    ? "bg-canvas-surface font-semibold text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* MODAL 1: Schedule New Event */}
+      {view === "month" && monthView}
+      {view === "week" && weekView}
+      {view === "day" && dayView}
+
       <ScheduleEventDialog
-        open={addModalOpen}
-        onOpenChange={setAddModalOpen}
-        defaultDate={selectedDateForAdd}
-        onAddEvent={(newEv) => setEvents((prev) => [...prev, newEv])}
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        defaultDate={addDate}
+        onAddEvent={(ev) => setEvents((prev) => [...prev, ev])}
       />
 
-      {/* MODAL 2: Event Details & Delete */}
       <EventDetailsDialog
-        event={selectedEvent}
+        event={selected}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
-        is24HourMode={is24HourMode}
+        is24HourMode={is24Hour}
       />
 
-      {/* MODAL 3: Overflow +N Events Popover */}
       <OverflowPopover
-        open={overflowOpen}
-        onOpenChange={setOverflowOpen}
-        dayNum={overflowDay}
-        events={visibleEvents.filter((e) => e.day === overflowDay)}
-        onSelectEvent={(ev) => {
-          setSelectedEvent(ev);
-          setDetailsOpen(true);
-        }}
-        is24HourMode={is24HourMode}
+        open={overflowDate !== null}
+        onOpenChange={(o) => !o && setOverflowDate(null)}
+        dateLabel={
+          overflowDate
+            ? fmt(overflowDate, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : ""
+        }
+        events={overflowDate ? eventsOn(overflowDate) : []}
+        onSelectEvent={openEvent}
+        is24HourMode={is24Hour}
       />
     </section>
   );

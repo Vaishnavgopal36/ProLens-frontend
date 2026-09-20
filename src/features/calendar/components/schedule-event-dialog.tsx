@@ -1,9 +1,11 @@
 import * as React from "react";
 import { toast } from "sonner";
-import { Plus, X } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
+import { Modal, ModalContent, ModalTitle } from "@/components/ui/modal";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/field-error";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -36,6 +38,18 @@ export function ScheduleEventDialog({
   const [endTime, setEndTime] = React.useState("11:30");
   const [location, setLocation] = React.useState("");
   const [desc, setDesc] = React.useState("");
+  const [errors, setErrors] = React.useState<{
+    title?: string;
+    date?: string;
+    startTime?: string;
+    endTime?: string;
+  }>({});
+  const clearError = (key: keyof typeof errors) =>
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
+
+  React.useEffect(() => {
+    if (!open) setErrors({});
+  }, [open]);
 
   React.useEffect(() => {
     if (defaultDate) setDate(defaultDate);
@@ -43,10 +57,18 @@ export function ScheduleEventDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      toast.error("Please enter an event title");
-      return;
-    }
+    const next: typeof errors = {};
+    if (!title.trim()) next.title = "Enter an event title.";
+    else if (title.trim().length > 100)
+      next.title = "Title must be 100 characters or fewer.";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date)))
+      next.date = "Choose a valid date.";
+    if (!startTime) next.startTime = "Choose a start time.";
+    if (!endTime) next.endTime = "Choose an end time.";
+    else if (startTime && endTime <= startTime)
+      next.endTime = "End time must be after the start time.";
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
 
     const [y, m, d] = date.split("-").map(Number);
     const styling = CATEGORY_COLOR_MAP[category] || CATEGORY_COLOR_MAP.Meeting;
@@ -77,8 +99,8 @@ export function ScheduleEventDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden p-0 sm:max-w-[500px] border border-border-subtle bg-canvas-surface">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="overflow-hidden p-0 sm:max-w-[500px] [&>button.absolute]:text-white border border-border-subtle bg-canvas-surface">
         <div className="flex items-center justify-between bg-navy-500 px-6 py-4 text-white">
           <div className="flex items-center gap-2">
             <Icon
@@ -86,21 +108,17 @@ export function ScheduleEventDialog({
               size={16}
               className="text-teal-500 dark:text-teal-400"
             />
-            <DialogTitle className="text-sm font-bold text-white tracking-tight">
+            <ModalTitle className="text-sm font-bold text-white tracking-tight">
               Schedule New Event
-            </DialogTitle>
+            </ModalTitle>
           </div>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            aria-label="Close"
-            className="text-white/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-          >
-            <Icon icon={X} size={16} />
-          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 p-6 text-xs">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="space-y-4 p-6 text-xs"
+        >
           <div>
             <Label
               htmlFor="event-title"
@@ -112,9 +130,18 @@ export function ScheduleEventDialog({
               id="event-title"
               placeholder="e.g., Client Retrospective"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                clearError("title");
+              }}
+              aria-invalid={!!errors.title}
+              aria-describedby={errors.title ? "event-title-error" : undefined}
               className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
-              required
+            />
+            <FieldError
+              id="event-title-error"
+              message={errors.title}
+              className="mt-1"
             />
           </div>
 
@@ -130,9 +157,18 @@ export function ScheduleEventDialog({
                 id="event-date"
                 type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  clearError("date");
+                }}
+                aria-invalid={!!errors.date}
+                aria-describedby={errors.date ? "event-date-error" : undefined}
                 className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
-                required
+              />
+              <FieldError
+                id="event-date-error"
+                message={errors.date}
+                className="mt-1"
               />
             </div>
             <div>
@@ -173,9 +209,21 @@ export function ScheduleEventDialog({
                 id="event-start"
                 type="time"
                 value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
+                onChange={(e) => {
+                  setStartTime(e.target.value);
+                  clearError("startTime");
+                  clearError("endTime");
+                }}
+                aria-invalid={!!errors.startTime}
+                aria-describedby={
+                  errors.startTime ? "event-start-error" : undefined
+                }
                 className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
-                required
+              />
+              <FieldError
+                id="event-start-error"
+                message={errors.startTime}
+                className="mt-1"
               />
             </div>
             <div>
@@ -189,9 +237,20 @@ export function ScheduleEventDialog({
                 id="event-end"
                 type="time"
                 value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
+                onChange={(e) => {
+                  setEndTime(e.target.value);
+                  clearError("endTime");
+                }}
+                aria-invalid={!!errors.endTime}
+                aria-describedby={
+                  errors.endTime ? "event-end-error" : undefined
+                }
                 className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
-                required
+              />
+              <FieldError
+                id="event-end-error"
+                message={errors.endTime}
+                className="mt-1"
               />
             </div>
           </div>
@@ -229,6 +288,7 @@ export function ScheduleEventDialog({
           </div>
 
           <div className="flex items-center justify-end space-x-3 pt-3 border-t border-border-subtle">
+            <HotkeyHint className="mr-auto" />
             <Button
               type="button"
               variant="outline"
@@ -248,7 +308,7 @@ export function ScheduleEventDialog({
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ModalContent>
+    </Modal>
   );
 }

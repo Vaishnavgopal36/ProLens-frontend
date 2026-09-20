@@ -8,13 +8,14 @@ import {
   Clock,
 } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+} from "@/components/ui/modal";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -179,24 +180,24 @@ export function CreateProjectDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[540px] max-h-none overflow-visible p-5">
-        <DialogHeader className="space-y-1">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="sm:max-w-[540px] max-h-none overflow-visible p-5">
+        <ModalHeader className="space-y-1">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
               <Icon icon={FolderPlus} size={17} />
             </div>
             <div>
-              <DialogTitle className="text-base font-semibold">
+              <ModalTitle className="text-base font-semibold">
                 Create New Project
-              </DialogTitle>
-              <DialogDescription className="text-xs">
+              </ModalTitle>
+              <ModalDescription className="text-xs">
                 Initiate a project workspace, set client ownership, and define
                 deliverables.
-              </DialogDescription>
+              </ModalDescription>
             </div>
           </div>
-        </DialogHeader>
+        </ModalHeader>
 
         {/* noValidate stops the browser's default black popup */}
         <form onSubmit={handleSubmit} noValidate className="space-y-3 pt-1">
@@ -459,7 +460,8 @@ export function CreateProjectDialog({
             }
           />
 
-          <DialogFooter className="pt-1.5">
+          <ModalFooter className="pt-1.5">
+            <HotkeyHint className="mr-auto" />
             <Button
               type="button"
               variant="outline"
@@ -471,9 +473,9 @@ export function CreateProjectDialog({
             <Button type="submit" variant="default" size="sm">
               Create Project
             </Button>
-          </DialogFooter>
+          </ModalFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ModalContent>
+    </Modal>
   );
 }

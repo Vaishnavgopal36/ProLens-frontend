@@ -10,15 +10,16 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/app/providers";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+} from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/field-error";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -125,6 +126,13 @@ export function ProjectSettingsDialog({
   const [estimatedHours, setEstimatedHours] = React.useState(
     project.estimatedHours.toString(),
   );
+  const [errors, setErrors] = React.useState<{
+    name?: string;
+    client?: string;
+    estimatedHours?: string;
+  }>({});
+  const clearError = (key: keyof typeof errors) =>
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
 
   // Sync state if external project reference changes
   React.useEffect(() => {
@@ -134,6 +142,7 @@ export function ProjectSettingsDialog({
     setStatus(project.status);
     setEstimatedHours(project.estimatedHours.toString());
     setActiveSprint(project.activeSprint);
+    setErrors({});
   }, [project]);
 
   const formattedDueDate = React.useMemo(() => {
@@ -149,10 +158,16 @@ export function ProjectSettingsDialog({
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !client.trim()) {
-      toast.error("Project title and client cannot be empty.");
-      return;
-    }
+    const next: typeof errors = {};
+    if (!name.trim()) next.name = "Project title is required.";
+    if (!client.trim()) next.client = "Client name is required.";
+    const hours = Number(estimatedHours);
+    if (estimatedHours.trim() === "" || Number.isNaN(hours))
+      next.estimatedHours = "Enter the estimated hours as a number.";
+    else if (hours <= 0)
+      next.estimatedHours = "Estimated hours must be above 0.";
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
 
     const updatedProject: Project = {
       ...project,
@@ -162,7 +177,7 @@ export function ProjectSettingsDialog({
       status,
       activeSprint,
       dueDate: formattedDueDate,
-      estimatedHours: Number(estimatedHours) || project.estimatedHours,
+      estimatedHours: Number(estimatedHours),
     };
 
     onUpdateProject?.(updatedProject);
@@ -171,25 +186,25 @@ export function ProjectSettingsDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="sm:max-w-[560px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         {/* Pinned Header */}
-        <DialogHeader className="p-5 pb-4 border-b border-border-subtle shrink-0">
+        <ModalHeader className="p-5 pb-4 border-b border-border-subtle shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
               <Icon icon={Sliders} size={17} />
             </div>
             <div>
-              <DialogTitle className="text-base font-semibold">
+              <ModalTitle className="text-base font-semibold">
                 Project &amp; Sprint Settings
-              </DialogTitle>
-              <DialogDescription className="text-xs">
+              </ModalTitle>
+              <ModalDescription className="text-xs">
                 Update core project identity, sprint cadence, and delivery
                 commitments.
-              </DialogDescription>
+              </ModalDescription>
             </div>
           </div>
-        </DialogHeader>
+        </ModalHeader>
 
         {/* Scrollable Form Body */}
         <form
@@ -208,11 +223,16 @@ export function ProjectSettingsDialog({
                   autoFocus
                   id="edit-name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    clearError("name");
+                  }}
                   disabled={!isManager}
+                  aria-invalid={!!errors.name}
+                  aria-describedby={errors.name ? "edit-name-error" : undefined}
                   className="h-8 text-xs bg-canvas-surface"
-                  required
                 />
+                <FieldError id="edit-name-error" message={errors.name} />
               </div>
 
               <div className="space-y-1">
@@ -228,12 +248,19 @@ export function ProjectSettingsDialog({
                   <Input
                     id="edit-client"
                     value={client}
-                    onChange={(e) => setClient(e.target.value)}
+                    onChange={(e) => {
+                      setClient(e.target.value);
+                      clearError("client");
+                    }}
                     disabled={!isManager}
+                    aria-invalid={!!errors.client}
+                    aria-describedby={
+                      errors.client ? "edit-client-error" : undefined
+                    }
                     className="h-8 pl-8 text-xs bg-canvas-surface"
-                    required
                   />
                 </div>
+                <FieldError id="edit-client-error" message={errors.client} />
               </div>
             </div>
 
@@ -441,11 +468,22 @@ export function ProjectSettingsDialog({
                   <Input
                     id="estHours"
                     type="number"
-                    min="0"
+                    inputMode="numeric"
                     value={estimatedHours}
-                    onChange={(e) => setEstimatedHours(e.target.value)}
+                    onChange={(e) => {
+                      setEstimatedHours(e.target.value);
+                      clearError("estimatedHours");
+                    }}
                     disabled={!isManager}
+                    aria-invalid={!!errors.estimatedHours}
+                    aria-describedby={
+                      errors.estimatedHours ? "estHours-error" : undefined
+                    }
                     className="h-8 text-xs bg-canvas-surface"
+                  />
+                  <FieldError
+                    id="estHours-error"
+                    message={errors.estimatedHours}
                   />
                 </div>
               </div>
@@ -481,7 +519,7 @@ export function ProjectSettingsDialog({
           </div>
 
           {/* Pinned Footer */}
-          <DialogFooter className="p-4 border-t border-border-subtle bg-canvas-bg/30 shrink-0 gap-2 sm:gap-0">
+          <ModalFooter className="p-4 border-t border-border-subtle bg-canvas-bg/30 shrink-0 gap-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"
@@ -495,9 +533,9 @@ export function ProjectSettingsDialog({
                 Save Changes
               </Button>
             )}
-          </DialogFooter>
+          </ModalFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ModalContent>
+    </Modal>
   );
 }

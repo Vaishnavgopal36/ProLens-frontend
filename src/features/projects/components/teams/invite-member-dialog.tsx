@@ -1,13 +1,14 @@
 import * as React from "react";
 import { UserPlus, Mail, Shield, Clock } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+} from "@/components/ui/modal";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -114,23 +115,23 @@ export function InviteMemberDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[460px] p-5">
-        <DialogHeader className="space-y-1">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="sm:max-w-[460px] p-5">
+        <ModalHeader className="space-y-1">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
               <Icon icon={UserPlus} size={17} />
             </div>
             <div>
-              <DialogTitle className="text-base font-semibold">
+              <ModalTitle className="text-base font-semibold">
                 Invite Team Member
-              </DialogTitle>
-              <DialogDescription className="text-xs">
+              </ModalTitle>
+              <ModalDescription className="text-xs">
                 Grant workspace access and assign governance privileges.
-              </DialogDescription>
+              </ModalDescription>
             </div>
           </div>
-        </DialogHeader>
+        </ModalHeader>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-3.5 pt-1">
           {/* Email Address */}
@@ -245,7 +246,8 @@ export function InviteMemberDialog({
             accepted — no need to enter it here.
           </p>
 
-          <DialogFooter className="pt-2">
+          <ModalFooter className="pt-2">
+            <HotkeyHint className="mr-auto" />
             <Button
               type="button"
               variant="outline"
@@ -263,9 +265,9 @@ export function InviteMemberDialog({
               <Icon icon={Mail} size={14} />
               <span>Send Invitation</span>
             </Button>
-          </DialogFooter>
+          </ModalFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ModalContent>
+    </Modal>
   );
 }

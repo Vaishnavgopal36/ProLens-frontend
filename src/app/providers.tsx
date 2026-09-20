@@ -114,26 +114,51 @@ export interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  setUser: (user: AuthUser | null) => void;
+  /** remember=false keeps the session for this browser tab only. */
+  setUser: (user: AuthUser | null, remember?: boolean) => void;
   logout: () => void;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Placeholder session state until connected to TanStack Query / OpenAPI client
-  const [user, setUser] = React.useState<AuthUser | null>({
-    id: "usr_1",
-    name: "Vaishnav Gopal",
-    email: "vaishnav@tarento.com",
-    initials: "VG",
-    role: "manager",
-  });
+const SESSION_KEY = "prolens_user";
 
-  const logout = React.useCallback(() => {
-    setUser(null);
-    localStorage.removeItem("prolens_token");
-  }, []);
+function readStoredUser(): AuthUser | null {
+  try {
+    const raw =
+      localStorage.getItem(SESSION_KEY) ?? sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<AuthUser>;
+    return parsed?.email && parsed?.role ? (parsed as AuthUser) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // Session persists across reloads; a fresh browser starts at /login.
+  const [user, setUserState] = React.useState<AuthUser | null>(readStoredUser);
+
+  const setUser = React.useCallback(
+    (next: AuthUser | null, remember: boolean = true) => {
+      setUserState(next);
+      try {
+        localStorage.removeItem(SESSION_KEY);
+        sessionStorage.removeItem(SESSION_KEY);
+        if (next) {
+          (remember ? localStorage : sessionStorage).setItem(
+            SESSION_KEY,
+            JSON.stringify(next),
+          );
+        }
+      } catch {
+        /* storage unavailable: session lasts until reload */
+      }
+    },
+    [],
+  );
+
+  const logout = React.useCallback(() => setUser(null), [setUser]);
 
   return (
     <AuthContext.Provider

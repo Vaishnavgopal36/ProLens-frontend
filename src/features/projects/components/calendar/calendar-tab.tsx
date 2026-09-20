@@ -104,7 +104,6 @@ function buildMonthGrid(year: number, month: number): DayCell[][] {
 
 interface CalendarTabProps {
   project: Project;
-  selectedMemberId?: string | null;
 }
 
 export function CalendarTab({ project }: CalendarTabProps) {

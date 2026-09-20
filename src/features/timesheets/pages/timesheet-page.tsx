@@ -30,9 +30,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 import {
   INITIAL_TIME_ENTRIES,
-  PROJECT_TAXONOMY,
+  WORK_TAXONOMY,
   REPORT_PRESETS,
 } from "../api/mock-data";
 import {
@@ -55,16 +56,13 @@ export function TimesheetPage() {
   // Collapsed state for project report table
   const [collapsedProjects, setCollapsedProjects] = React.useState<
     Record<string, boolean>
-  >({
-    "Internal Project": false,
-  });
+  >({});
 
   // Dialog State
   const [addModalOpen, setAddModalOpen] = React.useState(false);
   const [selectedDateForAdd, setSelectedDateForAdd] =
     React.useState("2026-09-14");
-  const [presetProjectForAdd, setPresetProjectForAdd] =
-    React.useState("Website Design");
+  const [presetProjectForAdd, setPresetProjectForAdd] = React.useState("");
   const [presetTaskForAdd, setPresetTaskForAdd] = React.useState("");
 
   const [editModalOpen, setEditModalOpen] = React.useState(false);
@@ -90,6 +88,19 @@ export function TimesheetPage() {
     const day = String(d.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
+
+  // Ctrl/⌘ + K toggles the add-time modal, defaulting to today.
+  useModalHotkey({
+    open: addModalOpen,
+    onOpen: () => {
+      setSelectedDateForAdd(formatDateISO(new Date()));
+      setPresetProjectForAdd("");
+      setPresetTaskForAdd("");
+      setAddModalOpen(true);
+    },
+    onClose: () => setAddModalOpen(false),
+    disabled: editModalOpen,
+  });
 
   const formatMins = (totalMinutes: number) => {
     if (!totalMinutes || totalMinutes <= 0) return "0h 00m";
@@ -123,11 +134,7 @@ export function TimesheetPage() {
   // Calculations for cards
   const { totalWeeklyMins, projectRollups } = React.useMemo(() => {
     let total = 0;
-    const rollups: Record<string, number> = {
-      "Website Design": 0,
-      "Mobile App": 0,
-      "Internal Project": 0,
-    };
+    const rollups: Record<string, number> = {};
 
     weekDays.forEach((d) => {
       const iso = formatDateISO(d);
@@ -277,11 +284,20 @@ export function TimesheetPage() {
                     onChange={(e) => setProjectFilter(e.target.value)}
                     className="w-full text-xs rounded-md border border-input bg-canvas-surface py-1.5 px-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <option value="ALL">All Projects</option>
-                    {Object.keys(PROJECT_TAXONOMY).map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
+                    <option value="ALL">All projects &amp; activities</option>
+                    {(["project", "activity"] as const).map((kind) => (
+                      <optgroup
+                        key={kind}
+                        label={kind === "project" ? "Projects" : "Activities"}
+                      >
+                        {Object.keys(WORK_TAXONOMY)
+                          .filter((p) => WORK_TAXONOMY[p].kind === kind)
+                          .map((p) => (
+                            <option key={p} value={p}>
+                              {p}
+                            </option>
+                          ))}
+                      </optgroup>
                     ))}
                   </select>
                 </div>
@@ -356,22 +372,6 @@ export function TimesheetPage() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Primary Action Button */}
-          <Button
-            variant="accent"
-            size="sm"
-            onClick={() => {
-              setSelectedDateForAdd("2026-09-15");
-              setPresetProjectForAdd("Website Design");
-              setPresetTaskForAdd("");
-              setAddModalOpen(true);
-            }}
-            className="gap-1.5 font-semibold text-xs shadow-xs"
-          >
-            <Icon icon={Plus} size={16} />
-            <span>Log Time</span>
-          </Button>
         </div>
       </div>
 
@@ -406,7 +406,7 @@ export function TimesheetPage() {
               size={16}
               className="text-teal-600 dark:text-teal-400"
             />
-            <span className="text-xs font-semibold text-foreground font-mono">
+            <span className="text-xs font-semibold text-foreground tabular-nums">
               {weekRangeLabel}
             </span>
           </div>
@@ -437,7 +437,7 @@ export function TimesheetPage() {
                 <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
                   Total Logged
                 </span>
-                <span className="text-xl font-bold text-foreground font-mono">
+                <span className="text-xl font-bold text-foreground tabular-nums">
                   {formatMins(totalWeeklyMins)}
                 </span>
               </div>
@@ -452,7 +452,7 @@ export function TimesheetPage() {
                 <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
                   Weekly Target
                 </span>
-                <span className="text-xl font-bold text-foreground font-mono">
+                <span className="text-xl font-bold text-foreground tabular-nums">
                   40h 00m
                 </span>
               </div>
@@ -477,7 +477,7 @@ export function TimesheetPage() {
                 <div className="flex items-center gap-2 mt-0.5">
                   <span
                     className={cn(
-                      "text-base font-bold font-mono",
+                      "text-base font-bold tabular-nums",
                       diffMins >= 0
                         ? "text-teal-600 dark:text-teal-400"
                         : "text-amber-600 dark:text-amber-400",
@@ -507,37 +507,40 @@ export function TimesheetPage() {
                 Project Allocation
               </span>
               <div className="flex flex-col gap-1 text-xs">
-                {Object.keys(PROJECT_TAXONOMY).map((proj) => (
-                  <div
-                    key={proj}
-                    className="flex items-center justify-between text-2xs"
-                  >
-                    <span className="flex items-center gap-1.5 text-muted-foreground truncate">
-                      <span
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full shrink-0",
-                          PROJECT_TAXONOMY[proj]?.dotClass,
-                        )}
-                      />
-                      <span className="truncate max-w-[110px]">{proj}</span>
-                    </span>
-                    <span className="font-mono font-semibold text-foreground">
-                      {formatMins(projectRollups[proj] || 0)}
-                    </span>
-                  </div>
-                ))}
+                {Object.keys(WORK_TAXONOMY)
+                  .filter((proj) => (projectRollups[proj] || 0) > 0)
+                  .map((proj) => (
+                    <div
+                      key={proj}
+                      className="flex items-center justify-between text-2xs"
+                    >
+                      <span className="flex items-center gap-1.5 text-muted-foreground truncate">
+                        <span
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full shrink-0",
+                            WORK_TAXONOMY[proj]?.dotClass,
+                          )}
+                        />
+                        <span className="truncate max-w-[110px]">{proj}</span>
+                      </span>
+                      <span className="tabular-nums font-semibold text-foreground">
+                        {formatMins(projectRollups[proj] || 0)}
+                      </span>
+                    </div>
+                  ))}
               </div>
             </Card>
           </div>
 
           {/* 7-Day Weekly Columns Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-7 rounded-lg border border-border-subtle bg-canvas-surface shadow-xs overflow-hidden">
             {weekDays.map((d) => {
               const iso = formatDateISO(d);
               const dayShort = d.toLocaleString("default", {
                 weekday: "short",
               });
               const dayNum = d.getDate();
+              const dayMonth = d.toLocaleString("default", { month: "short" });
 
               let dayEntries = entries.filter((e) => e.dateStr === iso);
               if (projectFilter !== "ALL")
@@ -555,21 +558,26 @@ export function TimesheetPage() {
               );
 
               return (
-                <Card
+                <div
                   key={iso}
-                  className="p-3 flex flex-col min-h-[480px] border-border-subtle bg-canvas-surface shadow-xs"
+                  className="p-3 flex flex-col min-h-[480px] border-b border-border-subtle last:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
                 >
                   {/* Column Header */}
                   <div className="pb-2.5 border-b border-border-subtle mb-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-foreground">
-                        {dayShort} {dayNum}
-                      </span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="leading-tight">
+                        <span className="text-xs font-bold text-foreground block">
+                          {dayShort}
+                        </span>
+                        <span className="text-2xs text-muted-foreground tabular-nums">
+                          {dayNum} {dayMonth}
+                        </span>
+                      </div>
                       <span
                         className={cn(
-                          "text-2xs font-mono font-bold",
-                          dayMinutes >= 480
-                            ? "text-teal-600 dark:text-teal-400"
+                          "text-xs tabular-nums font-bold",
+                          dayMinutes > 0
+                            ? "text-foreground"
                             : "text-muted-foreground",
                         )}
                       >
@@ -578,21 +586,17 @@ export function TimesheetPage() {
                     </div>
 
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => {
                         setSelectedDateForAdd(iso);
-                        setPresetProjectForAdd("Website Design");
+                        setPresetProjectForAdd("");
                         setPresetTaskForAdd("");
                         setAddModalOpen(true);
                       }}
-                      className="w-full mt-2 py-1 h-7 text-2xs font-medium border-border-subtle gap-1"
+                      className="w-full mt-2 h-8 text-xs font-semibold gap-1.5 bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/30 hover:bg-teal-500/20 hover:text-teal-800 dark:hover:text-teal-200"
                     >
-                      <Icon
-                        icon={Plus}
-                        size={14}
-                        className="text-teal-600 dark:text-teal-400"
-                      />
+                      <Icon icon={Plus} size={16} />
                       <span>Add Time</span>
                     </Button>
                   </div>
@@ -600,16 +604,9 @@ export function TimesheetPage() {
                   {/* Day Entries List */}
                   <div className="space-y-2 flex-1">
                     {dayEntries.length === 0 ? (
-                      <div className="flex-1 flex flex-col items-center justify-center p-4 border border-dashed border-border-subtle rounded-lg text-center my-3 bg-canvas-bg/30">
-                        <Icon
-                          icon={Clock}
-                          size={16}
-                          className="text-muted-foreground/40 mb-1"
-                        />
-                        <span className="text-2xs text-muted-foreground">
-                          No time entries
-                        </span>
-                      </div>
+                      <p className="text-2xs text-muted-foreground/60 text-center py-6">
+                        No time entries
+                      </p>
                     ) : (
                       dayEntries.map((item) => (
                         <div
@@ -630,10 +627,15 @@ export function TimesheetPage() {
                             <h5 className="text-xs font-semibold text-foreground mt-1 leading-snug group-hover:text-teal-600 dark:group-hover:text-teal-400 transition">
                               {item.task}
                             </h5>
+                            {item.activity && (
+                              <p className="mt-0.5 truncate text-2xs text-muted-foreground">
+                                {item.activity}
+                              </p>
+                            )}
                           </div>
 
                           <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
-                            <span className="text-2xs font-mono font-bold text-teal-600 dark:text-teal-400">
+                            <span className="text-2xs tabular-nums font-bold text-teal-600 dark:text-teal-400">
                               {item.hours}h {String(item.mins).padStart(2, "0")}
                               m
                             </span>
@@ -647,7 +649,7 @@ export function TimesheetPage() {
                       ))
                     )}
                   </div>
-                </Card>
+                </div>
               );
             })}
           </div>
@@ -664,7 +666,7 @@ export function TimesheetPage() {
               <span className="text-muted-foreground font-medium">
                 Total Hours:
               </span>
-              <span className="font-bold text-foreground text-sm font-mono">
+              <span className="font-bold text-foreground text-sm tabular-nums">
                 {formatMins(totalWeeklyMins)}
               </span>
             </div>
@@ -704,11 +706,11 @@ export function TimesheetPage() {
                 </thead>
 
                 <tbody className="divide-y divide-border-subtle/70">
-                  {Object.keys(PROJECT_TAXONOMY).map((projKey) => {
+                  {Object.keys(WORK_TAXONOMY).map((projKey) => {
                     if (projectFilter !== "ALL" && projectFilter !== projKey)
                       return null;
                     const isCollapsed = !!collapsedProjects[projKey];
-                    const pMeta = PROJECT_TAXONOMY[projKey];
+                    const pMeta = WORK_TAXONOMY[projKey];
 
                     // Project totals across Mon-Fri
                     const projDailyMins = [0, 0, 0, 0, 0];
@@ -737,6 +739,9 @@ export function TimesheetPage() {
                       projDailyMins[dayIdx] = finalM;
                       projTotalM += finalM;
                     });
+
+                    // Only show projects/activities that have time this week.
+                    if (projTotalM === 0) return null;
 
                     return (
                       <React.Fragment key={projKey}>
@@ -784,7 +789,7 @@ export function TimesheetPage() {
                             <td
                               key={idx}
                               className={cn(
-                                "py-3 px-3 text-center font-mono font-semibold",
+                                "py-3 px-3 text-center tabular-nums font-semibold",
                                 m > 0
                                   ? "text-foreground bg-canvas-bg/40"
                                   : "text-muted-foreground/50",
@@ -794,7 +799,7 @@ export function TimesheetPage() {
                             </td>
                           ))}
 
-                          <td className="py-3 px-5 text-right font-mono font-extrabold text-foreground text-xs">
+                          <td className="py-3 px-5 text-right tabular-nums font-extrabold text-foreground text-xs">
                             {formatMins(projTotalM)}
                           </td>
                         </tr>
@@ -809,7 +814,7 @@ export function TimesheetPage() {
                                 className="bg-canvas-surface hover:bg-canvas-bg/50 transition-colors text-foreground"
                               >
                                 <td className="py-2.5 px-5 pl-12 flex items-center gap-2 text-xs">
-                                  <span className="text-muted-foreground/50 font-mono">
+                                  <span className="text-muted-foreground/50 tabular-nums">
                                     ↳
                                   </span>
                                   <span className="font-medium text-foreground">
@@ -852,7 +857,7 @@ export function TimesheetPage() {
                                           setAddModalOpen(true);
                                         }
                                       }}
-                                      className="py-2.5 px-3 text-center font-mono cursor-pointer hover:bg-teal-500/10 text-muted-foreground transition group"
+                                      className="py-2.5 px-3 text-center tabular-nums cursor-pointer hover:bg-teal-500/10 text-muted-foreground transition group"
                                       title="Click to edit or add time"
                                     >
                                       {cellM > 0 ? (
@@ -868,7 +873,7 @@ export function TimesheetPage() {
                                   );
                                 })}
 
-                                <td className="py-2.5 px-5 text-right font-mono font-bold text-foreground text-xs">
+                                <td className="py-2.5 px-5 text-right tabular-nums font-bold text-foreground text-xs">
                                   {formatMins(taskTotalM)}
                                 </td>
                               </tr>
@@ -886,7 +891,7 @@ export function TimesheetPage() {
                     </td>
                     {[0, 1, 2, 3, 4].map((dayIdx) => {
                       let colMins = 0;
-                      Object.keys(PROJECT_TAXONOMY).forEach((p) => {
+                      Object.keys(WORK_TAXONOMY).forEach((p) => {
                         const iso = formatDateISO(weekDays[dayIdx]);
                         const userM = entries
                           .filter((e) => e.project === p && e.dateStr === iso)
@@ -905,13 +910,13 @@ export function TimesheetPage() {
                       return (
                         <td
                           key={dayIdx}
-                          className="py-3.5 px-3 text-center font-mono text-foreground"
+                          className="py-3.5 px-3 text-center tabular-nums text-foreground"
                         >
                           {formatMins(colMins)}
                         </td>
                       );
                     })}
-                    <td className="py-3.5 px-5 text-right font-mono text-sm text-teal-600 dark:text-teal-400 font-extrabold">
+                    <td className="py-3.5 px-5 text-right tabular-nums text-sm text-teal-600 dark:text-teal-400 font-extrabold">
                       {formatMins(totalWeeklyMins)}
                     </td>
                   </tr>

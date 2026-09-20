@@ -1,4 +1,7 @@
-import { Plus, Users, CheckCircle2 } from "lucide-react";
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
+import { useModalHotkey } from "@/hooks/use-hotkey";
+import { Plus, Users, CheckCircle2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -11,6 +14,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Project, ProjectStatus } from "@/types/project";
+import type { AdminProjectRow } from "@/types/dashboard";
+import { MOCK_PROJECTS } from "@/features/projects/api/mock-data";
+import { ProjectSettingsDialog } from "@/features/projects/components/project-settings-dialog";
+import { CreateProjectDialog } from "@/features/projects/components/create-project-dialog";
 import {
   ADMIN_METRICS,
   ADMIN_PROJECTS_TABLE,
@@ -26,8 +34,68 @@ import {
   CardListSkeleton,
 } from "@/components/composed/skeletons";
 
+const ROW_STATUS: Record<ProjectStatus, AdminProjectRow["status"]> = {
+  ongoing: "Active",
+  pending: "On-hold",
+  completed: "Active",
+};
+
+/** Overview rows are summaries; settings needs the full project record. */
+function projectForRow(row: AdminProjectRow): Project {
+  const known = MOCK_PROJECTS.find((p) => p.name === row.name);
+  if (known) return known;
+  return {
+    id: row.id,
+    name: row.name,
+    client: row.client,
+    description: row.subname,
+    status: row.status === "On-hold" ? "pending" : "ongoing",
+    lead: row.manager,
+    activeSprint: "Sprint 1: Active",
+    dateRange: "",
+    dueDate: "Q4 2026",
+    completionPercentage: 0,
+    estimatedHours: Math.max(Math.round(row.hoursLogged * 1.5), 100),
+    loggedHours: row.hoursLogged,
+    tasksCount: 0,
+    coreFeaturesCount: 0,
+    pendingInvites: [],
+    members: [],
+  };
+}
+
 export function AdminDashboardPage() {
+  const navigate = useNavigate();
+  const [editingRow, setEditingRow] = React.useState<AdminProjectRow | null>(
+    null,
+  );
   const isLoading = useSimulatedLoading();
+  const [createOpen, setCreateOpen] = React.useState(false);
+  const [projectRows, setProjectRows] = React.useState(ADMIN_PROJECTS_TABLE);
+
+  // Ctrl/⌘ + K toggles "new project".
+  useModalHotkey({
+    open: createOpen,
+    onOpen: () => setCreateOpen(true),
+    onClose: () => setCreateOpen(false),
+  });
+
+  // Same shared dialog the Projects page uses; surface the new project at the
+  // top of the overview table.
+  const handleCreateProject = (project: Project) => {
+    setProjectRows((prev) => [
+      {
+        id: project.id,
+        name: project.name,
+        subname: project.client,
+        client: project.client,
+        manager: project.lead,
+        status: "Active",
+        hoursLogged: 0,
+      },
+      ...prev,
+    ]);
+  };
 
   if (isLoading) {
     return (
@@ -64,6 +132,7 @@ export function AdminDashboardPage() {
         <Button
           variant="accent"
           size="sm"
+          onClick={() => setCreateOpen(true)}
           className="gap-1.5 font-semibold self-start sm:self-auto"
         >
           <Icon icon={Plus} size={15} />
@@ -92,7 +161,7 @@ export function AdminDashboardPage() {
               </p>
             </div>
             <span className="rounded-full bg-muted px-2 py-0.5 text-3xs font-bold text-muted-foreground">
-              5 showing
+              {projectRows.length} showing
             </span>
           </div>
 
@@ -104,11 +173,11 @@ export function AdminDashboardPage() {
                 <TableHead>Manager</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Hours logged</TableHead>
-                <TableHead className="w-[70px] text-right">Actions</TableHead>
+                <TableHead className="w-[120px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ADMIN_PROJECTS_TABLE.map((row) => (
+              {projectRows.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell>
                     <div className="space-y-0.5">
@@ -144,12 +213,30 @@ export function AdminDashboardPage() {
                     {row.hoursLogged.toFixed(1)}h
                   </TableCell>
                   <TableCell className="text-right">
-                    <button
-                      type="button"
-                      className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      View
-                    </button>
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setEditingRow(row)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:text-teal-600 dark:hover:text-teal-400 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        aria-label={`Edit ${row.name}`}
+                      >
+                        <Icon icon={Pencil} size={13} />
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(
+                            MOCK_PROJECTS.some((p) => p.name === row.name)
+                              ? `/projects/${MOCK_PROJECTS.find((p) => p.name === row.name)!.id}`
+                              : "/projects",
+                          )
+                        }
+                        className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        View
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -157,7 +244,7 @@ export function AdminDashboardPage() {
           </Table>
 
           <div className="flex items-center justify-between text-2xs text-muted-foreground px-1">
-            <span>Showing 5 of 14 projects</span>
+            <span>Showing {projectRows.length} of 14 projects</span>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -233,6 +320,36 @@ export function AdminDashboardPage() {
 
       {/* Bottom scheduled activities */}
       <UpcomingActivities />
+
+      {editingRow && (
+        <ProjectSettingsDialog
+          key={editingRow.id}
+          project={projectForRow(editingRow)}
+          open
+          onOpenChange={(open) => !open && setEditingRow(null)}
+          onUpdateProject={(updated) =>
+            setProjectRows((prev) =>
+              prev.map((r) =>
+                r.id === editingRow.id
+                  ? {
+                      ...r,
+                      name: updated.name,
+                      client: updated.client,
+                      subname: updated.description || r.subname,
+                      status: ROW_STATUS[updated.status],
+                    }
+                  : r,
+              ),
+            )
+          }
+        />
+      )}
+
+      <CreateProjectDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreateProject={handleCreateProject}
+      />
     </div>
   );
 }

@@ -6,12 +6,10 @@ import {
   ChevronRight,
   MoreHorizontal,
   Trash2,
-  X,
 } from "lucide-react";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import {
   DropdownMenu,
@@ -20,29 +18,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+} from "@/components/ui/modal";
 import type { Project } from "@/types/project";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface WorkspaceHeaderProps {
   project: Project;
-  selectedMemberId: string | null;
-  onSelectMember: (id: string | null) => void;
   onAddFeature?: () => void;
   onAddTask?: () => void;
 }
 
 export function WorkspaceHeader({
   project,
-  selectedMemberId,
-  onSelectMember,
   onAddFeature,
   onAddTask,
 }: WorkspaceHeaderProps) {
@@ -140,53 +134,8 @@ export function WorkspaceHeader({
           </div>
         </div>
 
-        {/* Right: Clean Avatar Filter & Action Button Stack */}
+        {/* Right: action buttons */}
         <div className="flex w-full min-w-0 flex-col items-start gap-2.5 sm:w-auto sm:items-end sm:shrink-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
-              Filter by:
-            </span>
-            <div className="flex items-center -space-x-1.5 overflow-visible py-1 px-1">
-              {project.members.map((member) => {
-                const isSelected = selectedMemberId === member.id;
-                return (
-                  <button
-                    key={member.id}
-                    type="button"
-                    onClick={() =>
-                      onSelectMember(isSelected ? null : member.id)
-                    }
-                    className={cn(
-                      "relative rounded-full transition-all focus:outline-none shrink-0",
-                      isSelected
-                        ? "z-20 scale-110 ring-2 ring-gold-500 ring-offset-2 ring-offset-canvas-bg shadow-sm"
-                        : "z-0 hover:z-10 hover:scale-105 opacity-85 hover:opacity-100",
-                    )}
-                    title={`Filter by ${member.name}`}
-                  >
-                    <Avatar className="h-7 w-7 border-2 border-canvas-bg">
-                      <AvatarImage src={member.avatarUrl} alt={member.name} />
-                      <AvatarFallback className="text-3xs font-bold bg-navy-500 text-white dark:bg-foreground dark:text-background">
-                        {member.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                  </button>
-                );
-              })}
-            </div>
-
-            {selectedMemberId && (
-              <button
-                type="button"
-                onClick={() => onSelectMember(null)}
-                className="flex items-center gap-1 rounded-full border border-border-subtle bg-canvas-surface px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-canvas-overlay"
-              >
-                <span>Clear filter</span>
-                <Icon icon={X} size={11} />
-              </button>
-            )}
-          </div>
-
           {/* Manager Action Buttons */}
           {(canManageWork || canDeleteProject) && (
             <div className="flex flex-wrap items-center gap-2">
@@ -242,21 +191,21 @@ export function WorkspaceHeader({
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle>Delete Project</DialogTitle>
-            <DialogDescription>
+      {/* Delete Confirmation Modal */}
+      <Modal open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <ModalContent className="sm:max-w-[420px]">
+          <ModalHeader>
+            <ModalTitle>Delete Project</ModalTitle>
+            <ModalDescription>
               Are you sure you want to delete{" "}
               <strong className="text-foreground font-semibold break-all">
                 {project.name}
               </strong>
               ? This action cannot be undone and will remove all associated
               sprints, tasks, and logged hours.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            </ModalDescription>
+          </ModalHeader>
+          <ModalFooter className="gap-2 sm:gap-0 pt-2">
             <Button
               variant="outline"
               size="sm"
@@ -273,9 +222,9 @@ export function WorkspaceHeader({
               <Icon icon={Trash2} size={15} />
               <span>Delete Project</span>
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

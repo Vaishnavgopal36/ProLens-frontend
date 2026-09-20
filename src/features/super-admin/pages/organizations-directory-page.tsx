@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -22,6 +23,13 @@ export function OrganizationsDirectoryPage() {
   const [organizations, setOrganizations] =
     React.useState<Organization[]>(MOCK_ORGANIZATIONS);
   const [provisionOpen, setProvisionOpen] = React.useState(false);
+
+  // Ctrl/⌘ + K toggles "new organization".
+  useModalHotkey({
+    open: provisionOpen,
+    onOpen: () => setProvisionOpen(true),
+    onClose: () => setProvisionOpen(false),
+  });
   const [inspectedOrgId, setInspectedOrgId] = React.useState<string | null>(
     null,
   );

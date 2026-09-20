@@ -239,13 +239,7 @@ export function OrgInsightsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium mb-1">
-            <span>Insights</span>
-            <Icon icon={ChevronRight} size={12} className="opacity-50" />
-            <span className="text-foreground font-semibold">
-              Portfolio Performance
-            </span>
-          </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium mb-1"></div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Project performance
           </h1>

@@ -1,24 +1,23 @@
 import { useMemo, useState } from "react";
-import { ChevronRight, Clock3, Plus, X } from "lucide-react";
+import { ChevronRight, Clock3, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FilterBar } from "@/components/composed/filters/filter-bar";
+import { useFilters } from "@/components/composed/filters/use-filters";
+import type { FilterFieldDef } from "@/components/composed/filters/types";
+import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types/project";
 import {
   MOCK_TIME_FEATURES,
   type FeatureTimeStatus,
   type TimeFeatureGroup,
+  type TimeTaskEntry,
 } from "./mock-data";
 import { LogTimeSheet } from "./log-time-sheet";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 
 const STATUS_META: Record<
   FeatureTimeStatus,
@@ -38,8 +37,6 @@ const STATUS_META: Record<
   },
 };
 
-const ALL_VALUE = "all";
-
 function sum(nums: number[]) {
   return nums.reduce((total, n) => total + n, 0);
 }
@@ -49,50 +46,73 @@ function percentOf(logged: number, estimated: number) {
   return Math.min(100, Math.round((logged / estimated) * 100));
 }
 
+type TimeRow = TimeTaskEntry & {
+  featureId: string;
+  featureStatus: FeatureTimeStatus;
+};
+
 interface TimeTabProps {
   project: Project;
-  selectedMemberId?: string | null;
 }
 
-export function TimeTab({
-  project,
-  selectedMemberId: _selectedMemberId,
-}: TimeTabProps) {
+export function TimeTab({ project }: TimeTabProps) {
   const [timeFeatures, setTimeFeatures] = useState(MOCK_TIME_FEATURES);
-  const [featureFilter, setFeatureFilter] = useState(ALL_VALUE);
-  const [assigneeFilter, setAssigneeFilter] = useState(ALL_VALUE);
-  const [statusFilter, setStatusFilter] = useState(ALL_VALUE);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [isLogTimeOpen, setIsLogTimeOpen] = useState(false);
 
-  const assigneeOptions = useMemo(() => {
-    const names = new Set<string>();
-    timeFeatures.forEach((feature) =>
-      feature.tasks.forEach((task) => names.add(task.assigneeName)),
-    );
-    return Array.from(names);
-  }, [timeFeatures]);
+  // Ctrl/⌘ + K toggles the log-time sheet (defaults to today's date).
+  useModalHotkey({
+    open: isLogTimeOpen,
+    onOpen: () => setIsLogTimeOpen(true),
+    onClose: () => setIsLogTimeOpen(false),
+  });
+
+  // Flatten to one row per task so the shared filters can work on it, then
+  // regroup by feature for display.
+  const rows = useMemo(
+    () =>
+      timeFeatures.flatMap((feature) =>
+        feature.tasks.map((task) => ({
+          ...task,
+          featureId: feature.id,
+          featureStatus: feature.status,
+        })),
+      ),
+    [timeFeatures],
+  );
+  const viewer = useProjectViewer<TimeRow>(project, (r) => r.assigneeName);
+  const scopedRows = useMemo(() => viewer.scope(rows), [rows, viewer]);
+  const fields: FilterFieldDef<TimeRow>[] = [
+    ...viewer.peopleField,
+    {
+      key: "feature",
+      label: "Feature",
+      options: timeFeatures.map((f) => ({ value: f.id, label: f.name })),
+      accessor: (r) => r.featureId,
+    },
+    {
+      key: "status",
+      label: "Status",
+      options: [
+        { value: "ACTIVE", label: "Active" },
+        { value: "COMPLETED", label: "Completed" },
+      ],
+      accessor: (r) => r.featureStatus,
+    },
+  ];
+  const filters = useFilters(scopedRows, fields, (r) =>
+    [r.title, r.code].join(" "),
+  );
 
   const filteredFeatures: TimeFeatureGroup[] = useMemo(() => {
+    const keep = new Set(filters.filtered.map((r) => r.id));
     return timeFeatures
-      .filter(
-        (feature) =>
-          featureFilter === ALL_VALUE || feature.id === featureFilter,
-      )
-      .filter(
-        (feature) =>
-          statusFilter === ALL_VALUE || feature.status === statusFilter,
-      )
       .map((feature) => ({
         ...feature,
-        tasks: feature.tasks.filter(
-          (task) =>
-            assigneeFilter === ALL_VALUE ||
-            task.assigneeName === assigneeFilter,
-        ),
+        tasks: feature.tasks.filter((task) => keep.has(task.id)),
       }))
       .filter((feature) => feature.tasks.length > 0);
-  }, [timeFeatures, featureFilter, assigneeFilter, statusFilter]);
+  }, [timeFeatures, filters.filtered]);
 
   const totals = useMemo(() => {
     const allTasks = filteredFeatures.flatMap((f) => f.tasks);
@@ -111,17 +131,6 @@ export function TimeTab({
     });
   };
 
-  const hasActiveFilters =
-    featureFilter !== ALL_VALUE ||
-    assigneeFilter !== ALL_VALUE ||
-    statusFilter !== ALL_VALUE;
-
-  const clearFilters = () => {
-    setFeatureFilter(ALL_VALUE);
-    setAssigneeFilter(ALL_VALUE);
-    setStatusFilter(ALL_VALUE);
-  };
-
   const handleLogTime = (taskId: string, hours: number) => {
     setTimeFeatures((prev) =>
       prev.map((feature) => ({
@@ -137,83 +146,28 @@ export function TimeTab({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-canvas-surface p-3 rounded-xl border border-border-subtle shadow-xs">
-        <div className="flex flex-wrap items-center gap-2">
-          <Select value={featureFilter} onValueChange={setFeatureFilter}>
-            <SelectTrigger className="h-8 w-auto px-2 text-xs gap-1">
-              <SelectValue placeholder="All Features" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL_VALUE}>All Features</SelectItem>
-              {timeFeatures.map((feature) => (
-                <SelectItem key={feature.id} value={feature.id}>
-                  {feature.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-            <SelectTrigger className="h-8 w-auto px-2 text-xs gap-1">
-              <SelectValue placeholder="All People" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL_VALUE}>All People</SelectItem>
-              {assigneeOptions.map((name) => (
-                <SelectItem key={name} value={name}>
-                  {name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-8 w-auto px-2 text-xs gap-1">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL_VALUE}>All Statuses</SelectItem>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="flex items-center gap-1 rounded-full border border-border-subtle bg-canvas-surface px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-canvas-overlay"
-            >
-              <span>Clear filters</span>
-              <Icon icon={X} size={11} />
-            </button>
-          )}
+      <FilterBar filters={filters} searchPlaceholder="Search tasks...">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Icon icon={Clock3} size={13} />
+          <span className="font-semibold text-foreground">
+            {totals.logged.toFixed(1)}h
+          </span>
+          <span>
+            logged of {totals.estimated.toFixed(1)}h estimated in {project.name}
+          </span>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Icon icon={Clock3} size={13} />
-            <span className="font-semibold text-foreground">
-              {totals.logged.toFixed(1)}h
-            </span>
-            <span>
-              logged of {totals.estimated.toFixed(1)}h estimated in{" "}
-              {project.name}
-            </span>
-          </div>
-
-          <Button
-            variant="accent"
-            size="sm"
-            onClick={() => setIsLogTimeOpen(true)}
-            className="h-8 gap-1.5 text-xs font-semibold"
-          >
-            <Icon icon={Plus} size={14} />
-            <span>Log Time</span>
-          </Button>
-        </div>
-      </div>
+        <Button
+          variant="accent"
+          size="sm"
+          onClick={() => setIsLogTimeOpen(true)}
+          title="Log time (Ctrl+K)"
+          className="h-8 gap-1.5 text-xs font-semibold"
+        >
+          <Icon icon={Plus} size={14} />
+          <span>Log Time</span>
+        </Button>
+      </FilterBar>
 
       <LogTimeSheet
         open={isLogTimeOpen}

@@ -52,7 +52,7 @@ export const BOARD_COLUMNS: BoardColumnMeta[] = [
 
 export const BOARD_FEATURES = ["Design System", "Authentication", "Reporting"];
 
-export const BOARD_ASSIGNEES = ["Sarah Jenkins", "John Doe", "Mike Ross"];
+export const BOARD_ASSIGNEES = ["Sarah Jenkins", "Marcus Chen", "Alex Morgan"];
 
 export const MOCK_BOARD_TASKS: BoardTask[] = [
   {
@@ -74,8 +74,8 @@ export const MOCK_BOARD_TASKS: BoardTask[] = [
     description: "Pass over onboarding flow copy for tone and clarity.",
     feature: "Design System",
     priority: "Medium",
-    assigneeName: "Mike Ross",
-    assigneeInitials: "MR",
+    assigneeName: "Alex Morgan",
+    assigneeInitials: "AM",
     column: "backlog",
   },
   {
@@ -100,8 +100,8 @@ export const MOCK_BOARD_TASKS: BoardTask[] = [
     description: "Responsive grid primitives for the app shell.",
     feature: "Design System",
     priority: "High",
-    assigneeName: "John Doe",
-    assigneeInitials: "JD",
+    assigneeName: "Marcus Chen",
+    assigneeInitials: "MC",
     dueDate: "Sep 20",
     column: "in_progress",
   },
@@ -112,8 +112,8 @@ export const MOCK_BOARD_TASKS: BoardTask[] = [
     description: "React hook wrapping the token refresh lifecycle.",
     feature: "Authentication",
     priority: "Medium",
-    assigneeName: "Mike Ross",
-    assigneeInitials: "MR",
+    assigneeName: "Alex Morgan",
+    assigneeInitials: "AM",
     dueDate: "Sep 22",
     column: "in_progress",
   },
@@ -123,8 +123,8 @@ export const MOCK_BOARD_TASKS: BoardTask[] = [
     title: "Color Token System",
     feature: "Design System",
     priority: "Medium",
-    assigneeName: "John Doe",
-    assigneeInitials: "JD",
+    assigneeName: "Marcus Chen",
+    assigneeInitials: "MC",
     completedDate: "Sep 4",
     column: "delivered",
   },
@@ -134,8 +134,8 @@ export const MOCK_BOARD_TASKS: BoardTask[] = [
     title: "SVG Asset Pipeline",
     feature: "Design System",
     priority: "Low",
-    assigneeName: "Mike Ross",
-    assigneeInitials: "MR",
+    assigneeName: "Alex Morgan",
+    assigneeInitials: "AM",
     completedDate: "Sep 8",
     column: "delivered",
   },

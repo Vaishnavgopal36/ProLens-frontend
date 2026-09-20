@@ -10,12 +10,13 @@ import {
   Pencil,
 } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+} from "@/components/ui/modal";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,7 +52,7 @@ const FEATURE_OPTIONS = [
   "QA & Hardening",
 ];
 
-const ASSIGNEE_OPTIONS = ["Sarah Jenkins", "John Doe", "Mike Ross"];
+const ASSIGNEE_OPTIONS = ["Sarah Jenkins", "Marcus Chen", "Alex Morgan"];
 
 export type TaskFormStatus = "Backlog" | "In Progress" | "Delivered";
 export type TaskFormPriority = "High" | "Medium" | "Low";
@@ -455,35 +456,35 @@ export function AddTaskDialog({
 
   return (
     <>
-      <Sheet
+      <Modal
         open={open}
         onOpenChange={(next) => {
           if (!next) resetForm();
           onOpenChange(next);
         }}
       >
-        <SheetContent className="sm:max-w-xl w-full overflow-y-auto p-5">
-          <SheetHeader className="space-y-1 pr-8">
+        <ModalContent className="sm:max-w-xl w-full overflow-y-auto p-5">
+          <ModalHeader className="space-y-1 pr-8">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
                   <Icon icon={ListTodo} size={17} />
                 </div>
                 <div className="min-w-0">
-                  <SheetTitle className="text-base font-semibold">
+                  <ModalTitle className="text-base font-semibold">
                     {isViewing
                       ? "Task Overview"
                       : isEditMode
                         ? "Edit Task"
                         : "Add Task to Workspace"}
-                  </SheetTitle>
-                  <SheetDescription className="text-xs truncate">
+                  </ModalTitle>
+                  <ModalDescription className="text-xs truncate">
                     {isViewing
                       ? `Viewing details for this task in ${project.name}.`
                       : isEditMode
                         ? `Update details for this task in ${project.name}.`
                         : `Create and assign a new task within ${project.name}.`}
-                  </SheetDescription>
+                  </ModalDescription>
                 </div>
               </div>
 
@@ -500,7 +501,7 @@ export function AddTaskDialog({
                 </Button>
               )}
             </div>
-          </SheetHeader>
+          </ModalHeader>
 
           {isViewing ? (
             <div className="space-y-4 pt-4">
@@ -996,6 +997,7 @@ export function AddTaskDialog({
                     Delete Task
                   </Button>
                 )}
+                <HotkeyHint />
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
@@ -1019,8 +1021,8 @@ export function AddTaskDialog({
               </div>
             </form>
           )}
-        </SheetContent>
-      </Sheet>
+        </ModalContent>
+      </Modal>
 
       <ConfirmDialog
         open={deleteConfirmOpen}

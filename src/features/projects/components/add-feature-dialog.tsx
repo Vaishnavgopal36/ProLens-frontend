@@ -8,13 +8,14 @@ import {
   User,
 } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+} from "@/components/ui/modal";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,7 +43,7 @@ import {
 
 type FeatureStatus = "ACTIVE" | "COMPLETED";
 
-const OWNER_OPTIONS = ["Sarah Jenkins", "John Doe", "Mike Ross"];
+const OWNER_OPTIONS = ["Sarah Jenkins", "Marcus Chen", "Alex Morgan"];
 
 interface AddFeatureDialogProps {
   project: Project;
@@ -105,29 +106,29 @@ export function AddFeatureDialog({
   };
 
   return (
-    <Sheet
+    <Modal
       open={open}
       onOpenChange={(next) => {
         if (!next) resetForm();
         onOpenChange(next);
       }}
     >
-      <SheetContent className="sm:max-w-lg p-5 overflow-y-auto">
-        <SheetHeader className="space-y-1">
+      <ModalContent className="sm:max-w-lg p-5 overflow-y-auto">
+        <ModalHeader className="space-y-1">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
               <Icon icon={Layers} size={17} />
             </div>
             <div>
-              <SheetTitle className="text-base font-semibold">
+              <ModalTitle className="text-base font-semibold">
                 Create Feature Stream
-              </SheetTitle>
-              <SheetDescription className="text-xs">
+              </ModalTitle>
+              <ModalDescription className="text-xs">
                 Define a new milestone stream within {project.name}.
-              </SheetDescription>
+              </ModalDescription>
             </div>
           </div>
-        </SheetHeader>
+        </ModalHeader>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-3.5 pt-4">
           <div className="space-y-1">
@@ -338,7 +339,8 @@ export function AddFeatureDialog({
             }
           />
 
-          <SheetFooter className="pt-2">
+          <ModalFooter className="pt-2">
+            <HotkeyHint className="mr-auto" />
             <Button
               type="button"
               variant="outline"
@@ -355,9 +357,9 @@ export function AddFeatureDialog({
             >
               Save Feature
             </Button>
-          </SheetFooter>
+          </ModalFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </ModalContent>
+    </Modal>
   );
 }

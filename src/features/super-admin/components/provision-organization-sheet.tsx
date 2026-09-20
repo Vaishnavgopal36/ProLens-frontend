@@ -1,18 +1,19 @@
 import * as React from "react";
 import { Building2, Mail, User } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+} from "@/components/ui/modal";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/field-error";
 import { Label } from "@/components/ui/label";
 import { Icon } from "@/components/ui/icon";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ProvisionOrganizationInput } from "../api/types";
 
@@ -40,7 +41,14 @@ export function ProvisionOrganizationSheet({
   const [slugTouched, setSlugTouched] = React.useState(false);
   const [adminName, setAdminName] = React.useState("");
   const [adminEmail, setAdminEmail] = React.useState("");
-  const [error, setError] = React.useState<string | null>(null);
+  const [errors, setErrors] = React.useState<{
+    name?: string;
+    slug?: string;
+    adminName?: string;
+    adminEmail?: string;
+  }>({});
+  const clearError = (key: keyof typeof errors) =>
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
 
   const resetForm = () => {
     setName("");
@@ -48,7 +56,7 @@ export function ProvisionOrganizationSheet({
     setSlugTouched(false);
     setAdminName("");
     setAdminEmail("");
-    setError(null);
+    setErrors({});
   };
 
   const handleNameChange = (value: string) => {
@@ -67,15 +75,18 @@ export function ProvisionOrganizationSheet({
     const trimmedAdminEmail = adminEmail.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!trimmedName || !trimmedSlug || !trimmedAdminName) {
-      setError("Organization name, slug, and primary admin name are required.");
-      return;
-    }
-
-    if (!emailRegex.test(trimmedAdminEmail)) {
-      setError("Please enter a valid primary admin email address.");
-      return;
-    }
+    const next: typeof errors = {};
+    if (!trimmedName) next.name = "Organization name is required.";
+    if (!trimmedSlug) next.slug = "Slug is required.";
+    else if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(trimmedSlug))
+      next.slug = "Use lowercase letters, numbers and single hyphens only.";
+    if (!trimmedAdminName) next.adminName = "Primary admin name is required.";
+    if (!trimmedAdminEmail)
+      next.adminEmail = "Primary admin email is required.";
+    else if (!emailRegex.test(trimmedAdminEmail))
+      next.adminEmail = "Enter a valid email address, like name@company.com.";
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
 
     onProvision({
       name: trimmedName,
@@ -89,27 +100,27 @@ export function ProvisionOrganizationSheet({
   };
 
   return (
-    <Sheet
+    <Modal
       open={open}
       onOpenChange={(next) => {
         if (!next) resetForm();
         onOpenChange(next);
       }}
     >
-      <SheetContent className="flex flex-col sm:max-w-md">
-        <SheetHeader>
+      <ModalContent className="flex flex-col sm:max-w-md">
+        <ModalHeader>
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
               <Icon icon={Building2} size={17} />
             </div>
             <div>
-              <SheetTitle>New Organization</SheetTitle>
-              <SheetDescription>
+              <ModalTitle>New Organization</ModalTitle>
+              <ModalDescription>
                 Provision a new tenant and assign its primary administrator.
-              </SheetDescription>
+              </ModalDescription>
             </div>
           </div>
-        </SheetHeader>
+        </ModalHeader>
 
         <form
           onSubmit={handleSubmit}
@@ -127,11 +138,15 @@ export function ProvisionOrganizationSheet({
                 value={name}
                 onChange={(e) => {
                   handleNameChange(e.target.value);
-                  if (error) setError(null);
+                  clearError("name");
+                  clearError("slug");
                 }}
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "org-name-error" : undefined}
                 className="h-9 text-sm"
                 autoFocus
               />
+              <FieldError id="org-name-error" message={errors.name} />
             </div>
 
             <div className="space-y-1.5">
@@ -145,10 +160,13 @@ export function ProvisionOrganizationSheet({
                 onChange={(e) => {
                   setSlugTouched(true);
                   setSlug(slugify(e.target.value));
-                  if (error) setError(null);
+                  clearError("slug");
                 }}
+                aria-invalid={!!errors.slug}
+                aria-describedby={errors.slug ? "org-slug-error" : undefined}
                 className="h-9 text-sm font-mono"
               />
+              <FieldError id="org-slug-error" message={errors.slug} />
               <p className="text-2xs text-muted-foreground">
                 Auto-generated from the organization name — edit if needed.
               </p>
@@ -175,11 +193,16 @@ export function ProvisionOrganizationSheet({
                     value={adminName}
                     onChange={(e) => {
                       setAdminName(e.target.value);
-                      if (error) setError(null);
+                      clearError("adminName");
                     }}
+                    aria-invalid={!!errors.adminName}
+                    aria-describedby={
+                      errors.adminName ? "admin-name-error" : undefined
+                    }
                     className="h-9 pl-8 text-sm"
                   />
                 </div>
+                <FieldError id="admin-name-error" message={errors.adminName} />
               </div>
 
               <div className="space-y-1.5">
@@ -194,29 +217,31 @@ export function ProvisionOrganizationSheet({
                   />
                   <Input
                     id="admin-email"
-                    type="email"
+                    type="text"
+                    inputMode="email"
                     placeholder="alex@horizonmedia.com"
                     value={adminEmail}
                     onChange={(e) => {
                       setAdminEmail(e.target.value);
-                      if (error) setError(null);
+                      clearError("adminEmail");
                     }}
-                    className={cn(
-                      "h-9 pl-8 text-sm",
-                      error &&
-                        "border-destructive focus-visible:ring-destructive/30",
-                    )}
+                    aria-invalid={!!errors.adminEmail}
+                    aria-describedby={
+                      errors.adminEmail ? "admin-email-error" : undefined
+                    }
+                    className="h-9 pl-8 text-sm"
                   />
                 </div>
+                <FieldError
+                  id="admin-email-error"
+                  message={errors.adminEmail}
+                />
               </div>
             </div>
-
-            {error && (
-              <p className="text-2xs font-medium text-destructive">{error}</p>
-            )}
           </div>
 
-          <SheetFooter>
+          <ModalFooter>
+            <HotkeyHint className="mr-auto" />
             <Button
               type="button"
               variant="outline"
@@ -234,9 +259,9 @@ export function ProvisionOrganizationSheet({
               <Icon icon={Building2} size={14} />
               <span>Provision Organization</span>
             </Button>
-          </SheetFooter>
+          </ModalFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </ModalContent>
+    </Modal>
   );
 }

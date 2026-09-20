@@ -10,26 +10,15 @@ import { FeatureDetailDialog } from "./feature-detail-dialog";
 
 interface FeaturesTabProps {
   project: Project;
-  selectedMemberId?: string | null;
 }
 
-export function FeaturesTab({
-  project,
-  selectedMemberId: _selectedMemberId,
-}: FeaturesTabProps) {
+export function FeaturesTab({ project: _project }: FeaturesTabProps) {
   const [selectedFeature, setSelectedFeature] =
     React.useState<FeatureStream | null>(null);
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold tracking-wider text-muted-foreground">
-          Feature Milestone Streams for {project.name} (Click to view allocated
-          tasks)
-        </span>
-      </div>
-
       {MOCK_FEATURE_STREAMS.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-subtle bg-canvas-bg/40 py-14 text-center">
           <Icon icon={Layers} size={22} className="text-muted-foreground" />

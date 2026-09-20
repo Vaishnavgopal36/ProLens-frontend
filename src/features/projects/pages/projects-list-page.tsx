@@ -2,6 +2,7 @@ import * as React from "react";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/app/providers";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { Project, ProjectFilterTab } from "@/types/project";
@@ -28,6 +29,14 @@ export function ProjectsListPage() {
   // for admins, not managers (who run day-to-day delivery on projects
   // someone else provisioned).
   const canManageProjects = hasMinimumRole("admin");
+
+  // Ctrl/⌘ + K toggles "new project" for roles that can create one.
+  useModalHotkey({
+    open: createDialogOpen,
+    onOpen: () => setCreateDialogOpen(true),
+    onClose: () => setCreateDialogOpen(false),
+    disabled: !canManageProjects,
+  });
 
   // Employees are individual contributors, not portfolio owners — they only
   // see projects they're actually staffed on. Managers/admins keep full

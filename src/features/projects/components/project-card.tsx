@@ -16,13 +16,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+} from "@/components/ui/modal";
 import { ProjectSettingsDialog } from "./project-settings-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -219,24 +219,24 @@ export function ProjectCard({
         onUpdateProject={onUpdateProject}
       />
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent
+      {/* Delete Confirmation Modal */}
+      <Modal open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <ModalContent
           className="sm:max-w-[420px]"
           onClick={(e) => e.stopPropagation()}
         >
-          <DialogHeader>
-            <DialogTitle>Delete Project</DialogTitle>
-            <DialogDescription>
+          <ModalHeader>
+            <ModalTitle>Delete Project</ModalTitle>
+            <ModalDescription>
               Are you sure you want to delete{" "}
               <strong className="text-foreground font-semibold break-all">
                 {project.name}
               </strong>
               ? This action cannot be undone and will remove all associated
               sprints, tasks, and logged hours.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            </ModalDescription>
+          </ModalHeader>
+          <ModalFooter className="gap-2 sm:gap-0 pt-2">
             <Button
               variant="outline"
               size="sm"
@@ -253,9 +253,9 @@ export function ProjectCard({
               <Icon icon={Trash2} size={15} />
               <span>Delete Project</span>
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }

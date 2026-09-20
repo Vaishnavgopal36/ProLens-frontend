@@ -1,11 +1,11 @@
 import { Building2, Users, FolderKanban, Mail } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+} from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
@@ -23,23 +23,23 @@ export function TenantInspectorDrawer({
   tenant,
 }: TenantInspectorDrawerProps) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex flex-col sm:max-w-md overflow-y-auto">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="flex flex-col sm:max-w-md overflow-y-auto">
         {tenant && (
           <>
-            <SheetHeader>
+            <ModalHeader>
               <div className="flex items-center gap-2.5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy-500/10 text-navy-600 dark:text-foreground/80 border border-navy-500/20 shrink-0">
                   <Icon icon={Building2} size={17} />
                 </div>
                 <div>
-                  <SheetTitle>{tenant.organization.name}</SheetTitle>
-                  <SheetDescription>
+                  <ModalTitle>{tenant.organization.name}</ModalTitle>
+                  <ModalDescription>
                     /{tenant.organization.slug}
-                  </SheetDescription>
+                  </ModalDescription>
                 </div>
               </div>
-            </SheetHeader>
+            </ModalHeader>
 
             <div className="space-y-6 pt-2">
               <div>
@@ -148,7 +148,7 @@ export function TenantInspectorDrawer({
             </div>
           </>
         )}
-      </SheetContent>
-    </Sheet>
+      </ModalContent>
+    </Modal>
   );
 }

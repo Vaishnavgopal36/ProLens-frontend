@@ -130,25 +130,22 @@ export const MANAGER_METRICS: MetricCardData[] = [
     id: "mgr-1",
     label: "Managed projects",
     value: 2,
-    subtext: "Active assignments",
   },
   {
     id: "mgr-2",
     label: "Open sprint tasks",
     value: 24,
-    subtext: "Distributed in backlog",
   },
   {
     id: "mgr-3",
     label: "Logged this week",
     value: "186.5h",
-    subtext: "Across engineering squads",
   },
   {
     id: "mgr-4",
     label: "Tasks needing attention",
     value: "2 items",
-    subtext: "At risk or blocked",
+
     highlight: true, // Highlights the amber warning card from the design
   },
 ];

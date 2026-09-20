@@ -69,8 +69,15 @@ export function MyInsightsPage() {
           10,
       ) / 10
     : 0;
+  // The user's own contribution per project (not the project-wide totals).
+  const myHoursByProject = new Map(
+    assignedProjects.map((p) => [
+      p.id,
+      p.members.find((m) => m.email === user?.email)?.hoursLogged ?? 0,
+    ]),
+  );
   const totalHoursLogged = assignedProjects.reduce(
-    (s, p) => s + p.loggedHours,
+    (s, p) => s + (myHoursByProject.get(p.id) ?? 0),
     0,
   );
   const overBudget = assignedProjects.filter(
@@ -82,8 +89,14 @@ export function MyInsightsPage() {
   // on. With zero assigned projects there's no effort to burn down at all —
   // that renders an empty state instead of a fabricated chart.
   const hasAssignments = assignedProjects.length > 0;
+  // Personal capacity: each project's estimate weighted by the user's share
+  // of the effort logged on it so far.
   const sprintCapacityHours = assignedProjects.reduce(
-    (s, p) => s + p.estimatedHours,
+    (s, p) =>
+      s +
+      (p.loggedHours > 0
+        ? p.estimatedHours * ((myHoursByProject.get(p.id) ?? 0) / p.loggedHours)
+        : 0),
     0,
   );
   const scale = sprintCapacityHours / BASE_SPRINT_CAPACITY_HOURS;

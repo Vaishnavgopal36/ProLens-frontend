@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Trash2, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Modal, ModalContent, ModalTitle } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
@@ -44,20 +44,12 @@ export function EventDetailsDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden p-0 sm:max-w-md border border-border-subtle bg-canvas-surface shadow-2xl">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="overflow-hidden p-0 sm:max-w-md border border-border-subtle bg-canvas-surface shadow-2xl">
         <div className="px-6 py-4 bg-muted border-b border-border-subtle flex items-center justify-between">
-          <DialogTitle className="font-bold text-sm text-foreground">
+          <ModalTitle className="font-bold text-sm text-foreground">
             {event.title}
-          </DialogTitle>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            aria-label="Close"
-            className="text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-          >
-            <Icon icon={X} size={16} />
-          </button>
+          </ModalTitle>
         </div>
 
         <div className="p-6 space-y-3 text-xs">
@@ -115,7 +107,7 @@ export function EventDetailsDialog({
             </Button>
           </div>
         </div>
-      </DialogContent>
+      </ModalContent>
 
       <ConfirmDialog
         open={deleteConfirmOpen}
@@ -125,6 +117,6 @@ export function EventDetailsDialog({
         confirmLabel="Delete"
         onConfirm={handleDelete}
       />
-    </Dialog>
+    </Modal>
   );
 }

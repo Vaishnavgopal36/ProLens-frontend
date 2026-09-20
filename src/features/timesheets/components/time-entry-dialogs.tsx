@@ -2,16 +2,15 @@ import * as React from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Modal,
+  ModalContent,
+  ModalDescription,
+  ModalTitle,
+} from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FieldError } from "@/components/ui/field-error";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
+import { Icon } from "@/components/ui/icon";
 import {
   Select,
   SelectContent,
@@ -19,209 +18,386 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Icon } from "@/components/ui/icon";
+import {
+  UnderlineInput,
+  underlineFieldClass,
+} from "@/components/ui/underline-input";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
-import { PROJECT_TAXONOMY } from "../api/mock-data";
+import {
+  UnderlineCombobox,
+  type ComboboxOption,
+} from "@/components/composed/underline-combobox";
+import { cn } from "@/lib/utils";
 import type { TimeEntry, WorkLocation } from "@/types/timesheet";
+import { WORK_TAXONOMY } from "../api/mock-data";
+import { useWorkOptions } from "../hooks/use-work-options";
+
+const MAX_ACTIVITY_LENGTH = 120;
+
+/** "2026-09-25" → "25 Sep, Friday" (the Kronos modal heading). */
+function formatHeading(dateStr: string) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  if (Number.isNaN(date.getTime())) return dateStr;
+  return `${d} ${date.toLocaleDateString("en-US", { month: "short" })}, ${date.toLocaleDateString("en-US", { weekday: "long" })}`;
+}
+
+/** Returns an inline error message, or undefined when the duration is valid. */
+function validateDuration(hours: number, mins: number): string | undefined {
+  if (!Number.isInteger(hours) || !Number.isInteger(mins))
+    return "Enter whole numbers for hours and minutes.";
+  if (hours < 0 || hours > 23) return "Hours must be between 0 and 23.";
+  if (mins < 0 || mins > 59) return "Minutes must be between 0 and 59.";
+  if (hours === 0 && mins === 0) return "Duration must be greater than 0.";
+  return undefined;
+}
+
+const toNumber = (value: string) => (value.trim() === "" ? 0 : Number(value));
+
+// ---------- shared form pieces ----------
+
+function TimeModalShell({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="gap-0 overflow-hidden border-border-subtle bg-canvas-surface p-0 sm:max-w-[480px]">
+        <div className="px-6 pb-2 pt-8 text-center sm:px-10">
+          <ModalTitle className="text-sm font-normal tracking-normal text-foreground">
+            {title}
+          </ModalTitle>
+          <ModalDescription className="sr-only">{description}</ModalDescription>
+        </div>
+        {children}
+      </ModalContent>
+    </Modal>
+  );
+}
+
+function DurationFields({
+  hours,
+  mins,
+  error,
+  onHoursChange,
+  onMinsChange,
+}: {
+  hours: string;
+  mins: string;
+  error?: string;
+  onHoursChange: (v: string) => void;
+  onMinsChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
+        <div className="flex items-end gap-3">
+          <label
+            htmlFor="entry-hours"
+            className="pb-2.5 text-sm text-muted-foreground"
+          >
+            Hours
+          </label>
+          <UnderlineInput
+            id="entry-hours"
+            type="number"
+            inputMode="numeric"
+            placeholder="0"
+            value={hours}
+            onChange={(e) => onHoursChange(e.target.value)}
+            aria-invalid={!!error}
+            aria-describedby={error ? "entry-duration-error" : undefined}
+            className="text-center font-medium"
+          />
+        </div>
+        <span className="pb-2.5 text-muted-foreground">:</span>
+        <div className="flex items-end gap-3">
+          <label
+            htmlFor="entry-mins"
+            className="pb-2.5 text-sm text-muted-foreground"
+          >
+            Mins
+          </label>
+          <UnderlineInput
+            id="entry-mins"
+            type="number"
+            inputMode="numeric"
+            placeholder="00"
+            value={mins}
+            onChange={(e) => onMinsChange(e.target.value)}
+            aria-invalid={!!error}
+            aria-describedby={error ? "entry-duration-error" : undefined}
+            className="text-center font-medium"
+          />
+        </div>
+      </div>
+      <FieldError
+        id="entry-duration-error"
+        message={error}
+        className="mt-1.5"
+      />
+    </div>
+  );
+}
+
+function LocationField({
+  value,
+  onChange,
+}: {
+  value: WorkLocation;
+  onChange: (value: WorkLocation) => void;
+}) {
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as WorkLocation)}>
+      <SelectTrigger
+        aria-label="Work location"
+        className={cn(underlineFieldClass, "justify-between")}
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="Tarento Office">Tarento Office (Onsite)</SelectItem>
+        <SelectItem value="WFH">WFH (Remote)</SelectItem>
+        <SelectItem value="Client Site">Client Site</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
+function SaveButton({ children = "Save" }: { children?: React.ReactNode }) {
+  return (
+    <Button
+      type="submit"
+      className="h-11 w-full px-10 text-xs font-bold uppercase tracking-wider shadow-md sm:w-auto"
+    >
+      {children}
+    </Button>
+  );
+}
 
 // ==================== ADD TIME DIALOG ====================
 interface AddTimeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultDateStr: string;
+  /** Prefill (e.g. when opened from inside a project). Blank by default. */
   defaultProject?: string;
   defaultTask?: string;
   onSave: (entry: TimeEntry) => void;
+}
+
+interface AddErrors {
+  activity?: string;
+  project?: string;
+  task?: string;
+  duration?: string;
 }
 
 export function AddTimeDialog({
   open,
   onOpenChange,
   defaultDateStr,
-  defaultProject = "Website Design",
-  defaultTask,
+  defaultProject = "",
+  defaultTask = "",
   onSave,
 }: AddTimeDialogProps) {
-  const [project, setProject] = React.useState(defaultProject);
-  const [task, setTask] = React.useState(
-    defaultTask || PROJECT_TAXONOMY[defaultProject]?.tasks[0] || "",
-  );
-  const [hours, setHours] = React.useState(2);
-  const [mins, setMins] = React.useState(30);
+  const { projects, activities } = useWorkOptions();
+  const [activity, setActivity] = React.useState("");
+  const [project, setProject] = React.useState("");
+  const [task, setTask] = React.useState("");
+  const [hours, setHours] = React.useState("");
+  const [mins, setMins] = React.useState("");
   const [location, setLocation] =
     React.useState<WorkLocation>("Tarento Office");
+  const [errors, setErrors] = React.useState<AddErrors>({});
+  const clearError = (key: keyof AddErrors) =>
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
 
+  // One combined list, like Kronos: assigned projects first, then activities.
+  const workOptions = React.useMemo<ComboboxOption[]>(
+    () => [
+      ...projects.map((name) => ({
+        value: name,
+        label: name,
+        group: "Assigned projects",
+      })),
+      ...activities.map((name) => ({
+        value: name,
+        label: `[${WORK_TAXONOMY[name]?.code}] ${name}`,
+        group: "Activities",
+      })),
+    ],
+    [projects, activities],
+  );
+  const taskOptions = React.useMemo<ComboboxOption[]>(
+    () =>
+      (WORK_TAXONOMY[project]?.tasks ?? []).map((t) => ({
+        value: t,
+        label: t,
+      })),
+    [project],
+  );
+
+  // Every time the dialog opens: fresh form, with any requested prefill that
+  // the user is actually allowed to use.
   React.useEffect(() => {
-    if (defaultProject) {
-      setProject(defaultProject);
-      setTask(defaultTask || PROJECT_TAXONOMY[defaultProject]?.tasks[0] || "");
-    }
-  }, [defaultProject, defaultTask]);
+    if (!open) return;
+    const allowed = [...projects, ...activities].includes(defaultProject);
+    setActivity("");
+    setProject(allowed ? defaultProject : "");
+    setTask(
+      allowed && WORK_TAXONOMY[defaultProject]?.tasks.includes(defaultTask)
+        ? defaultTask
+        : "",
+    );
+    setHours("");
+    setMins("");
+    setLocation("Tarento Office");
+    setErrors({});
+  }, [open, defaultProject, defaultTask, projects, activities]);
 
-  const handleProjectChange = (newProj: string) => {
-    setProject(newProj);
-    const available = PROJECT_TAXONOMY[newProj]?.tasks || [];
-    setTask(available[0] || "");
+  const handleProjectChange = (value: string) => {
+    setProject(value);
+    setTask("");
+    clearError("project");
+    clearError("task");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (hours === 0 && mins === 0) {
-      toast.error("Please enter a duration greater than 0 minutes");
-      return;
-    }
+    const next: AddErrors = {};
+    if (activity.trim().length > MAX_ACTIVITY_LENGTH)
+      next.activity = `Keep the activity under ${MAX_ACTIVITY_LENGTH} characters.`;
+    if (!project)
+      next.project =
+        projects.length === 0
+          ? "You aren't assigned to any projects yet. Pick an activity instead."
+          : "Select a project or activity.";
+    else if (!task) next.task = "Select a task.";
+    next.duration = validateDuration(toNumber(hours), toNumber(mins));
+    setErrors(next);
+    if (Object.values(next).some(Boolean)) return;
 
-    const newEntry: TimeEntry = {
+    onSave({
       id: `TE-${Math.floor(200 + Math.random() * 800)}`,
       dateStr: defaultDateStr,
       project,
       task,
-      hours: Number(hours),
-      mins: Number(mins),
+      activity: activity.trim() || undefined,
+      hours: toNumber(hours),
+      mins: toNumber(mins),
       location,
-    };
-
-    onSave(newEntry);
+    });
     toast.success("Time entry added to timesheet.");
     onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px] p-5 border-border-subtle bg-canvas-surface">
-        <DialogHeader className="border-b border-border-subtle pb-3">
-          <DialogTitle className="text-base font-semibold text-foreground">
-            Add Time Entry
-          </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Record billable task effort for this timesheet.
-          </DialogDescription>
-        </DialogHeader>
+    <TimeModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={formatHeading(defaultDateStr)}
+      description="Add a time entry against a project or activity."
+    >
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="space-y-5 px-6 pb-8 pt-4 sm:px-10"
+      >
+        <div>
+          <UnderlineInput
+            id="entry-activity"
+            aria-label="Activity"
+            placeholder="Activity"
+            value={activity}
+            onChange={(e) => {
+              setActivity(e.target.value);
+              clearError("activity");
+            }}
+            aria-invalid={!!errors.activity}
+            aria-describedby={
+              errors.activity ? "entry-activity-error" : undefined
+            }
+          />
+          <FieldError
+            id="entry-activity-error"
+            message={errors.activity}
+            className="mt-1.5"
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5 pt-1 text-xs">
-          <div>
-            <Label className="block font-medium text-foreground mb-1">
-              Date
-            </Label>
-            <Input
-              value={defaultDateStr}
-              readOnly
-              className="h-9 text-xs bg-canvas-bg/50 border-border-subtle cursor-not-allowed"
-            />
-          </div>
+        <div>
+          <UnderlineCombobox
+            id="entry-project"
+            options={workOptions}
+            value={project}
+            onChange={handleProjectChange}
+            placeholder="Select a Project"
+            searchPlaceholder="Search projects & activities…"
+            invalid={!!errors.project}
+            describedBy={errors.project ? "entry-project-error" : undefined}
+            clearable
+          />
+          <FieldError
+            id="entry-project-error"
+            message={errors.project}
+            className="mt-1.5"
+          />
+        </div>
 
-          <div>
-            <Label className="block font-medium text-foreground mb-1">
-              Project *
-            </Label>
-            <Select value={project} onValueChange={handleProjectChange}>
-              <SelectTrigger className="h-9 text-xs border-border-subtle bg-canvas-surface">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.keys(PROJECT_TAXONOMY).map((p) => (
-                  <SelectItem key={p} value={p} className="text-xs">
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div>
+          <UnderlineCombobox
+            id="entry-task"
+            options={taskOptions}
+            value={task}
+            onChange={(v) => {
+              setTask(v);
+              clearError("task");
+            }}
+            placeholder="Select a Task"
+            searchPlaceholder="Search tasks…"
+            disabled={!project}
+            invalid={!!errors.task}
+            describedBy={errors.task ? "entry-task-error" : undefined}
+          />
+          <FieldError
+            id="entry-task-error"
+            message={errors.task}
+            className="mt-1.5"
+          />
+        </div>
 
-          <div>
-            <Label className="block font-medium text-foreground mb-1">
-              Task *
-            </Label>
-            <Select value={task} onValueChange={setTask}>
-              <SelectTrigger className="h-9 text-xs border-border-subtle bg-canvas-surface">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(PROJECT_TAXONOMY[project]?.tasks || []).map((t) => (
-                  <SelectItem key={t} value={t} className="text-xs">
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <DurationFields
+          hours={hours}
+          mins={mins}
+          error={errors.duration}
+          onHoursChange={(v) => {
+            setHours(v);
+            clearError("duration");
+          }}
+          onMinsChange={(v) => {
+            setMins(v);
+            clearError("duration");
+          }}
+        />
 
-          <div>
-            <Label className="block font-medium text-foreground mb-1">
-              Duration *
-            </Label>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2 bg-canvas-bg/50 border border-border-subtle rounded-md px-3">
-                <span className="text-muted-foreground text-2xs">Hours</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={23}
-                  value={hours}
-                  onChange={(e) => setHours(Number(e.target.value))}
-                  className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 p-0 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  required
-                />
-              </div>
-              <div className="flex items-center gap-2 bg-canvas-bg/50 border border-border-subtle rounded-md px-3">
-                <span className="text-muted-foreground text-2xs">Mins</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={59}
-                  step={15}
-                  value={mins}
-                  onChange={(e) => setMins(Number(e.target.value))}
-                  className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 p-0 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  required
-                />
-              </div>
-            </div>
-          </div>
+        <LocationField value={location} onChange={setLocation} />
 
-          <div>
-            <Label className="block font-medium text-foreground mb-1">
-              Work Location
-            </Label>
-            <Select
-              value={location}
-              onValueChange={(val) => setLocation(val as WorkLocation)}
-            >
-              <SelectTrigger className="h-9 text-xs border-border-subtle bg-canvas-surface">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Tarento Office">
-                  Tarento Office (Onsite)
-                </SelectItem>
-                <SelectItem value="WFH">WFH (Remote)</SelectItem>
-                <SelectItem value="Client Site">Client Site</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <DialogFooter className="pt-3 border-t border-border-subtle">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              className="text-xs"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="accent"
-              size="sm"
-              className="text-xs font-semibold"
-            >
-              Save Entry
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        <div className="flex items-center justify-between gap-4 pt-4">
+          <HotkeyHint />
+          <SaveButton />
+        </div>
+      </form>
+    </TimeModalShell>
   );
 }
 
@@ -241,28 +417,39 @@ export function EditTimeDialog({
   onUpdate,
   onDelete,
 }: EditTimeDialogProps) {
-  const [hours, setHours] = React.useState(0);
-  const [mins, setMins] = React.useState(0);
+  const [activity, setActivity] = React.useState("");
+  const [hours, setHours] = React.useState("");
+  const [mins, setMins] = React.useState("");
   const [location, setLocation] =
     React.useState<WorkLocation>("Tarento Office");
+  const [errors, setErrors] = React.useState<AddErrors>({});
   const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (entry) {
-      setHours(entry.hours);
-      setMins(entry.mins);
-      setLocation(entry.location);
-    }
+    if (!entry) return;
+    setActivity(entry.activity ?? "");
+    setHours(String(entry.hours));
+    setMins(String(entry.mins));
+    setLocation(entry.location);
+    setErrors({});
   }, [entry]);
 
   if (!entry) return null;
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
+    const next: AddErrors = {};
+    if (activity.trim().length > MAX_ACTIVITY_LENGTH)
+      next.activity = `Keep the activity under ${MAX_ACTIVITY_LENGTH} characters.`;
+    next.duration = validateDuration(toNumber(hours), toNumber(mins));
+    setErrors(next);
+    if (Object.values(next).some(Boolean)) return;
+
     onUpdate({
       ...entry,
-      hours: Number(hours),
-      mins: Number(mins),
+      activity: activity.trim() || undefined,
+      hours: toNumber(hours),
+      mins: toNumber(mins),
       location,
     });
     toast.success("Time entry updated successfully.");
@@ -278,142 +465,77 @@ export function EditTimeDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[440px] p-5 border-border-subtle bg-canvas-surface">
-          <DialogHeader className="border-b border-border-subtle pb-3">
-            <DialogTitle className="text-base font-semibold text-foreground">
-              Edit Time Entry
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Update logged hours or work location.
-            </DialogDescription>
-          </DialogHeader>
+      <TimeModalShell
+        open={open}
+        onOpenChange={onOpenChange}
+        title={formatHeading(entry.dateStr)}
+        description="Edit or delete this time entry."
+      >
+        <form
+          onSubmit={handleUpdate}
+          noValidate
+          className="space-y-5 px-6 pb-8 pt-4 sm:px-10"
+        >
+          <div>
+            <UnderlineInput
+              aria-label="Activity"
+              placeholder="Activity"
+              value={activity}
+              onChange={(e) => {
+                setActivity(e.target.value);
+                setErrors((prev) => ({ ...prev, activity: undefined }));
+              }}
+              aria-invalid={!!errors.activity}
+            />
+            <FieldError message={errors.activity} className="mt-1.5" />
+          </div>
 
-          <form onSubmit={handleUpdate} className="space-y-3.5 pt-1 text-xs">
-            <div>
-              <Label className="block font-medium text-foreground mb-1">
-                Date
-              </Label>
-              <Input
-                value={entry.dateStr}
-                readOnly
-                className="h-9 text-xs bg-canvas-bg/50 border-border-subtle cursor-not-allowed"
-              />
-            </div>
+          {/* Project and task identify the entry, so they're fixed here. */}
+          <UnderlineInput
+            aria-label="Project"
+            value={entry.project}
+            readOnly
+            disabled
+          />
+          <UnderlineInput
+            aria-label="Task"
+            value={entry.task}
+            readOnly
+            disabled
+          />
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="block font-medium text-foreground mb-1">
-                  Project
-                </Label>
-                <Input
-                  value={entry.project}
-                  readOnly
-                  className="h-9 text-xs bg-canvas-bg/50 border-border-subtle cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <Label className="block font-medium text-foreground mb-1">
-                  Task
-                </Label>
-                <Input
-                  value={entry.task}
-                  readOnly
-                  className="h-9 text-xs bg-canvas-bg/50 border-border-subtle cursor-not-allowed"
-                />
-              </div>
-            </div>
+          <DurationFields
+            hours={hours}
+            mins={mins}
+            error={errors.duration}
+            onHoursChange={(v) => {
+              setHours(v);
+              setErrors((prev) => ({ ...prev, duration: undefined }));
+            }}
+            onMinsChange={(v) => {
+              setMins(v);
+              setErrors((prev) => ({ ...prev, duration: undefined }));
+            }}
+          />
 
-            <div>
-              <Label className="block font-medium text-foreground mb-1">
-                Duration
-              </Label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 bg-canvas-bg/50 border border-border-subtle rounded-md px-3">
-                  <span className="text-muted-foreground text-2xs">Hours</span>
-                  <input
-                    type="number"
-                    min={0}
-                    max={23}
-                    value={hours}
-                    onChange={(e) => setHours(Number(e.target.value))}
-                    className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 p-0 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    required
-                  />
-                </div>
-                <div className="flex items-center gap-2 bg-canvas-bg/50 border border-border-subtle rounded-md px-3">
-                  <span className="text-muted-foreground text-2xs">Mins</span>
-                  <input
-                    type="number"
-                    min={0}
-                    max={59}
-                    step={15}
-                    value={mins}
-                    onChange={(e) => setMins(Number(e.target.value))}
-                    className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 p-0 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
+          <LocationField value={location} onChange={setLocation} />
 
-            <div>
-              <Label className="block font-medium text-foreground mb-1">
-                Work Location
-              </Label>
-              <Select
-                value={location}
-                onValueChange={(val) => setLocation(val as WorkLocation)}
-              >
-                <SelectTrigger className="h-9 text-xs border-border-subtle bg-canvas-surface">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Tarento Office">
-                    Tarento Office (Onsite)
-                  </SelectItem>
-                  <SelectItem value="WFH">WFH (Remote)</SelectItem>
-                  <SelectItem value="Client Site">Client Site</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex items-center justify-between gap-4 pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setConfirmDeleteOpen(true)}
+              className="h-10 gap-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10"
+            >
+              <Icon icon={Trash2} size={15} />
+              Delete
+            </Button>
+            <SaveButton />
+          </div>
+        </form>
+      </TimeModalShell>
 
-            <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setConfirmDeleteOpen(true)}
-                className="h-9 text-destructive hover:bg-destructive/10 text-xs font-semibold gap-1.5"
-              >
-                <Icon icon={Trash2} size={15} />
-                <span>Delete</span>
-              </Button>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onOpenChange(false)}
-                  className="text-xs"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="accent"
-                  size="sm"
-                  className="text-xs font-semibold"
-                >
-                  Save Changes
-                </Button>
-              </div>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirmation Sub-Modal */}
       <ConfirmDialog
         open={confirmDeleteOpen}
         onOpenChange={setConfirmDeleteOpen}

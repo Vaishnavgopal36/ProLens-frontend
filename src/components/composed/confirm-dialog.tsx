@@ -1,12 +1,12 @@
 import * as React from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+} from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 
 interface ConfirmDialogProps {
@@ -30,14 +30,23 @@ export function ConfirmDialog({
   onConfirm,
   variant = "destructive",
 }: ConfirmDialogProps) {
+  const confirmRef = React.useRef<HTMLButtonElement>(null);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[420px]">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="gap-2 sm:gap-0 pt-2">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent
+        className="sm:max-w-[420px]"
+        // Focus the confirm action so Enter confirms straight away.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          confirmRef.current?.focus();
+        }}
+      >
+        <ModalHeader>
+          <ModalTitle>{title}</ModalTitle>
+          <ModalDescription>{description}</ModalDescription>
+        </ModalHeader>
+        <ModalFooter className="pt-2">
           <Button
             variant="outline"
             size="sm"
@@ -46,6 +55,7 @@ export function ConfirmDialog({
             {cancelLabel}
           </Button>
           <Button
+            ref={confirmRef}
             variant={variant}
             size="sm"
             onClick={() => {
@@ -55,8 +65,8 @@ export function ConfirmDialog({
           >
             {confirmLabel}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 }

@@ -90,7 +90,6 @@ const TODAY_OFFSET_PERCENT = 19;
 
 interface TimelineTabProps {
   project: Project;
-  selectedMemberId?: string | null;
 }
 
 export function TimelineTab({ project }: TimelineTabProps) {

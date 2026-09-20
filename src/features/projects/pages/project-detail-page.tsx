@@ -13,6 +13,8 @@ import {
   Timer,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTabKeyCycle } from "@/hooks/use-tab-key-cycle";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Icon } from "@/components/ui/icon";
 import { MOCK_PROJECTS } from "@/features/projects/api/mock-data";
 import { WorkspaceHeader } from "@/features/projects/components/workspace-header";
@@ -67,13 +69,36 @@ export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const { hasMinimumRole } = usePermissions();
   const isLoading = useSimulatedLoading();
-  const [selectedMemberId, setSelectedMemberId] = React.useState<string | null>(
-    null,
-  );
   // 1. Declare activeTab and setActiveTab state
   const [activeTab, setActiveTab] = React.useState("summary");
+
+  const visibleTabs = WORKSPACE_TABS.filter(
+    (tab) => !tab.managerOnly || hasMinimumRole("manager"),
+  );
+  // Tab / Shift+Tab cycle through the workspace tabs from anywhere on the page.
+  useTabKeyCycle(
+    visibleTabs.map((tab) => tab.value),
+    activeTab,
+    setActiveTab,
+  );
   const [addTaskOpen, setAddTaskOpen] = React.useState(false);
   const [addFeatureOpen, setAddFeatureOpen] = React.useState(false);
+
+  // Ctrl/⌘ + K toggles the most relevant "add" modal for the current tab:
+  // Features → new feature, everything else → new task. Tabs that own their
+  // modal (Time, Teams) register their own shortcut.
+  const ownsHotkey = ["time", "teams", "reports", "attachments"].includes(
+    activeTab,
+  );
+  const addingFeature = activeTab === "features";
+  useModalHotkey({
+    open: addingFeature ? addFeatureOpen : addTaskOpen,
+    onOpen: () =>
+      addingFeature ? setAddFeatureOpen(true) : setAddTaskOpen(true),
+    onClose: () =>
+      addingFeature ? setAddFeatureOpen(false) : setAddTaskOpen(false),
+    disabled: !hasMinimumRole("manager") || ownsHotkey,
+  });
 
   const project = React.useMemo(() => {
     return MOCK_PROJECTS.find((p) => p.id === projectId);
@@ -109,8 +134,6 @@ export function ProjectDetailPage() {
       {/* Workspace Meta Header */}
       <WorkspaceHeader
         project={project}
-        selectedMemberId={selectedMemberId}
-        onSelectMember={setSelectedMemberId}
         onAddFeature={() => setAddFeatureOpen(true)}
         onAddTask={() => setAddTaskOpen(true)}
       />
@@ -123,9 +146,7 @@ export function ProjectDetailPage() {
       >
         <div className="overflow-x-auto pb-1">
           <TabsList className="h-9 justify-start bg-canvas-surface p-1 border border-border-subtle w-max sm:w-auto">
-            {WORKSPACE_TABS.filter(
-              (tab) => !tab.managerOnly || hasMinimumRole("manager"),
-            ).map((tab) => (
+            {visibleTabs.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
@@ -142,19 +163,19 @@ export function ProjectDetailPage() {
         <TabsContent value="summary" className="m-0 focus-visible:outline-none">
           <SummaryTab
             project={project}
-            selectedMemberId={selectedMemberId}
+
             onNavigateTab={setActiveTab}
           />
         </TabsContent>
 
         {/* Tab 2: Board */}
         <TabsContent value="board" className="m-0 focus-visible:outline-none">
-          <BoardTab project={project} selectedMemberId={selectedMemberId} />
+          <BoardTab project={project} />
         </TabsContent>
 
         {/* Tab 3: Teams & Governance */}
         <TabsContent value="teams" className="m-0 focus-visible:outline-none">
-          <TeamsTab project={project} selectedMemberId={selectedMemberId} />
+          <TeamsTab project={project} />
         </TabsContent>
 
         {/* Tab 4: Features */}
@@ -162,12 +183,12 @@ export function ProjectDetailPage() {
           value="features"
           className="m-0 focus-visible:outline-none"
         >
-          <FeaturesTab project={project} selectedMemberId={selectedMemberId} />
+          <FeaturesTab project={project} />
         </TabsContent>
 
         {/* Tab 5: List */}
         <TabsContent value="list" className="m-0 focus-visible:outline-none">
-          <ListTab project={project} selectedMemberId={selectedMemberId} />
+          <ListTab project={project} />
         </TabsContent>
 
         {/* Tab 6: Calendar */}
@@ -175,7 +196,7 @@ export function ProjectDetailPage() {
           value="calendar"
           className="m-0 focus-visible:outline-none"
         >
-          <CalendarTab project={project} selectedMemberId={selectedMemberId} />
+          <CalendarTab project={project} />
         </TabsContent>
 
         {/* Tab 7: Timeline */}
@@ -183,7 +204,7 @@ export function ProjectDetailPage() {
           value="timeline"
           className="m-0 focus-visible:outline-none"
         >
-          <TimelineTab project={project} selectedMemberId={selectedMemberId} />
+          <TimelineTab project={project} />
         </TabsContent>
 
         {/* Tab 8: Attachments */}
@@ -191,20 +212,17 @@ export function ProjectDetailPage() {
           value="attachments"
           className="m-0 focus-visible:outline-none"
         >
-          <AttachmentsTab
-            project={project}
-            selectedMemberId={selectedMemberId}
-          />
+          <AttachmentsTab project={project} />
         </TabsContent>
 
         {/* Tab 9: Reports */}
         <TabsContent value="reports" className="m-0 focus-visible:outline-none">
-          <ReportsTab project={project} selectedMemberId={selectedMemberId} />
+          <ReportsTab project={project} />
         </TabsContent>
 
         {/* Tab 10: Time */}
         <TabsContent value="time" className="m-0 focus-visible:outline-none">
-          <TimeTab project={project} selectedMemberId={selectedMemberId} />
+          <TimeTab project={project} />
         </TabsContent>
       </Tabs>
 

@@ -1,14 +1,16 @@
 import * as React from "react";
 import { toast } from "sonner";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalFooter,
+} from "@/components/ui/modal";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/field-error";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -24,16 +26,48 @@ interface LogTimeDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/** e.g. "Today, Sep 20" — always the real current date. */
+function todayLabel() {
+  return `Today, ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+}
+
 export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
   const [selectedTask, setSelectedTask] = React.useState(
     EMPLOYEE_PRIORITIES_TABLE[0]?.id ?? "",
   );
-  const [date, setDate] = React.useState("Today, Sep 18");
+  const [date, setDate] = React.useState(todayLabel);
   const [duration, setDuration] = React.useState("1.5");
   const [summary, setSummary] = React.useState("");
+  const [errors, setErrors] = React.useState<{
+    task?: string;
+    date?: string;
+    duration?: string;
+    summary?: string;
+  }>({});
+  const clearError = (key: keyof typeof errors) =>
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
+
+  React.useEffect(() => {
+    if (open) setDate(todayLabel());
+    else setErrors({});
+  }, [open]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    const next: typeof errors = {};
+    if (!selectedTask) next.task = "Select a task.";
+    if (!date.trim()) next.date = "Enter the date worked.";
+    const hours = Number(duration);
+    if (!duration.trim() || Number.isNaN(hours))
+      next.duration = "Enter the hours worked, like 1.5.";
+    else if (hours < 0.25)
+      next.duration = "Duration must be at least 0.25 hours.";
+    else if (hours > 24) next.duration = "Duration can't exceed 24 hours.";
+    else if ((hours * 4) % 1 !== 0)
+      next.duration = "Use 15-minute steps, like 1.25 or 1.5.";
+    if (!summary.trim()) next.summary = "Add a short summary of the work done.";
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
     const taskObj = EMPLOYEE_PRIORITIES_TABLE.find(
       (t) => t.id === selectedTask,
     );
@@ -44,15 +78,15 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-6 bg-canvas-surface border-border-subtle">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-bold text-foreground">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="sm:max-w-[480px] p-6 bg-canvas-surface border-border-subtle">
+        <ModalHeader>
+          <ModalTitle className="text-lg font-bold text-foreground">
             Log working time
-          </DialogTitle>
-        </DialogHeader>
+          </ModalTitle>
+        </ModalHeader>
 
-        <form onSubmit={handleSave} className="space-y-4 pt-2">
+        <form onSubmit={handleSave} noValidate className="space-y-4 pt-2">
           {/* 1. Task Dropdown */}
           <div className="space-y-1.5">
             <Label
@@ -61,7 +95,13 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
             >
               Task
             </Label>
-            <Select value={selectedTask} onValueChange={setSelectedTask}>
+            <Select
+              value={selectedTask}
+              onValueChange={(v) => {
+                setSelectedTask(v);
+                clearError("task");
+              }}
+            >
               <SelectTrigger
                 id="task-select"
                 className="h-9 text-xs bg-canvas-surface"
@@ -76,6 +116,7 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
                 ))}
               </SelectContent>
             </Select>
+            <FieldError id="task-error" message={errors.task} />
           </div>
 
           {/* 2. Date & Duration (Two-Column Row) */}
@@ -90,9 +131,15 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
               <Input
                 id="log-date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  clearError("date");
+                }}
+                aria-invalid={!!errors.date}
+                aria-describedby={errors.date ? "log-date-error" : undefined}
                 className="h-9 text-xs bg-canvas-surface"
               />
+              <FieldError id="log-date-error" message={errors.date} />
             </div>
 
             <div className="space-y-1.5">
@@ -105,13 +152,20 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
               <Input
                 id="log-duration"
                 type="number"
+                inputMode="decimal"
                 step="0.25"
-                min="0.25"
-                max="24"
                 value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                onChange={(e) => {
+                  setDuration(e.target.value);
+                  clearError("duration");
+                }}
+                aria-invalid={!!errors.duration}
+                aria-describedby={
+                  errors.duration ? "log-duration-error" : undefined
+                }
                 className="h-9 text-xs bg-canvas-surface"
               />
+              <FieldError id="log-duration-error" message={errors.duration} />
             </div>
           </div>
 
@@ -127,14 +181,23 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
               id="work-summary"
               rows={3}
               value={summary}
-              onChange={(e) => setSummary(e.target.value)}
+              onChange={(e) => {
+                setSummary(e.target.value);
+                clearError("summary");
+              }}
+              aria-invalid={!!errors.summary}
+              aria-describedby={
+                errors.summary ? "work-summary-error" : undefined
+              }
               placeholder="Brief explanation of work done..."
-              className="w-full rounded-md border border-input bg-canvas-surface p-2.5 text-xs text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+              className="w-full rounded-md border border-input aria-[invalid=true]:border-destructive bg-canvas-surface p-2.5 text-xs text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
             />
+            <FieldError id="work-summary-error" message={errors.summary} />
           </div>
 
           {/* 4. Footer Buttons */}
-          <DialogFooter className="pt-2 flex items-center justify-end gap-2">
+          <ModalFooter className="pt-2 flex items-center justify-end gap-2">
+            <HotkeyHint className="mr-auto" />
             <Button
               type="button"
               variant="outline"
@@ -152,9 +215,9 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
             >
               Save entry
             </Button>
-          </DialogFooter>
+          </ModalFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ModalContent>
+    </Modal>
   );
 }

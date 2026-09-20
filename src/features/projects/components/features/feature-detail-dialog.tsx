@@ -1,11 +1,11 @@
 import { Layers } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+} from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/app/providers";
@@ -48,9 +48,9 @@ export function FeatureDetailDialog({
   const isActive = feature.status === "ACTIVE";
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-lg p-5 overflow-y-auto">
-        <SheetHeader className="space-y-1">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="sm:max-w-lg p-5 overflow-y-auto">
+        <ModalHeader className="space-y-1">
           <div className="flex items-center gap-2.5">
             <div
               className={cn(
@@ -63,12 +63,12 @@ export function FeatureDetailDialog({
               <Icon icon={Layers} size={17} />
             </div>
             <div>
-              <SheetTitle className="text-base font-semibold">
+              <ModalTitle className="text-base font-semibold">
                 {feature.name}
-              </SheetTitle>
-              <SheetDescription className="text-xs">
+              </ModalTitle>
+              <ModalDescription className="text-xs">
                 {feature.description}
-              </SheetDescription>
+              </ModalDescription>
             </div>
           </div>
 
@@ -97,7 +97,7 @@ export function FeatureDetailDialog({
               style={{ width: `${feature.progress}%` }}
             />
           </div>
-        </SheetHeader>
+        </ModalHeader>
 
         <div className="pt-4 space-y-2.5">
           <p className="text-xs font-medium text-muted-foreground">
@@ -156,7 +156,7 @@ export function FeatureDetailDialog({
             </div>
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+      </ModalContent>
+    </Modal>
   );
 }

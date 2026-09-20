@@ -160,13 +160,9 @@ function Tile({
 
 interface AttachmentsTabProps {
   project: Project;
-  selectedMemberId?: string | null;
 }
 
-export function AttachmentsTab({
-  project: _project,
-  selectedMemberId: _selectedMemberId,
-}: AttachmentsTabProps) {
+export function AttachmentsTab({ project: _project }: AttachmentsTabProps) {
   const [path, setPath] = React.useState<FolderPath>({ level: "root" });
 
   // Distinct features that have at least one attachment (feature-level or

@@ -1,7 +1,8 @@
 import * as React from "react";
-import { History } from "lucide-react";
+import { ChevronLeft, ChevronRight, History } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import {
   Select,
@@ -69,8 +70,11 @@ const ACTIVITIES: ActivityEvent[] = [
   },
 ];
 
+const PAGE_SIZE = 4;
+
 export function RecentActivityCard() {
   const [userFilter, setUserFilter] = React.useState("all");
+  const [page, setPage] = React.useState(0);
 
   const uniqueUsers = React.useMemo(
     () => Array.from(new Set(ACTIVITIES.map((a) => a.user))),
@@ -82,64 +86,113 @@ export function RecentActivityCard() {
     return ACTIVITIES.filter((a) => a.user === userFilter);
   }, [userFilter]);
 
+  const pageCount = Math.max(
+    1,
+    Math.ceil(visibleActivities.length / PAGE_SIZE),
+  );
+  const pageItems = visibleActivities.slice(
+    page * PAGE_SIZE,
+    (page + 1) * PAGE_SIZE,
+  );
+  const rangeStart = visibleActivities.length === 0 ? 0 : page * PAGE_SIZE + 1;
+  const rangeEnd = page * PAGE_SIZE + pageItems.length;
+
   return (
-    <Card className="border-border-subtle bg-canvas-surface p-5 space-y-3.5 shadow-xs">
-      <div className="flex items-center justify-between border-b border-border-subtle pb-3 gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <Icon
-            icon={History}
-            size={15}
-            className="text-teal-600 dark:text-teal-400 shrink-0"
-          />
-          <h3 className="text-sm font-semibold text-foreground truncate">
-            Recent Activity
-          </h3>
-        </div>
-        <Select value={userFilter} onValueChange={setUserFilter}>
-          <SelectTrigger className="h-7 w-auto text-2xs bg-canvas-bg border-border-subtle px-2 gap-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Everyone</SelectItem>
-            {uniqueUsers.map((name) => (
-              <SelectItem key={name} value={name}>
-                {name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-3">
-        {visibleActivities.length === 0 && (
-          <p className="py-4 text-center text-xs text-muted-foreground">
-            No activity from {userFilter}.
-          </p>
-        )}
-        {visibleActivities.map((item) => (
-          <div key={item.id} className="flex items-start gap-3">
-            <Avatar className="h-7 w-7 shrink-0 border border-border-subtle mt-0.5">
-              <AvatarFallback
-                className={`text-3xs font-bold text-white ${item.avatarBg}`}
-              >
-                {item.initials}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className="min-w-0 text-xs">
-              <p className="text-foreground leading-snug">
-                <strong className="font-semibold">{item.user}</strong>{" "}
-                {item.action}{" "}
-                <span className="font-semibold text-teal-600 dark:text-teal-400">
-                  {item.target}
-                </span>
-              </p>
-              <p className="text-2xs text-muted-foreground mt-0.5">
-                {item.timeAgo}
-              </p>
-            </div>
+    <Card className="relative min-h-[320px] flex-1 border-border-subtle bg-canvas-surface shadow-xs">
+      {/* Absolutely positioned so the list never drives the row height: the
+          card stretches to match the left column and scrolls internally. */}
+      <div className="absolute inset-0 flex flex-col gap-3.5 p-5">
+        <div className="flex shrink-0 items-center justify-between border-b border-border-subtle pb-3 gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Icon
+              icon={History}
+              size={15}
+              className="text-teal-600 dark:text-teal-400 shrink-0"
+            />
+            <h3 className="text-sm font-semibold text-foreground truncate">
+              Recent Activity
+            </h3>
           </div>
-        ))}
+          <Select
+            value={userFilter}
+            onValueChange={(v) => {
+              setUserFilter(v);
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="h-7 w-auto text-2xs bg-canvas-bg border-border-subtle px-2 gap-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Everyone</SelectItem>
+              {uniqueUsers.map((name) => (
+                <SelectItem key={name} value={name}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+          {visibleActivities.length === 0 && (
+            <p className="py-4 text-center text-xs text-muted-foreground">
+              No activity from {userFilter}.
+            </p>
+          )}
+          {pageItems.map((item) => (
+            <div key={item.id} className="flex items-start gap-3">
+              <Avatar className="h-7 w-7 shrink-0 border border-border-subtle mt-0.5">
+                <AvatarFallback
+                  className={`text-3xs font-bold text-white ${item.avatarBg}`}
+                >
+                  {item.initials}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="min-w-0 text-xs">
+                <p className="text-foreground leading-snug">
+                  <strong className="font-semibold">{item.user}</strong>{" "}
+                  {item.action}{" "}
+                  <span className="font-semibold text-teal-600 dark:text-teal-400">
+                    {item.target}
+                  </span>
+                </p>
+                <p className="text-2xs text-muted-foreground mt-0.5">
+                  {item.timeAgo}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex shrink-0 items-center justify-between border-t border-border-subtle pt-3">
+          <span className="text-2xs tabular-nums text-muted-foreground">
+            {rangeStart}–{rangeEnd} of {visibleActivities.length}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setPage((p) => p - 1)}
+              disabled={page === 0}
+              aria-label="Newer activity"
+            >
+              <Icon icon={ChevronLeft} size={14} />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page >= pageCount - 1}
+              aria-label="Older activity"
+            >
+              <Icon icon={ChevronRight} size={14} />
+            </Button>
+          </div>
+        </div>
       </div>
     </Card>
   );

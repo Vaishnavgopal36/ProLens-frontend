@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,13 @@ import { LogTimeDialog } from "../components/log-time-dialog";
 export function EmployeeDashboardPage() {
   // 1. STATE: Controls whether the modal is visible (true) or hidden (false)
   const [logTimeOpen, setLogTimeOpen] = React.useState(false);
+
+  // Ctrl/⌘ + K toggles the log-time modal (dated today).
+  useModalHotkey({
+    open: logTimeOpen,
+    onOpen: () => setLogTimeOpen(true),
+    onClose: () => setLogTimeOpen(false),
+  });
 
   return (
     <div className="space-y-6">

@@ -136,13 +136,9 @@ function exportWorkstreamsCsv(project: Project) {
 
 interface ReportsTabProps {
   project: Project;
-  selectedMemberId?: string | null;
 }
 
-export function ReportsTab({
-  project,
-  selectedMemberId: _selectedMemberId,
-}: ReportsTabProps) {
+export function ReportsTab({ project }: ReportsTabProps) {
   const totalPlanned = WORKSTREAMS.reduce((s, w) => s + w.plannedHours, 0);
   const totalLogged = WORKSTREAMS.reduce((s, w) => s + w.loggedHours, 0);
   const totalPlannedPts = WORKSTREAMS.reduce((s, w) => s + w.plannedPoints, 0);

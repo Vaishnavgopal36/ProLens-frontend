@@ -1,12 +1,13 @@
 import * as React from "react";
 import { Clock3, CalendarIcon } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+} from "@/components/ui/modal";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,8 +23,11 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { TimeFeatureGroup } from "./mock-data";
 
+/** Today in the user's local timezone as YYYY-MM-DD (toISOString would be UTC). */
 function formatToday() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 interface LogTimeSheetProps {
@@ -45,6 +49,11 @@ export function LogTimeSheet({
   const [date, setDate] = React.useState(formatToday());
   const [notes, setNotes] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
+
+  // Always start on today's date when the sheet opens.
+  React.useEffect(() => {
+    if (open) setDate(formatToday());
+  }, [open]);
 
   const selectedFeature = features.find((f) => f.id === featureId);
   const taskOptions = selectedFeature?.tasks ?? [];
@@ -80,29 +89,29 @@ export function LogTimeSheet({
   };
 
   return (
-    <Sheet
+    <Modal
       open={open}
       onOpenChange={(next) => {
         if (!next) resetForm();
         onOpenChange(next);
       }}
     >
-      <SheetContent className="sm:max-w-md w-full overflow-y-auto p-5">
-        <SheetHeader className="space-y-1">
+      <ModalContent className="sm:max-w-md w-full overflow-y-auto p-5">
+        <ModalHeader className="space-y-1">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
               <Icon icon={Clock3} size={17} />
             </div>
             <div>
-              <SheetTitle className="text-base font-semibold">
+              <ModalTitle className="text-base font-semibold">
                 Log Time
-              </SheetTitle>
-              <SheetDescription className="text-xs">
+              </ModalTitle>
+              <ModalDescription className="text-xs">
                 Record hours worked against a task.
-              </SheetDescription>
+              </ModalDescription>
             </div>
           </div>
-        </SheetHeader>
+        </ModalHeader>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-4">
           <div className="space-y-1">
@@ -238,6 +247,7 @@ export function LogTimeSheet({
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
+            <HotkeyHint className="mr-auto" />
             <Button
               type="button"
               variant="outline"
@@ -256,7 +266,7 @@ export function LogTimeSheet({
             </Button>
           </div>
         </form>
-      </SheetContent>
-    </Sheet>
+      </ModalContent>
+    </Modal>
   );
 }

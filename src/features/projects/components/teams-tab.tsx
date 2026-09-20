@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Plus } from "lucide-react";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
@@ -10,13 +11,19 @@ import { toast } from "sonner";
 
 interface TeamsTabProps {
   project: Project;
-  selectedMemberId: string | null;
 }
 
-export function TeamsTab({ project, selectedMemberId }: TeamsTabProps) {
+export function TeamsTab({ project }: TeamsTabProps) {
   const { hasMinimumRole } = usePermissions();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isInviteDialogOpen, setIsInviteDialogOpen] = React.useState(false);
+
+  // Ctrl/⌘ + K toggles the invite-member dialog.
+  useModalHotkey({
+    open: isInviteDialogOpen,
+    onOpen: () => setIsInviteDialogOpen(true),
+    onClose: () => setIsInviteDialogOpen(false),
+  });
   const [members, setMembers] = React.useState(project.members);
 
   // Reset the local roster if the user navigates to a different project
@@ -35,15 +42,13 @@ export function TeamsTab({ project, selectedMemberId }: TeamsTabProps) {
 
   const filteredMembers = React.useMemo(() => {
     return members.filter((member) => {
-      const matchesQuickFilter =
-        !selectedMemberId || member.id === selectedMemberId;
       const matchesSearch =
         member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.designation.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesQuickFilter && matchesSearch;
+      return matchesSearch;
     });
-  }, [members, selectedMemberId, searchQuery]);
+  }, [members, searchQuery]);
 
   return (
     <div className="space-y-6">

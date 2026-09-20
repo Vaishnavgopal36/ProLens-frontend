@@ -1,13 +1,11 @@
-import { X } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Icon } from "@/components/ui/icon";
+import { Modal, ModalContent, ModalTitle } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/types/calendar";
 
 interface OverflowPopoverProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  dayNum: number;
+  dateLabel: string;
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
   is24HourMode: boolean;
@@ -16,7 +14,7 @@ interface OverflowPopoverProps {
 export function OverflowPopover({
   open,
   onOpenChange,
-  dayNum,
+  dateLabel,
   events,
   onSelectEvent,
   is24HourMode,
@@ -28,20 +26,12 @@ export function OverflowPopover({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden p-0 sm:max-w-sm border border-border-subtle bg-canvas-surface shadow-xl">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent className="overflow-hidden p-0 sm:max-w-sm border border-border-subtle bg-canvas-surface shadow-xl">
         <div className="px-4 py-3 bg-canvas-bg border-b border-border-subtle flex items-center justify-between">
-          <DialogTitle className="font-bold text-xs text-foreground">
-            Sep {dayNum}, 2026 ({events.length} events)
-          </DialogTitle>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            aria-label="Close"
-            className="text-muted-foreground hover:text-foreground font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-          >
-            <Icon icon={X} size={15} />
-          </button>
+          <ModalTitle className="font-bold text-xs text-foreground">
+            {dateLabel} ({events.length} events)
+          </ModalTitle>
         </div>
 
         <div className="p-3 max-h-72 overflow-y-auto space-y-2">
@@ -65,7 +55,7 @@ export function OverflowPopover({
             </div>
           ))}
         </div>
-      </DialogContent>
-    </Dialog>
+      </ModalContent>
+    </Modal>
   );
 }

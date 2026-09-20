@@ -50,9 +50,6 @@ export function ManagerDashboardPage() {
       {/* Top Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span className="text-xs text-muted-foreground">
-            Management / My Dashboard
-          </span>
           <h1 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
             Project management
           </h1>
