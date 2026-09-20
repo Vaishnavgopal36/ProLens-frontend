@@ -81,7 +81,7 @@ export function UpcomingMilestonesCard({
           </h3>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-medium text-muted-foreground">
+          <span className="text-2xs font-medium text-muted-foreground">
             Due in {activeSprintName}
           </span>
           {onNavigateTab && (
@@ -124,10 +124,10 @@ export function UpcomingMilestonesCard({
               </div>
 
               <div className="flex items-center gap-3 shrink-0">
-                <span className="text-[11px] font-medium text-red-500 dark:text-red-400">
+                <span className="text-2xs font-medium text-red-500 dark:text-red-400">
                   {task.dueDate}
                 </span>
-                <span className="rounded-md border border-border-subtle bg-canvas-bg px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <span className="rounded-md border border-border-subtle bg-canvas-bg px-2 py-0.5 text-3xs font-medium text-muted-foreground">
                   {task.assignee}
                 </span>
               </div>

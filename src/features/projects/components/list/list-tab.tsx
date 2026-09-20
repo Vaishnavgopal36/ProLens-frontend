@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -122,6 +122,21 @@ export function ListTab({
     statusFilter,
   ]);
 
+  const hasActiveFilters =
+    searchQuery.trim().length > 0 ||
+    featureFilter !== ALL_VALUE ||
+    assigneeFilter !== ALL_VALUE ||
+    priorityFilter !== ALL_VALUE ||
+    statusFilter !== ALL_VALUE;
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setFeatureFilter(ALL_VALUE);
+    setAssigneeFilter(ALL_VALUE);
+    setPriorityFilter(ALL_VALUE);
+    setStatusFilter(ALL_VALUE);
+  };
+
   const handleRowClick = (taskId: string) => {
     setEditingTaskId(taskId);
     setIsTaskSheetOpen(true);
@@ -234,6 +249,17 @@ export function ListTab({
                 <SelectItem value="Delivered">Delivered</SelectItem>
               </SelectContent>
             </Select>
+
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="flex items-center gap-1 rounded-full border border-border-subtle bg-canvas-surface px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-canvas-overlay"
+              >
+                <span>Clear filters</span>
+                <Icon icon={X} size={11} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -262,7 +288,7 @@ export function ListTab({
                   >
                     <TableCell className="pl-4">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[11px] text-muted-foreground">
+                        <span className="font-mono text-2xs text-muted-foreground">
                           {task.code}
                         </span>
                         <span
@@ -279,7 +305,7 @@ export function ListTab({
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className="border-transparent bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+                        className="border-transparent bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground"
                       >
                         {task.feature}
                       </Badge>
@@ -290,7 +316,7 @@ export function ListTab({
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className={`border-transparent px-2 py-0.5 text-[11px] font-semibold ${
+                        className={`border-transparent px-2 py-0.5 text-2xs font-semibold ${
                           PRIORITY_BADGE_CLASS[task.priority]
                         }`}
                       >
@@ -300,7 +326,7 @@ export function ListTab({
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className={`border-transparent px-2 py-0.5 text-[11px] font-semibold ${
+                        className={`border-transparent px-2 py-0.5 text-2xs font-semibold ${
                           STATUS_BADGE_CLASS[task.status]
                         }`}
                       >

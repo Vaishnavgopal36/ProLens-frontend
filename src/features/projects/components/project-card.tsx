@@ -2,7 +2,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { Folder, MoreVertical, Settings, Trash2 } from "lucide-react";
 import type { Project } from "@/types/project";
-import { useAuth } from "@/app/providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,14 +39,12 @@ export function ProjectCard({
   onDeleteProject,
 }: ProjectCardProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { hasMinimumRole } = usePermissions();
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
-  const isManager =
-    user?.role === "manager" ||
-    user?.role === "admin" ||
-    user?.role === "super_admin";
+  // Deleting a project is portfolio-lifecycle ownership — admin+ only.
+  const canDeleteProject = hasMinimumRole("admin");
 
   const isOngoing = project.status === "ongoing";
 
@@ -68,7 +66,7 @@ export function ProjectCard({
             <Badge
               variant="outline"
               className={cn(
-                "text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border shrink-0",
+                "text-3xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border shrink-0",
                 isOngoing
                   ? "border-teal-500/40 text-teal-600 bg-teal-500/10 dark:text-teal-400"
                   : "border-gold-500/40 text-gold-600 bg-gold-500/10 dark:text-gold-400",
@@ -97,7 +95,7 @@ export function ProjectCard({
                     <span>Project Settings</span>
                   </DropdownMenuItem>
 
-                  {isManager && (
+                  {canDeleteProject && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -160,7 +158,7 @@ export function ProjectCard({
           {/* Hours & Task Metrics Box */}
           <div className="mt-4 grid grid-cols-3 divide-x divide-border-subtle rounded-lg border border-border-subtle bg-canvas-bg/50 py-2 text-center">
             <div>
-              <p className="text-[10px] text-muted-foreground font-medium">
+              <p className="text-3xs text-muted-foreground font-medium">
                 Estimated
               </p>
               <p className="text-xs font-semibold text-foreground mt-0.5">
@@ -168,7 +166,7 @@ export function ProjectCard({
               </p>
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground font-medium">
+              <p className="text-3xs text-muted-foreground font-medium">
                 Logged
               </p>
               <p className="text-xs font-semibold text-teal-600 dark:text-teal-400 mt-0.5">
@@ -176,7 +174,7 @@ export function ProjectCard({
               </p>
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground font-medium">
+              <p className="text-3xs text-muted-foreground font-medium">
                 Tasks
               </p>
               <p className="text-xs font-semibold text-foreground mt-0.5">
@@ -199,13 +197,13 @@ export function ProjectCard({
                 className="h-6 w-6 border-2 border-canvas-surface ring-1 ring-border-subtle"
               >
                 <AvatarImage src={member.avatarUrl} alt={member.name} />
-                <AvatarFallback className="text-[9px] font-bold bg-navy-500 text-white dark:bg-foreground dark:text-background">
+                <AvatarFallback className="text-4xs font-bold bg-navy-500 text-white dark:bg-foreground dark:text-background">
                   {member.initials}
                 </AvatarFallback>
               </Avatar>
             ))}
             {project.members.length > 3 && (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-canvas-surface bg-muted text-[9px] font-bold text-muted-foreground">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-canvas-surface bg-muted text-4xs font-bold text-muted-foreground">
                 +{project.members.length - 3}
               </div>
             )}

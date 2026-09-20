@@ -247,9 +247,29 @@ export const CATEGORY_COLOR_MAP: Record<
   string,
   { bg: string; text: string; border: string }
 > = {
-  Meeting: { bg: "bg-[#D3E5FA]", text: "text-[#1D4ED8]", border: "border-blue-200" },
-  Client: { bg: "bg-[#C2F3D2]", text: "text-[#15803D]", border: "border-emerald-200" },
-  Workshop: { bg: "bg-[#E9D5FF]", text: "text-[#6B21A8]", border: "border-purple-200" },
-  Marketing: { bg: "bg-[#FCEEA7]", text: "text-[#854D0E]", border: "border-amber-200" },
-  Launch: { bg: "bg-[#FECDD3]", text: "text-[#9F1239]", border: "border-rose-200" },
+  Meeting: {
+    bg: "bg-[#D3E5FA]",
+    text: "text-[#1D4ED8]",
+    border: "border-blue-200",
+  },
+  Client: {
+    bg: "bg-[#C2F3D2]",
+    text: "text-[#15803D]",
+    border: "border-emerald-200",
+  },
+  Workshop: {
+    bg: "bg-[#E9D5FF]",
+    text: "text-[#6B21A8]",
+    border: "border-purple-200",
+  },
+  Marketing: {
+    bg: "bg-[#FCEEA7]",
+    text: "text-[#854D0E]",
+    border: "border-amber-200",
+  },
+  Launch: {
+    bg: "bg-[#FECDD3]",
+    text: "text-[#9F1239]",
+    border: "border-rose-200",
+  },
 };

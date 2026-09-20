@@ -32,8 +32,20 @@ const EVENTS: (CalendarEvent & { month: number; year: number })[] = [
   { year: 2026, month: 8, day: 12, label: "Kickoff Review", color: "amber" },
   { year: 2026, month: 8, day: 20, label: "UI Design Due", color: "rose" },
   { year: 2026, month: 8, day: 22, label: "API Auth Due", color: "teal" },
-  { year: 2026, month: 8, day: 24, label: "Security Audit (10:00)", color: "amber" },
-  { year: 2026, month: 8, day: 24, label: "Acme Client Sync (10:30)", color: "amber" },
+  {
+    year: 2026,
+    month: 8,
+    day: 24,
+    label: "Security Audit (10:00)",
+    color: "amber",
+  },
+  {
+    year: 2026,
+    month: 8,
+    day: 24,
+    label: "Acme Client Sync (10:30)",
+    color: "amber",
+  },
   { year: 2026, month: 8, day: 25, label: "Sprint 4 Review", color: "amber" },
   { year: 2026, month: 8, day: 29, label: "QA Handoff Due", color: "rose" },
 ];
@@ -139,34 +151,36 @@ export function CalendarTab({ project }: CalendarTabProps) {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="p-4 shadow-xs">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Active Sprint Cycle
           </p>
           <p className="mt-1 text-lg font-bold text-foreground">
             {project.activeSprint || "—"}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-2xs text-muted-foreground mt-0.5">
             {project.dueDate ? `Target: ${project.dueDate}` : project.dateRange}
           </p>
         </Card>
         <Card className="p-4 shadow-xs">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Scheduled Events
           </p>
           <p className="mt-1 text-lg font-bold text-foreground">
             {monthEvents.length} events
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-2xs text-muted-foreground mt-0.5">
             In {monthLabel}
           </p>
         </Card>
         <Card className="p-4 shadow-xs">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
             <Icon icon={Flag} size={11} />
             Milestone Deadlines
           </p>
-          <p className="mt-1 text-lg font-bold text-foreground">{deadlineCount}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">This month</p>
+          <p className="mt-1 text-lg font-bold text-foreground">
+            {deadlineCount}
+          </p>
+          <p className="text-2xs text-muted-foreground mt-0.5">This month</p>
         </Card>
         <Card
           className={cn(
@@ -177,7 +191,7 @@ export function CalendarTab({ project }: CalendarTabProps) {
         >
           <p
             className={cn(
-              "text-[10px] font-bold uppercase tracking-wide flex items-center gap-1",
+              "text-3xs font-bold uppercase tracking-wide flex items-center gap-1",
               conflictDays.length > 0
                 ? "text-amber-700 dark:text-amber-400"
                 : "text-muted-foreground",
@@ -189,7 +203,7 @@ export function CalendarTab({ project }: CalendarTabProps) {
           <p className="mt-1 text-lg font-bold text-foreground">
             {conflictDays.length} overlapping
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-2xs text-muted-foreground mt-0.5">
             {conflictDays.length > 0
               ? `Sep ${conflictDays[0][0]}: ${conflictDays[0][1].length} events same day`
               : "No conflicts this month"}
@@ -304,7 +318,7 @@ export function CalendarTab({ project }: CalendarTabProps) {
                       <span
                         key={i}
                         className={cn(
-                          "inline-flex items-center gap-1 self-start max-w-full rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+                          "inline-flex items-center gap-1 self-start max-w-full rounded-full px-1.5 py-0.5 text-3xs font-medium",
                           COLOR_CLASSES[event.color].chip,
                         )}
                       >
@@ -318,7 +332,7 @@ export function CalendarTab({ project }: CalendarTabProps) {
                       </span>
                     ))}
                     {overflowCount > 0 && (
-                      <span className="text-[10px] text-muted-foreground font-medium pl-1">
+                      <span className="text-3xs text-muted-foreground font-medium pl-1">
                         +{overflowCount} more
                       </span>
                     )}
@@ -329,15 +343,17 @@ export function CalendarTab({ project }: CalendarTabProps) {
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-[11px] text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center gap-4 text-2xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" /> Feature workstream
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" /> Feature
+            workstream
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Deadline
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Sprint / conflict
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Sprint /
+            conflict
           </span>
         </div>
       </Card>

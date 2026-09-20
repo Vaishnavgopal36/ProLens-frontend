@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronRight, Clock3, Plus } from "lucide-react";
+import { ChevronRight, Clock3, Plus, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -111,6 +111,17 @@ export function TimeTab({
     });
   };
 
+  const hasActiveFilters =
+    featureFilter !== ALL_VALUE ||
+    assigneeFilter !== ALL_VALUE ||
+    statusFilter !== ALL_VALUE;
+
+  const clearFilters = () => {
+    setFeatureFilter(ALL_VALUE);
+    setAssigneeFilter(ALL_VALUE);
+    setStatusFilter(ALL_VALUE);
+  };
+
   const handleLogTime = (taskId: string, hours: number) => {
     setTimeFeatures((prev) =>
       prev.map((feature) => ({
@@ -167,6 +178,17 @@ export function TimeTab({
               <SelectItem value="COMPLETED">Completed</SelectItem>
             </SelectContent>
           </Select>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="flex items-center gap-1 rounded-full border border-border-subtle bg-canvas-surface px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-canvas-overlay"
+            >
+              <span>Clear filters</span>
+              <Icon icon={X} size={11} />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
@@ -202,7 +224,7 @@ export function TimeTab({
 
       {/* Breakdown Table */}
       <Card className="border-border-subtle bg-canvas-surface p-0 shadow-xs overflow-hidden">
-        <div className="grid grid-cols-[1fr_140px_160px] items-center gap-3 border-b border-border-subtle bg-canvas-bg/60 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="grid grid-cols-[1fr_140px_160px] items-center gap-3 border-b border-border-subtle bg-canvas-bg/60 px-4 py-2 text-3xs font-semibold uppercase tracking-wider text-muted-foreground">
           <span>Feature / Task</span>
           <span className="text-right">Assignee</span>
           <span className="text-right">Logged / Estimated</span>
@@ -245,7 +267,7 @@ export function TimeTab({
                       <Badge
                         variant="outline"
                         className={cn(
-                          "px-2 py-0.5 rounded text-[10px] font-bold shrink-0",
+                          "px-2 py-0.5 rounded text-3xs font-bold shrink-0",
                           meta.badgeClassName,
                         )}
                       >
@@ -256,7 +278,7 @@ export function TimeTab({
                       </span>
                     </div>
 
-                    <span className="text-right text-[11px] text-muted-foreground">
+                    <span className="text-right text-2xs text-muted-foreground">
                       {feature.tasks.length} task
                       {feature.tasks.length === 1 ? "" : "s"}
                     </span>
@@ -295,7 +317,7 @@ export function TimeTab({
                           className="grid grid-cols-[1fr_140px_160px] items-center gap-3 border-t border-border-subtle/60 bg-canvas-bg/30 px-4 py-2.5 pl-10"
                         >
                           <div className="flex min-w-0 items-center gap-2">
-                            <span className="font-mono text-[10px] text-muted-foreground/70 shrink-0">
+                            <span className="font-mono text-3xs text-muted-foreground/70 shrink-0">
                               {task.code}
                             </span>
                             <span className="truncate text-xs font-medium text-foreground">
@@ -304,16 +326,16 @@ export function TimeTab({
                           </div>
 
                           <div className="flex items-center justify-end gap-1.5 text-right">
-                            <span className="truncate text-[11px] text-muted-foreground">
+                            <span className="truncate text-2xs text-muted-foreground">
                               {task.assigneeName}
                             </span>
-                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-navy-500 text-[9px] font-bold text-white dark:bg-foreground dark:text-background">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-navy-500 text-4xs font-bold text-white dark:bg-foreground dark:text-background">
                               {task.assigneeInitials}
                             </span>
                           </div>
 
                           <div className="flex flex-col items-end gap-1">
-                            <span className="text-[11px] font-medium">
+                            <span className="text-2xs font-medium">
                               <span className="text-foreground">
                                 {task.hoursLogged.toFixed(1)}h
                               </span>

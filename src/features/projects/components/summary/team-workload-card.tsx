@@ -33,7 +33,7 @@ export function TeamWorkloadCard({ members }: TeamWorkloadCardProps) {
             Team Workload
           </h3>
         </div>
-        <span className="text-[11px] font-medium text-muted-foreground">
+        <span className="text-2xs font-medium text-muted-foreground">
           Manager view
         </span>
       </div>
@@ -45,7 +45,7 @@ export function TeamWorkloadCard({ members }: TeamWorkloadCardProps) {
               <span className="font-medium text-foreground truncate pr-2">
                 {member.name}
               </span>
-              <span className="text-[11px] font-semibold text-muted-foreground shrink-0">
+              <span className="text-2xs font-semibold text-muted-foreground shrink-0">
                 {member.assignedTasksCount} tasks · {percent}%
               </span>
             </div>

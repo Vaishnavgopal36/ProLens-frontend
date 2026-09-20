@@ -78,10 +78,14 @@ export function ScheduleEventDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden p-0 sm:max-w-[500px] border border-slate-200 bg-white">
-        <div className="flex items-center justify-between bg-[#17283C] px-6 py-4 text-white">
+      <DialogContent className="overflow-hidden p-0 sm:max-w-[500px] border border-border-subtle bg-canvas-surface">
+        <div className="flex items-center justify-between bg-navy-500 px-6 py-4 text-white">
           <div className="flex items-center gap-2">
-            <Icon icon={Plus} size={16} className="text-[#1E8F8E]" />
+            <Icon
+              icon={Plus}
+              size={16}
+              className="text-teal-500 dark:text-teal-400"
+            />
             <DialogTitle className="text-sm font-bold text-white tracking-tight">
               Schedule New Event
             </DialogTitle>
@@ -89,7 +93,8 @@ export function ScheduleEventDialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="text-slate-400 hover:text-white"
+            aria-label="Close"
+            className="text-white/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
             <Icon icon={X} size={16} />
           </button>
@@ -97,7 +102,10 @@ export function ScheduleEventDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6 text-xs">
           <div>
-            <Label htmlFor="event-title" className="block text-xs font-semibold text-slate-700 mb-1">
+            <Label
+              htmlFor="event-title"
+              className="block text-xs font-semibold text-foreground mb-1"
+            >
               Event Title *
             </Label>
             <Input
@@ -105,14 +113,17 @@ export function ScheduleEventDialog({
               placeholder="e.g., Client Retrospective"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-9 text-xs border-[#D8DEE5] rounded bg-white"
+              className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
               required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="event-date" className="block text-xs font-semibold text-slate-700 mb-1">
+              <Label
+                htmlFor="event-date"
+                className="block text-xs font-semibold text-foreground mb-1"
+              >
                 Date *
               </Label>
               <Input
@@ -120,27 +131,31 @@ export function ScheduleEventDialog({
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="h-9 text-xs border-[#D8DEE5] rounded bg-white"
+                className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
                 required
               />
             </div>
             <div>
-              <Label className="block text-xs font-semibold text-slate-700 mb-1">
+              <Label className="block text-xs font-semibold text-foreground mb-1">
                 Category / Theme *
               </Label>
               <Select
                 value={category}
                 onValueChange={(val) => setCategory(val as EventCategory)}
               >
-                <SelectTrigger className="h-9 text-xs border-[#D8DEE5] rounded bg-white">
+                <SelectTrigger className="h-9 text-xs border-border-subtle rounded bg-canvas-surface">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Meeting">Meeting (Blue)</SelectItem>
                   <SelectItem value="Client">Client Call (Green)</SelectItem>
                   <SelectItem value="Workshop">Workshop (Purple)</SelectItem>
-                  <SelectItem value="Marketing">Ads / Campaign (Yellow)</SelectItem>
-                  <SelectItem value="Launch">Sprint / Launch (Rose/Red)</SelectItem>
+                  <SelectItem value="Marketing">
+                    Ads / Campaign (Yellow)
+                  </SelectItem>
+                  <SelectItem value="Launch">
+                    Sprint / Launch (Rose/Red)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -148,7 +163,10 @@ export function ScheduleEventDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="event-start" className="block text-xs font-semibold text-slate-700 mb-1">
+              <Label
+                htmlFor="event-start"
+                className="block text-xs font-semibold text-foreground mb-1"
+              >
                 Start Time *
               </Label>
               <Input
@@ -156,12 +174,15 @@ export function ScheduleEventDialog({
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="h-9 text-xs border-[#D8DEE5] rounded bg-white"
+                className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
                 required
               />
             </div>
             <div>
-              <Label htmlFor="event-end" className="block text-xs font-semibold text-slate-700 mb-1">
+              <Label
+                htmlFor="event-end"
+                className="block text-xs font-semibold text-foreground mb-1"
+              >
                 End Time *
               </Label>
               <Input
@@ -169,14 +190,17 @@ export function ScheduleEventDialog({
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="h-9 text-xs border-[#D8DEE5] rounded bg-white"
+                className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
                 required
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="event-loc" className="block text-xs font-semibold text-slate-700 mb-1">
+            <Label
+              htmlFor="event-loc"
+              className="block text-xs font-semibold text-foreground mb-1"
+            >
               Location / Room
             </Label>
             <Input
@@ -184,12 +208,15 @@ export function ScheduleEventDialog({
               placeholder="e.g., Conf Room B / Zoom"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="h-9 text-xs border-[#D8DEE5] rounded bg-white"
+              className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
             />
           </div>
 
           <div>
-            <Label htmlFor="event-desc" className="block text-xs font-semibold text-slate-700 mb-1">
+            <Label
+              htmlFor="event-desc"
+              className="block text-xs font-semibold text-foreground mb-1"
+            >
               Description / Notes
             </Label>
             <Input
@@ -197,24 +224,24 @@ export function ScheduleEventDialog({
               placeholder="e.g., AdSense + FB, Target A..."
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
-              className="h-9 text-xs border-[#D8DEE5] rounded bg-white"
+              className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
             />
           </div>
 
-          <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end space-x-3 pt-3 border-t border-border-subtle">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="h-8 border-[#D8DEE5] text-slate-600 hover:bg-slate-50 text-xs font-medium"
+              className="h-8 border-border-subtle text-muted-foreground hover:bg-canvas-bg text-xs font-medium"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               size="sm"
-              className="h-8 bg-[#0D1218] hover:bg-[#17283C] text-white text-xs font-semibold shadow-sm border border-amber-500/30 hover:border-amber-400 flex items-center space-x-1.5"
+              className="h-8 bg-navy-900 hover:bg-navy-500 text-white text-xs font-semibold shadow-sm border border-amber-500/30 hover:border-amber-400 flex items-center space-x-1.5"
             >
               <span className="text-amber-400 font-bold">+</span>
               <span>Save Event</span>

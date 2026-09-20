@@ -45,13 +45,13 @@ export function ProjectTeamWidget({
                 className="h-7 w-7 border-2 border-canvas-surface"
               >
                 <AvatarImage src={m.avatarUrl} alt={m.name} />
-                <AvatarFallback className="text-[10px] font-bold bg-navy-500 text-white dark:bg-foreground dark:text-background">
+                <AvatarFallback className="text-3xs font-bold bg-navy-500 text-white dark:bg-foreground dark:text-background">
                   {m.initials}
                 </AvatarFallback>
               </Avatar>
             ))}
             {remainingCount > 0 && (
-              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-canvas-surface bg-muted text-[10px] font-bold text-muted-foreground">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-canvas-surface bg-muted text-3xs font-bold text-muted-foreground">
                 +{remainingCount}
               </div>
             )}
@@ -61,7 +61,7 @@ export function ProjectTeamWidget({
             <p className="font-semibold text-foreground">
               {members.length} Team Members
             </p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               All roles allocated
             </p>
           </div>

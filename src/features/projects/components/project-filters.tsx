@@ -26,7 +26,7 @@ export function ProjectFilters({
   ];
 
   return (
-    <div className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-canvas-surface p-1">
+    <div className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-canvas-surface p-1 w-max">
       {options.map((option) => {
         const isActive = activeFilter === option.key;
 
@@ -36,7 +36,7 @@ export function ProjectFilters({
             type="button"
             onClick={() => onFilterChange(option.key)}
             className={cn(
-              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors outline-none",
+              "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors outline-none",
               isActive
                 ? "bg-canvas-bg text-foreground shadow-xs font-semibold"
                 : "text-muted-foreground hover:bg-canvas-overlay hover:text-foreground",
@@ -45,7 +45,7 @@ export function ProjectFilters({
             <span>{option.label}</span>
             <span
               className={cn(
-                "rounded-full px-1.5 py-0.2 text-[10px]",
+                "rounded-full px-1.5 py-0.2 text-3xs",
                 isActive
                   ? "bg-muted text-foreground font-bold"
                   : "bg-muted/60 text-muted-foreground",

@@ -1,9 +1,5 @@
 export type EventCategory =
-  | "Meeting"
-  | "Client"
-  | "Workshop"
-  | "Marketing"
-  | "Launch";
+  "Meeting" | "Client" | "Workshop" | "Marketing" | "Launch";
 
 export interface CalendarEvent {
   id: string;
@@ -12,7 +8,7 @@ export interface CalendarEvent {
   year: number;
   title: string;
   startTime: string; // "10:00"
-  endTime: string;   // "11:30"
+  endTime: string; // "11:30"
   category: EventCategory;
   desc?: string;
   location?: string;

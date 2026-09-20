@@ -75,15 +75,15 @@ export function FeatureOverviewCard({ onViewAll }: FeatureOverviewCardProps) {
                   variant="outline"
                   className={
                     stream.status === "ACTIVE"
-                      ? "text-[9px] px-1.5 py-0 font-bold border-teal-500/30 text-teal-600 bg-teal-500/10 dark:text-teal-400"
-                      : "text-[9px] px-1.5 py-0 font-bold border-amber-500/30 text-amber-600 bg-amber-500/10 dark:text-amber-400"
+                      ? "text-4xs px-1.5 py-0 font-bold border-teal-500/30 text-teal-600 bg-teal-500/10 dark:text-teal-400"
+                      : "text-4xs px-1.5 py-0 font-bold border-amber-500/30 text-amber-600 bg-amber-500/10 dark:text-amber-400"
                   }
                 >
                   {stream.status}
                 </Badge>
               </div>
 
-              <span className="text-[11px] font-medium text-muted-foreground">
+              <span className="text-2xs font-medium text-muted-foreground">
                 <strong className="text-foreground font-semibold">
                   {stream.progress}%
                 </strong>{" "}

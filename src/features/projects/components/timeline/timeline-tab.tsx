@@ -125,31 +125,35 @@ export function TimelineTab({ project }: TimelineTabProps) {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="p-4 shadow-xs">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Project Window
           </p>
           <p className="mt-1 text-lg font-bold text-foreground">
             {project.activeSprint || "Active"}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-2xs text-muted-foreground mt-0.5">
             {project.dateRange}
           </p>
         </Card>
         <Card className="p-4 shadow-xs">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Timeline Progress
           </p>
-          <p className="mt-1 text-lg font-bold text-foreground">{avgProgress}%</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="mt-1 text-lg font-bold text-foreground">
+            {avgProgress}%
+          </p>
+          <p className="text-2xs text-muted-foreground mt-0.5">
             Avg. across {STREAMS.length} streams
           </p>
         </Card>
         <Card className="p-4 shadow-xs">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Scheduled Workstreams
           </p>
-          <p className="mt-1 text-lg font-bold text-foreground">{STREAMS.length}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="mt-1 text-lg font-bold text-foreground">
+            {STREAMS.length}
+          </p>
+          <p className="text-2xs text-muted-foreground mt-0.5">
             {totalTasks} total tasks on roadmap
           </p>
         </Card>
@@ -162,19 +166,21 @@ export function TimelineTab({ project }: TimelineTabProps) {
         >
           <p
             className={cn(
-              "text-[10px] font-bold uppercase tracking-wide flex items-center gap-1",
+              "text-3xs font-bold uppercase tracking-wide flex items-center gap-1",
               atRiskStreams.length > 0
                 ? "text-amber-700 dark:text-amber-400"
                 : "text-muted-foreground",
             )}
           >
-            {atRiskStreams.length > 0 && <Icon icon={AlertTriangle} size={11} />}
+            {atRiskStreams.length > 0 && (
+              <Icon icon={AlertTriangle} size={11} />
+            )}
             Needs Attention
           </p>
           <p className="mt-1 text-lg font-bold text-foreground">
             {atRiskStreams.length} stream{atRiskStreams.length === 1 ? "" : "s"}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+          <p className="text-2xs text-muted-foreground mt-0.5 truncate">
             {atRiskStreams.length > 0
               ? atRiskStreams.map((s) => s.name).join(", ")
               : "All streams on pace"}
@@ -194,7 +200,9 @@ export function TimelineTab({ project }: TimelineTabProps) {
               Project Gantt &amp; Stream Timeline
             </h4>
           </div>
-          <span className="text-xs text-muted-foreground">{project.dateRange}</span>
+          <span className="text-xs text-muted-foreground">
+            {project.dateRange}
+          </span>
         </div>
 
         <div className="overflow-x-auto">
@@ -205,7 +213,7 @@ export function TimelineTab({ project }: TimelineTabProps) {
                 {WEEK_LABELS.map((label, i) => (
                   <span
                     key={label}
-                    className="absolute text-[9px] text-muted-foreground -translate-x-1/2"
+                    className="absolute text-4xs text-muted-foreground -translate-x-1/2"
                     style={{ left: `${(i / (WEEK_LABELS.length - 1)) * 100}%` }}
                   >
                     {label}
@@ -242,7 +250,7 @@ export function TimelineTab({ project }: TimelineTabProps) {
                           style={{ left: `${TODAY_OFFSET_PERCENT}%` }}
                         />
                         <div
-                          className={`absolute h-full rounded-lg font-bold text-[10px] flex items-center px-2 whitespace-nowrap ${BAR_COLOR_CLASSES[stream.color]}`}
+                          className={`absolute h-full rounded-lg font-bold text-3xs flex items-center px-2 whitespace-nowrap ${BAR_COLOR_CLASSES[stream.color]}`}
                           style={{
                             left: `${stream.offsetPercent}%`,
                             width: `${stream.widthPercent}%`,
@@ -251,7 +259,7 @@ export function TimelineTab({ project }: TimelineTabProps) {
                           {stream.dateRange} ({stream.progress}%)
                         </div>
                       </div>
-                      <span className="w-14 shrink-0 text-right text-[11px] text-muted-foreground">
+                      <span className="w-14 shrink-0 text-right text-2xs text-muted-foreground">
                         {tasks.length} task{tasks.length === 1 ? "" : "s"}
                       </span>
                     </button>
@@ -259,19 +267,20 @@ export function TimelineTab({ project }: TimelineTabProps) {
                     {isExpanded && (
                       <div className="pl-8 pb-2 space-y-1.5">
                         {tasks.length === 0 ? (
-                          <p className="text-[11px] text-muted-foreground py-1">
+                          <p className="text-2xs text-muted-foreground py-1">
                             No tasks scheduled yet.
                           </p>
                         ) : (
                           tasks.map((task) => (
                             <div
                               key={task.id}
-                              className="flex items-center gap-3 py-1 text-[11px]"
+                              className="flex items-center gap-3 py-1 text-2xs"
                             >
                               <span
                                 className={cn(
                                   "h-1.5 w-1.5 rounded-full shrink-0",
-                                  STATUS_DOT_CLASSES[task.status] ?? "bg-muted-foreground",
+                                  STATUS_DOT_CLASSES[task.status] ??
+                                    "bg-muted-foreground",
                                 )}
                               />
                               <span className="font-mono text-muted-foreground/70 shrink-0">
@@ -282,7 +291,7 @@ export function TimelineTab({ project }: TimelineTabProps) {
                               </span>
                               <Badge
                                 variant="outline"
-                                className="text-[9px] px-1.5 py-0 font-semibold shrink-0"
+                                className="text-4xs px-1.5 py-0 font-semibold shrink-0"
                               >
                                 {task.status}
                               </Badge>
@@ -302,12 +311,13 @@ export function TimelineTab({ project }: TimelineTabProps) {
         </div>
 
         {/* Legend */}
-        <div className="mt-4 pt-3 border-t border-border-subtle flex flex-wrap items-center gap-4 text-[11px] text-muted-foreground">
+        <div className="mt-4 pt-3 border-t border-border-subtle flex flex-wrap items-center gap-4 text-2xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-teal-500" /> Active
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-amber-500" /> At risk / upcoming
+            <span className="h-2 w-2 rounded-full bg-amber-500" /> At risk /
+            upcoming
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-px w-4 bg-rose-500/70" /> Today

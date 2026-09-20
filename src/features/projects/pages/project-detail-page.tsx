@@ -29,6 +29,7 @@ import { TimeTab } from "@/features/projects/components/time/time-tab";
 import { AddTaskDialog } from "@/features/projects/components/add-task-dialog";
 import { AddFeatureDialog } from "@/features/projects/components/add-feature-dialog";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   WorkspaceHeaderSkeleton,
   MetricCardGridSkeleton,
@@ -36,21 +37,35 @@ import {
   TableSkeleton,
 } from "@/components/composed/skeletons";
 
+// Teams (governance/roles) and Reports (portfolio-level reporting) are
+// manager-facing concerns — employees only see the tabs relevant to doing
+// their own contributor work on the project.
 const WORKSPACE_TABS = [
-  { value: "summary", label: "Summary", icon: LayoutDashboard },
-  { value: "board", label: "Board", icon: Kanban },
-  { value: "teams", label: "Teams", icon: Users },
-  { value: "features", label: "Features", icon: Layers },
-  { value: "list", label: "List", icon: ListFilter },
-  { value: "calendar", label: "Calendar", icon: Calendar },
-  { value: "timeline", label: "Timeline", icon: Clock },
-  { value: "attachments", label: "Attachments", icon: Paperclip },
-  { value: "reports", label: "Reports", icon: BarChart3 },
-  { value: "time", label: "Time", icon: Timer },
+  {
+    value: "summary",
+    label: "Summary",
+    icon: LayoutDashboard,
+    managerOnly: false,
+  },
+  { value: "board", label: "Board", icon: Kanban, managerOnly: false },
+  { value: "teams", label: "Teams", icon: Users, managerOnly: true },
+  { value: "features", label: "Features", icon: Layers, managerOnly: false },
+  { value: "list", label: "List", icon: ListFilter, managerOnly: false },
+  { value: "calendar", label: "Calendar", icon: Calendar, managerOnly: false },
+  { value: "timeline", label: "Timeline", icon: Clock, managerOnly: false },
+  {
+    value: "attachments",
+    label: "Attachments",
+    icon: Paperclip,
+    managerOnly: false,
+  },
+  { value: "reports", label: "Reports", icon: BarChart3, managerOnly: true },
+  { value: "time", label: "Time", icon: Timer, managerOnly: false },
 ];
 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const { hasMinimumRole } = usePermissions();
   const isLoading = useSimulatedLoading();
   const [selectedMemberId, setSelectedMemberId] = React.useState<string | null>(
     null,
@@ -108,7 +123,9 @@ export function ProjectDetailPage() {
       >
         <div className="overflow-x-auto pb-1">
           <TabsList className="h-9 justify-start bg-canvas-surface p-1 border border-border-subtle w-max sm:w-auto">
-            {WORKSPACE_TABS.map((tab) => (
+            {WORKSPACE_TABS.filter(
+              (tab) => !tab.managerOnly || hasMinimumRole("manager"),
+            ).map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}

@@ -35,11 +35,15 @@ import {
   PROJECT_TAXONOMY,
   REPORT_PRESETS,
 } from "../api/mock-data";
-import { AddTimeDialog, EditTimeDialog } from "../components/time-entry-dialogs";
+import {
+  AddTimeDialog,
+  EditTimeDialog,
+} from "../components/time-entry-dialogs";
 import type { TimeEntry, TimesheetTab, WorkLocation } from "@/types/timesheet";
 
 export function TimesheetPage() {
-  const [entries, setEntries] = React.useState<TimeEntry[]>(INITIAL_TIME_ENTRIES);
+  const [entries, setEntries] =
+    React.useState<TimeEntry[]>(INITIAL_TIME_ENTRIES);
   const [activeTab, setActiveTab] = React.useState<TimesheetTab>("tracking");
   const [weekOffset, setWeekOffset] = React.useState(0);
   const baseWeekStart = new Date(2026, 8, 14); // Sep 14, 2026 (Mon)
@@ -49,18 +53,23 @@ export function TimesheetPage() {
   const [locationFilter, setLocationFilter] = React.useState("ALL");
 
   // Collapsed state for project report table
-  const [collapsedProjects, setCollapsedProjects] = React.useState<Record<string, boolean>>({
+  const [collapsedProjects, setCollapsedProjects] = React.useState<
+    Record<string, boolean>
+  >({
     "Internal Project": false,
   });
 
   // Dialog State
   const [addModalOpen, setAddModalOpen] = React.useState(false);
-  const [selectedDateForAdd, setSelectedDateForAdd] = React.useState("2026-09-14");
-  const [presetProjectForAdd, setPresetProjectForAdd] = React.useState("Website Design");
+  const [selectedDateForAdd, setSelectedDateForAdd] =
+    React.useState("2026-09-14");
+  const [presetProjectForAdd, setPresetProjectForAdd] =
+    React.useState("Website Design");
   const [presetTaskForAdd, setPresetTaskForAdd] = React.useState("");
 
   const [editModalOpen, setEditModalOpen] = React.useState(false);
-  const [activeEditEntry, setActiveEditEntry] = React.useState<TimeEntry | null>(null);
+  const [activeEditEntry, setActiveEditEntry] =
+    React.useState<TimeEntry | null>(null);
 
   // Helper date generators
   const weekDays = React.useMemo(() => {
@@ -99,7 +108,9 @@ export function TimesheetPage() {
 
   // Header week range string
   const weekRangeLabel = React.useMemo(() => {
-    const startMonth = weekDays[0].toLocaleString("default", { month: "short" });
+    const startMonth = weekDays[0].toLocaleString("default", {
+      month: "short",
+    });
     const endMonth = weekDays[6].toLocaleString("default", { month: "short" });
     const startDay = weekDays[0].getDate();
     const endDay = weekDays[6].getDate();
@@ -121,8 +132,10 @@ export function TimesheetPage() {
     weekDays.forEach((d) => {
       const iso = formatDateISO(d);
       let dayList = entries.filter((e) => e.dateStr === iso);
-      if (projectFilter !== "ALL") dayList = dayList.filter((e) => e.project === projectFilter);
-      if (locationFilter !== "ALL") dayList = dayList.filter((e) => e.location === locationFilter);
+      if (projectFilter !== "ALL")
+        dayList = dayList.filter((e) => e.project === projectFilter);
+      if (locationFilter !== "ALL")
+        dayList = dayList.filter((e) => e.location === locationFilter);
 
       dayList.forEach((e) => {
         const m = e.hours * 60 + e.mins;
@@ -141,7 +154,7 @@ export function TimesheetPage() {
   const renderLocationBadge = (loc: WorkLocation) => {
     if (loc === "Tarento Office") {
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+        <span className="inline-flex items-center gap-1 text-3xs text-muted-foreground font-medium">
           <span className="text-teal-600 font-bold">·</span>
           <Icon icon={Building} size={12} className="opacity-70" />
           <span>Office</span>
@@ -150,15 +163,15 @@ export function TimesheetPage() {
     }
     if (loc === "Client Site") {
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
-          <span className="text-slate-400 font-bold">·</span>
+        <span className="inline-flex items-center gap-1 text-3xs text-muted-foreground font-medium">
+          <span className="text-muted-foreground font-bold">·</span>
           <Icon icon={Globe} size={12} className="opacity-70" />
           <span>Client</span>
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+      <span className="inline-flex items-center gap-1 text-3xs text-muted-foreground font-medium">
         <span className="text-amber-500 font-bold">·</span>
         <Icon icon={Home} size={12} className="opacity-70" />
         <span>WFH</span>
@@ -176,16 +189,20 @@ export function TimesheetPage() {
             type="button"
             onClick={() => setActiveTab("tracking")}
             className={cn(
-              "relative pb-2.5 flex items-center gap-2 transition-colors outline-none",
+              "relative pb-2.5 flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-t-sm",
               activeTab === "tracking"
                 ? "text-foreground font-semibold border-b-2 border-navy-500 dark:border-teal-400"
-                : "text-muted-foreground hover:text-foreground border-b-2 border-transparent"
+                : "text-muted-foreground hover:text-foreground border-b-2 border-transparent",
             )}
           >
             <Icon
               icon={Timer}
               size={18}
-              className={activeTab === "tracking" ? "text-teal-600 dark:text-teal-400" : "text-muted-foreground"}
+              className={
+                activeTab === "tracking"
+                  ? "text-teal-600 dark:text-teal-400"
+                  : "text-muted-foreground"
+              }
             />
             <span>Time Tracking</span>
           </button>
@@ -194,16 +211,20 @@ export function TimesheetPage() {
             type="button"
             onClick={() => setActiveTab("report")}
             className={cn(
-              "relative pb-2.5 flex items-center gap-2 transition-colors outline-none",
+              "relative pb-2.5 flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-t-sm",
               activeTab === "report"
                 ? "text-foreground font-semibold border-b-2 border-navy-500 dark:border-teal-400"
-                : "text-muted-foreground hover:text-foreground border-b-2 border-transparent"
+                : "text-muted-foreground hover:text-foreground border-b-2 border-transparent",
             )}
           >
             <Icon
               icon={Clock}
               size={18}
-              className={activeTab === "report" ? "text-teal-600 dark:text-teal-400" : "text-muted-foreground"}
+              className={
+                activeTab === "report"
+                  ? "text-teal-600 dark:text-teal-400"
+                  : "text-muted-foreground"
+              }
             />
             <span>Project Report</span>
           </button>
@@ -214,13 +235,24 @@ export function TimesheetPage() {
           {/* Filter Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
-                <Icon icon={Filter} size={15} className="text-muted-foreground" />
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 text-xs"
+              >
+                <Icon
+                  icon={Filter}
+                  size={15}
+                  className="text-muted-foreground"
+                />
                 <span>Filter</span>
                 <Icon icon={ChevronDown} size={13} className="opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 p-3 bg-canvas-surface border-border-subtle">
+            <DropdownMenuContent
+              align="end"
+              className="w-64 p-3 bg-canvas-surface border-border-subtle"
+            >
               <div className="flex items-center justify-between pb-2 border-b border-border-subtle font-semibold text-xs text-foreground">
                 <span>Filter Timesheets</span>
                 <button
@@ -230,20 +262,20 @@ export function TimesheetPage() {
                     setLocationFilter("ALL");
                     toast.info("Filters reset.");
                   }}
-                  className="text-[11px] text-teal-600 hover:underline"
+                  className="text-2xs text-teal-600 hover:underline"
                 >
                   Reset
                 </button>
               </div>
               <div className="py-2.5 space-y-3 text-xs">
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                  <label className="text-2xs font-medium text-muted-foreground block mb-1">
                     Project
                   </label>
                   <select
                     value={projectFilter}
                     onChange={(e) => setProjectFilter(e.target.value)}
-                    className="w-full text-xs rounded-md border border-input bg-canvas-surface py-1.5 px-2 text-foreground focus:outline-none"
+                    className="w-full text-xs rounded-md border border-input bg-canvas-surface py-1.5 px-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <option value="ALL">All Projects</option>
                     {Object.keys(PROJECT_TAXONOMY).map((p) => (
@@ -254,13 +286,13 @@ export function TimesheetPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                  <label className="text-2xs font-medium text-muted-foreground block mb-1">
                     Location
                   </label>
                   <select
                     value={locationFilter}
                     onChange={(e) => setLocationFilter(e.target.value)}
-                    className="w-full text-xs rounded-md border border-input bg-canvas-surface py-1.5 px-2 text-foreground focus:outline-none"
+                    className="w-full text-xs rounded-md border border-input bg-canvas-surface py-1.5 px-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <option value="ALL">All Locations</option>
                     <option value="Tarento Office">Tarento Office</option>
@@ -275,25 +307,44 @@ export function TimesheetPage() {
           {/* Export Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
-                <Icon icon={Download} size={15} className="text-muted-foreground" />
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 text-xs"
+              >
+                <Icon
+                  icon={Download}
+                  size={15}
+                  className="text-muted-foreground"
+                />
                 <span>Export</span>
                 <Icon icon={ChevronDown} size={13} className="opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-36 bg-canvas-surface border-border-subtle">
+            <DropdownMenuContent
+              align="end"
+              className="w-36 bg-canvas-surface border-border-subtle"
+            >
               <DropdownMenuItem
                 onClick={() => toast.info("Exporting CSV file...")}
                 className="gap-2 text-xs cursor-pointer"
               >
-                <Icon icon={FileSpreadsheet} size={14} className="text-teal-600" />
+                <Icon
+                  icon={FileSpreadsheet}
+                  size={14}
+                  className="text-teal-600"
+                />
                 <span>CSV</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => toast.info("Exporting Excel file...")}
                 className="gap-2 text-xs cursor-pointer"
               >
-                <Icon icon={FileSpreadsheet} size={14} className="text-teal-600" />
+                <Icon
+                  icon={FileSpreadsheet}
+                  size={14}
+                  className="text-teal-600"
+                />
                 <span>Excel</span>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -350,7 +401,11 @@ export function TimesheetPage() {
           </Button>
 
           <div className="flex items-center gap-2 px-2.5">
-            <Icon icon={CalendarIcon} size={16} className="text-teal-600 dark:text-teal-400" />
+            <Icon
+              icon={CalendarIcon}
+              size={16}
+              className="text-teal-600 dark:text-teal-400"
+            />
             <span className="text-xs font-semibold text-foreground font-mono">
               {weekRangeLabel}
             </span>
@@ -379,7 +434,7 @@ export function TimesheetPage() {
                 <Icon icon={Timer} size={20} />
               </div>
               <div>
-                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider block">
+                <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
                   Total Logged
                 </span>
                 <span className="text-xl font-bold text-foreground font-mono">
@@ -394,7 +449,7 @@ export function TimesheetPage() {
                 <Icon icon={Flag} size={20} />
               </div>
               <div>
-                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider block">
+                <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
                   Weekly Target
                 </span>
                 <span className="text-xl font-bold text-foreground font-mono">
@@ -410,20 +465,22 @@ export function TimesheetPage() {
                   "w-10 h-10 rounded-md flex items-center justify-center border",
                   diffMins >= 0
                     ? "bg-teal-500/10 text-teal-600 border-teal-500/20"
-                    : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                    : "bg-amber-500/10 text-amber-600 border-amber-500/20",
                 )}
               >
                 <Icon icon={diffMins >= 0 ? CheckCircle2 : Clock} size={20} />
               </div>
               <div>
-                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider block">
+                <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
                   Difference / Status
                 </span>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span
                     className={cn(
                       "text-base font-bold font-mono",
-                      diffMins >= 0 ? "text-teal-600 dark:text-teal-400" : "text-amber-600 dark:text-amber-400"
+                      diffMins >= 0
+                        ? "text-teal-600 dark:text-teal-400"
+                        : "text-amber-600 dark:text-amber-400",
                     )}
                   >
                     {diffMins >= 0
@@ -432,10 +489,10 @@ export function TimesheetPage() {
                   </span>
                   <span
                     className={cn(
-                      "px-2 py-0.5 rounded text-[10px] font-semibold border",
+                      "px-2 py-0.5 rounded text-3xs font-semibold border",
                       diffMins >= 0
                         ? "bg-teal-500/10 text-teal-600 border-teal-500/30"
-                        : "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                        : "bg-amber-500/10 text-amber-600 border-amber-500/30",
                     )}
                   >
                     {diffMins >= 0 ? "In Compliance" : "Under Target"}
@@ -446,17 +503,20 @@ export function TimesheetPage() {
 
             {/* Project Allocation Breakdown */}
             <Card className="p-3.5 border-border-subtle bg-canvas-surface flex flex-col justify-center">
-              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider block mb-1.5">
+              <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block mb-1.5">
                 Project Allocation
               </span>
               <div className="flex flex-col gap-1 text-xs">
                 {Object.keys(PROJECT_TAXONOMY).map((proj) => (
-                  <div key={proj} className="flex items-center justify-between text-[11px]">
+                  <div
+                    key={proj}
+                    className="flex items-center justify-between text-2xs"
+                  >
                     <span className="flex items-center gap-1.5 text-muted-foreground truncate">
                       <span
                         className={cn(
                           "w-1.5 h-1.5 rounded-full shrink-0",
-                          PROJECT_TAXONOMY[proj]?.dotClass
+                          PROJECT_TAXONOMY[proj]?.dotClass,
                         )}
                       />
                       <span className="truncate max-w-[110px]">{proj}</span>
@@ -474,14 +534,25 @@ export function TimesheetPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3 items-start">
             {weekDays.map((d) => {
               const iso = formatDateISO(d);
-              const dayShort = d.toLocaleString("default", { weekday: "short" });
+              const dayShort = d.toLocaleString("default", {
+                weekday: "short",
+              });
               const dayNum = d.getDate();
 
               let dayEntries = entries.filter((e) => e.dateStr === iso);
-              if (projectFilter !== "ALL") dayEntries = dayEntries.filter((e) => e.project === projectFilter);
-              if (locationFilter !== "ALL") dayEntries = dayEntries.filter((e) => e.location === locationFilter);
+              if (projectFilter !== "ALL")
+                dayEntries = dayEntries.filter(
+                  (e) => e.project === projectFilter,
+                );
+              if (locationFilter !== "ALL")
+                dayEntries = dayEntries.filter(
+                  (e) => e.location === locationFilter,
+                );
 
-              const dayMinutes = dayEntries.reduce((acc, curr) => acc + curr.hours * 60 + curr.mins, 0);
+              const dayMinutes = dayEntries.reduce(
+                (acc, curr) => acc + curr.hours * 60 + curr.mins,
+                0,
+              );
 
               return (
                 <Card
@@ -496,8 +567,10 @@ export function TimesheetPage() {
                       </span>
                       <span
                         className={cn(
-                          "text-[11px] font-mono font-bold",
-                          dayMinutes >= 480 ? "text-teal-600 dark:text-teal-400" : "text-muted-foreground"
+                          "text-2xs font-mono font-bold",
+                          dayMinutes >= 480
+                            ? "text-teal-600 dark:text-teal-400"
+                            : "text-muted-foreground",
                         )}
                       >
                         {formatMins(dayMinutes)}
@@ -513,9 +586,13 @@ export function TimesheetPage() {
                         setPresetTaskForAdd("");
                         setAddModalOpen(true);
                       }}
-                      className="w-full mt-2 py-1 h-7 text-[11px] font-medium border-border-subtle gap-1"
+                      className="w-full mt-2 py-1 h-7 text-2xs font-medium border-border-subtle gap-1"
                     >
-                      <Icon icon={Plus} size={14} className="text-teal-600 dark:text-teal-400" />
+                      <Icon
+                        icon={Plus}
+                        size={14}
+                        className="text-teal-600 dark:text-teal-400"
+                      />
                       <span>Add Time</span>
                     </Button>
                   </div>
@@ -524,8 +601,12 @@ export function TimesheetPage() {
                   <div className="space-y-2 flex-1">
                     {dayEntries.length === 0 ? (
                       <div className="flex-1 flex flex-col items-center justify-center p-4 border border-dashed border-border-subtle rounded-lg text-center my-3 bg-canvas-bg/30">
-                        <Icon icon={Clock} size={16} className="text-muted-foreground/40 mb-1" />
-                        <span className="text-[11px] text-muted-foreground">
+                        <Icon
+                          icon={Clock}
+                          size={16}
+                          className="text-muted-foreground/40 mb-1"
+                        />
+                        <span className="text-2xs text-muted-foreground">
                           No time entries
                         </span>
                       </div>
@@ -541,7 +622,7 @@ export function TimesheetPage() {
                         >
                           <div>
                             <div className="flex items-center justify-between gap-1">
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight truncate max-w-[90px]">
+                              <span className="text-3xs font-bold text-muted-foreground uppercase tracking-tight truncate max-w-[90px]">
                                 {item.project}
                               </span>
                               {renderLocationBadge(item.location)}
@@ -552,8 +633,9 @@ export function TimesheetPage() {
                           </div>
 
                           <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
-                            <span className="text-[11px] font-mono font-bold text-teal-600 dark:text-teal-400">
-                              {item.hours}h {String(item.mins).padStart(2, "0")}m
+                            <span className="text-2xs font-mono font-bold text-teal-600 dark:text-teal-400">
+                              {item.hours}h {String(item.mins).padStart(2, "0")}
+                              m
                             </span>
                             <Icon
                               icon={Edit2}
@@ -579,7 +661,9 @@ export function TimesheetPage() {
           <Card className="px-5 py-3 border-border-subtle bg-canvas-surface flex items-center gap-5 text-xs shadow-xs">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-teal-500" />
-              <span className="text-muted-foreground font-medium">Total Hours:</span>
+              <span className="text-muted-foreground font-medium">
+                Total Hours:
+              </span>
               <span className="font-bold text-foreground text-sm font-mono">
                 {formatMins(totalWeeklyMins)}
               </span>
@@ -587,7 +671,9 @@ export function TimesheetPage() {
             <div className="h-4 w-px bg-border-subtle" />
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-navy-500" />
-              <span className="text-muted-foreground font-medium">Active Projects:</span>
+              <span className="text-muted-foreground font-medium">
+                Active Projects:
+              </span>
               <span className="font-bold text-foreground text-sm">3</span>
             </div>
           </Card>
@@ -597,13 +683,17 @@ export function TimesheetPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-canvas-bg/60 border-b border-border-subtle text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <tr className="bg-canvas-bg/60 border-b border-border-subtle text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <th className="py-3 px-5 min-w-[260px]">Project / Task</th>
                     {weekDays.slice(0, 5).map((d) => (
-                      <th key={d.toISOString()} className="py-3 px-3 text-center w-24">
+                      <th
+                        key={d.toISOString()}
+                        className="py-3 px-3 text-center w-24"
+                      >
                         {d.toLocaleString("default", { weekday: "short" })}{" "}
-                        <span className="text-muted-foreground block font-normal text-[10px]">
-                          {d.toLocaleString("default", { month: "short" })} {d.getDate()}
+                        <span className="text-muted-foreground block font-normal text-3xs">
+                          {d.toLocaleString("default", { month: "short" })}{" "}
+                          {d.getDate()}
                         </span>
                       </th>
                     ))}
@@ -615,7 +705,8 @@ export function TimesheetPage() {
 
                 <tbody className="divide-y divide-border-subtle/70">
                   {Object.keys(PROJECT_TAXONOMY).map((projKey) => {
-                    if (projectFilter !== "ALL" && projectFilter !== projKey) return null;
+                    if (projectFilter !== "ALL" && projectFilter !== projKey)
+                      return null;
                     const isCollapsed = !!collapsedProjects[projKey];
                     const pMeta = PROJECT_TAXONOMY[projKey];
 
@@ -626,14 +717,19 @@ export function TimesheetPage() {
                     weekDays.slice(0, 5).forEach((dayObj, dayIdx) => {
                       const iso = formatDateISO(dayObj);
                       const userEntries = entries.filter(
-                        (e) => e.project === projKey && e.dateStr === iso
+                        (e) => e.project === projKey && e.dateStr === iso,
                       );
-                      const userM = userEntries.reduce((acc, c) => acc + c.hours * 60 + c.mins, 0);
+                      const userM = userEntries.reduce(
+                        (acc, c) => acc + c.hours * 60 + c.mins,
+                        0,
+                      );
 
                       let presetM = 0;
                       if (REPORT_PRESETS[projKey]) {
                         Object.keys(REPORT_PRESETS[projKey]).forEach((t) => {
-                          presetM += Math.round((REPORT_PRESETS[projKey][t][dayIdx] || 0) * 60);
+                          presetM += Math.round(
+                            (REPORT_PRESETS[projKey][t][dayIdx] || 0) * 60,
+                          );
                         });
                       }
 
@@ -661,16 +757,23 @@ export function TimesheetPage() {
                                 size={16}
                                 className={cn(
                                   "transition-transform",
-                                  isCollapsed && "-rotate-90"
+                                  isCollapsed && "-rotate-90",
                                 )}
                               />
                             </span>
-                            <span className={cn("w-2 h-2 rounded-full", pMeta.dotClass)} />
-                            <span className="font-bold text-foreground text-xs">{projKey}</span>
                             <span
                               className={cn(
-                                "px-2 py-0.5 rounded text-[10px] font-medium ml-1",
-                                pMeta.badgeClass
+                                "w-2 h-2 rounded-full",
+                                pMeta.dotClass,
+                              )}
+                            />
+                            <span className="font-bold text-foreground text-xs">
+                              {projKey}
+                            </span>
+                            <span
+                              className={cn(
+                                "px-2 py-0.5 rounded text-3xs font-medium ml-1",
+                                pMeta.badgeClass,
                               )}
                             >
                               {pMeta.tasks.length} tasks
@@ -682,7 +785,9 @@ export function TimesheetPage() {
                               key={idx}
                               className={cn(
                                 "py-3 px-3 text-center font-mono font-semibold",
-                                m > 0 ? "text-foreground bg-canvas-bg/40" : "text-muted-foreground/50"
+                                m > 0
+                                  ? "text-foreground bg-canvas-bg/40"
+                                  : "text-muted-foreground/50",
                               )}
                             >
                               {formatCol(m)}
@@ -704,8 +809,12 @@ export function TimesheetPage() {
                                 className="bg-canvas-surface hover:bg-canvas-bg/50 transition-colors text-foreground"
                               >
                                 <td className="py-2.5 px-5 pl-12 flex items-center gap-2 text-xs">
-                                  <span className="text-muted-foreground/50 font-mono">↳</span>
-                                  <span className="font-medium text-foreground">{taskName}</span>
+                                  <span className="text-muted-foreground/50 font-mono">
+                                    ↳
+                                  </span>
+                                  <span className="font-medium text-foreground">
+                                    {taskName}
+                                  </span>
                                 </td>
 
                                 {weekDays.slice(0, 5).map((dayObj, dayIdx) => {
@@ -714,14 +823,16 @@ export function TimesheetPage() {
                                     (e) =>
                                       e.project === projKey &&
                                       e.task === taskName &&
-                                      e.dateStr === iso
+                                      e.dateStr === iso,
                                   );
                                   const userM = userMatches.reduce(
                                     (acc, c) => acc + c.hours * 60 + c.mins,
-                                    0
+                                    0,
                                   );
                                   const presetM = Math.round(
-                                    (REPORT_PRESETS[projKey]?.[taskName]?.[dayIdx] || 0) * 60
+                                    (REPORT_PRESETS[projKey]?.[taskName]?.[
+                                      dayIdx
+                                    ] || 0) * 60,
                                   );
                                   const cellM = userM > 0 ? userM : presetM;
                                   taskTotalM += cellM;
@@ -770,7 +881,7 @@ export function TimesheetPage() {
 
                 <tfoot>
                   <tr className="bg-canvas-bg/80 border-t-2 border-border-subtle font-bold text-xs text-foreground">
-                    <td className="py-3.5 px-5 uppercase tracking-wider text-[11px] text-muted-foreground">
+                    <td className="py-3.5 px-5 uppercase tracking-wider text-2xs text-muted-foreground">
                       Total
                     </td>
                     {[0, 1, 2, 3, 4].map((dayIdx) => {
@@ -783,14 +894,19 @@ export function TimesheetPage() {
                         let presetM = 0;
                         if (REPORT_PRESETS[p]) {
                           Object.keys(REPORT_PRESETS[p]).forEach((t) => {
-                            presetM += Math.round((REPORT_PRESETS[p][t][dayIdx] || 0) * 60);
+                            presetM += Math.round(
+                              (REPORT_PRESETS[p][t][dayIdx] || 0) * 60,
+                            );
                           });
                         }
                         colMins += Math.max(userM, presetM);
                       });
 
                       return (
-                        <td key={dayIdx} className="py-3.5 px-3 text-center font-mono text-foreground">
+                        <td
+                          key={dayIdx}
+                          className="py-3.5 px-3 text-center font-mono text-foreground"
+                        >
                           {formatMins(colMins)}
                         </td>
                       );
@@ -805,7 +921,10 @@ export function TimesheetPage() {
 
             {/* Print Sheet Utility Bar */}
             <div className="px-5 py-3 bg-canvas-bg/30 border-t border-border-subtle flex items-center justify-between text-xs text-muted-foreground">
-              <span>Showing 3 project breakdowns with nested tasks. Click project row to toggle.</span>
+              <span>
+                Showing 3 project breakdowns with nested tasks. Click project
+                row to toggle.
+              </span>
               <Button
                 variant="outline"
                 size="sm"
@@ -836,7 +955,9 @@ export function TimesheetPage() {
         open={editModalOpen}
         onOpenChange={setEditModalOpen}
         onUpdate={(updated) =>
-          setEntries((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
+          setEntries((prev) =>
+            prev.map((e) => (e.id === updated.id ? updated : e)),
+          )
         }
         onDelete={(id) => setEntries((prev) => prev.filter((e) => e.id !== id))}
       />

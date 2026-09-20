@@ -51,7 +51,7 @@ export function AppHeader() {
             >
               <Avatar className="h-8 w-8 border border-border-subtle cursor-pointer transition-transform hover:scale-105">
                 <AvatarImage src={user?.avatarUrl} alt={user?.name ?? "User"} />
-                <AvatarFallback className="bg-navy-500 text-[11px] font-bold text-white dark:bg-foreground dark:text-background">
+                <AvatarFallback className="bg-navy-500 text-2xs font-bold text-white dark:bg-foreground dark:text-background">
                   {user?.initials ?? "VG"}
                 </AvatarFallback>
               </Avatar>
@@ -66,7 +66,7 @@ export function AppHeader() {
                     src={user?.avatarUrl}
                     alt={user?.name ?? "User"}
                   />
-                  <AvatarFallback className="bg-navy-500 text-[11px] font-bold text-white dark:bg-foreground dark:text-background">
+                  <AvatarFallback className="bg-navy-500 text-2xs font-bold text-white dark:bg-foreground dark:text-background">
                     {user?.initials ?? "VG"}
                   </AvatarFallback>
                 </Avatar>
@@ -74,7 +74,7 @@ export function AppHeader() {
                   <p className="text-xs font-semibold text-foreground truncate">
                     {user?.name ?? "User"}
                   </p>
-                  <p className="text-[11px] text-muted-foreground truncate">
+                  <p className="text-2xs text-muted-foreground truncate">
                     {user?.email ?? ""}
                   </p>
                 </div>
@@ -98,7 +98,7 @@ export function AppHeader() {
                   <strong className="capitalize font-semibold">{theme}</strong>
                 </span>
               </div>
-              <span className="text-[10px] text-muted-foreground uppercase font-semibold">
+              <span className="text-3xs text-muted-foreground uppercase font-semibold">
                 Switch
               </span>
             </DropdownMenuItem>

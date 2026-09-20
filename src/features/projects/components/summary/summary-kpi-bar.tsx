@@ -46,7 +46,7 @@ export function SummaryKpiBar({
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 sm:divide-x divide-border-subtle gap-y-4 sm:gap-y-0">
         {/* 1. PROGRESS */}
         <div className="flex flex-col justify-between pr-4">
-          <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
             {isEmployeeMode ? "My Progress" : "Progress"}
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
@@ -64,7 +64,7 @@ export function SummaryKpiBar({
 
         {/* 2. FEATURES */}
         <div className="flex flex-col justify-between px-0 sm:px-4 pt-3 sm:pt-0">
-          <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
             Features
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
@@ -74,14 +74,14 @@ export function SummaryKpiBar({
                 : project.coreFeaturesCount || 5}
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground truncate">
+          <p className="mt-2 text-2xs text-muted-foreground truncate">
             {isEmployeeMode ? "Assigned tracks" : "4 Active • 1 Planning"}
           </p>
         </div>
 
         {/* 3. TASKS BREAKDOWN */}
         <div className="flex flex-col justify-between px-0 sm:px-4 pt-3 sm:pt-0">
-          <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
             Tasks
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
@@ -89,14 +89,14 @@ export function SummaryKpiBar({
               {totalTasks}
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground truncate">
+          <p className="mt-2 text-2xs text-muted-foreground truncate">
             {totalTasks} sprint assignments
           </p>
         </div>
 
         {/* 4. ESTIMATED */}
         <div className="flex flex-col justify-between px-0 sm:px-4 pt-3 sm:pt-0">
-          <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
             Estimated
           </span>
           <div className="mt-1">
@@ -104,14 +104,14 @@ export function SummaryKpiBar({
               {estimatedHours}h
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground truncate">
+          <p className="mt-2 text-2xs text-muted-foreground truncate">
             Scoped by {project.activeSprint || "Sprint 4"}
           </p>
         </div>
 
         {/* 5. LOGGED EFFORT */}
         <div className="flex flex-col justify-between px-0 sm:px-4 pt-3 sm:pt-0">
-          <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
             Logged Effort
           </span>
           <div className="mt-1">
@@ -119,14 +119,14 @@ export function SummaryKpiBar({
               {loggedHours.toFixed(1)}h
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground truncate">
+          <p className="mt-2 text-2xs text-muted-foreground truncate">
             {burnedPercent}% burned
           </p>
         </div>
 
         {/* 6. REMAINING */}
         <div className="flex flex-col justify-between pl-0 sm:pl-4 pt-3 sm:pt-0">
-          <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
             Remaining
           </span>
           <div className="mt-1">
@@ -134,7 +134,7 @@ export function SummaryKpiBar({
               {remainingHours.toFixed(1)}h
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground truncate">
+          <p className="mt-2 text-2xs text-muted-foreground truncate">
             On schedule for {project.dueDate}
           </p>
         </div>

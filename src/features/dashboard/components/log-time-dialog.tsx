@@ -26,7 +26,7 @@ interface LogTimeDialogProps {
 
 export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
   const [selectedTask, setSelectedTask] = React.useState(
-    EMPLOYEE_PRIORITIES_TABLE[0]?.id ?? ""
+    EMPLOYEE_PRIORITIES_TABLE[0]?.id ?? "",
   );
   const [date, setDate] = React.useState("Today, Sep 18");
   const [duration, setDuration] = React.useState("1.5");
@@ -34,7 +34,9 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const taskObj = EMPLOYEE_PRIORITIES_TABLE.find((t) => t.id === selectedTask);
+    const taskObj = EMPLOYEE_PRIORITIES_TABLE.find(
+      (t) => t.id === selectedTask,
+    );
     const taskName = taskObj ? taskObj.title : "task";
 
     toast.success(`Logged ${duration}h for ${taskName}`);
@@ -53,11 +55,17 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
         <form onSubmit={handleSave} className="space-y-4 pt-2">
           {/* 1. Task Dropdown */}
           <div className="space-y-1.5">
-            <Label htmlFor="task-select" className="text-xs font-semibold text-foreground">
+            <Label
+              htmlFor="task-select"
+              className="text-xs font-semibold text-foreground"
+            >
               Task
             </Label>
             <Select value={selectedTask} onValueChange={setSelectedTask}>
-              <SelectTrigger id="task-select" className="h-9 text-xs bg-canvas-surface">
+              <SelectTrigger
+                id="task-select"
+                className="h-9 text-xs bg-canvas-surface"
+              >
                 <SelectValue placeholder="Select a task..." />
               </SelectTrigger>
               <SelectContent>
@@ -73,7 +81,10 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
           {/* 2. Date & Duration (Two-Column Row) */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="log-date" className="text-xs font-semibold text-foreground">
+              <Label
+                htmlFor="log-date"
+                className="text-xs font-semibold text-foreground"
+              >
                 Date
               </Label>
               <Input
@@ -85,7 +96,10 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="log-duration" className="text-xs font-semibold text-foreground">
+              <Label
+                htmlFor="log-duration"
+                className="text-xs font-semibold text-foreground"
+              >
                 Duration (hours)
               </Label>
               <Input
@@ -103,7 +117,10 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
 
           {/* 3. Work Summary Textarea */}
           <div className="space-y-1.5">
-            <Label htmlFor="work-summary" className="text-xs font-semibold text-foreground">
+            <Label
+              htmlFor="work-summary"
+              className="text-xs font-semibold text-foreground"
+            >
               Work summary
             </Label>
             <textarea
@@ -129,8 +146,9 @@ export function LogTimeDialog({ open, onOpenChange }: LogTimeDialogProps) {
             </Button>
             <Button
               type="submit"
+              variant="accent"
               size="sm"
-              className="text-xs font-semibold h-8 bg-teal-600 hover:bg-teal-700 text-white"
+              className="text-xs font-semibold h-8"
             >
               Save entry
             </Button>

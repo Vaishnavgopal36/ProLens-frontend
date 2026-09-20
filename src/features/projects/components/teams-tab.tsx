@@ -1,11 +1,12 @@
 import * as React from "react";
 import { Plus } from "lucide-react";
-import { useAuth } from "@/app/providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { Project } from "@/types/project";
 import { TeamMembersTable } from "./teams/team-members-table";
 import { InviteMemberDialog } from "./teams/invite-member-dialog";
+import { toast } from "sonner";
 
 interface TeamsTabProps {
   project: Project;
@@ -13,17 +14,27 @@ interface TeamsTabProps {
 }
 
 export function TeamsTab({ project, selectedMemberId }: TeamsTabProps) {
-  const { user } = useAuth();
+  const { hasMinimumRole } = usePermissions();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isInviteDialogOpen, setIsInviteDialogOpen] = React.useState(false);
+  const [members, setMembers] = React.useState(project.members);
 
-  const isManager =
-    user?.role === "manager" ||
-    user?.role === "admin" ||
-    user?.role === "super_admin";
+  // Reset the local roster if the user navigates to a different project
+  // without unmounting this tab (same route, different :projectId).
+  React.useEffect(() => {
+    setMembers(project.members);
+  }, [project.id, project.members]);
+
+  const isManager = hasMinimumRole("manager");
+
+  const handleRemoveMember = (memberId: string) => {
+    const member = members.find((m) => m.id === memberId);
+    setMembers((prev) => prev.filter((m) => m.id !== memberId));
+    if (member) toast.success(`${member.name} removed from the project.`);
+  };
 
   const filteredMembers = React.useMemo(() => {
-    return project.members.filter((member) => {
+    return members.filter((member) => {
       const matchesQuickFilter =
         !selectedMemberId || member.id === selectedMemberId;
       const matchesSearch =
@@ -32,7 +43,7 @@ export function TeamsTab({ project, selectedMemberId }: TeamsTabProps) {
         member.designation.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesQuickFilter && matchesSearch;
     });
-  }, [project.members, selectedMemberId, searchQuery]);
+  }, [members, selectedMemberId, searchQuery]);
 
   return (
     <div className="space-y-6">
@@ -63,10 +74,11 @@ export function TeamsTab({ project, selectedMemberId }: TeamsTabProps) {
       {/* Team Members Table */}
       <TeamMembersTable
         members={filteredMembers}
-        totalMembersCount={project.members.length}
+        totalMembersCount={members.length}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         isManager={isManager}
+        onRemoveMember={handleRemoveMember}
       />
 
       {/* Invite Member Modal */}

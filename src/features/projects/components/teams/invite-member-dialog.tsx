@@ -168,9 +168,7 @@ export function InviteMemberDialog({
               />
             </div>
             {error && (
-              <p className="text-[11px] font-medium text-destructive">
-                {error}
-              </p>
+              <p className="text-2xs font-medium text-destructive">{error}</p>
             )}
           </div>
 
@@ -207,7 +205,7 @@ export function InviteMemberDialog({
                 </SelectContent>
               </Select>
               {grantableRoles.length === 1 && (
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   You can only grant {ROLE_LABELS[grantableRoles[0]]} access.
                 </p>
               )}
@@ -242,7 +240,7 @@ export function InviteMemberDialog({
             </div>
           </div>
 
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Designation is pulled from employee records once the invite is
             accepted — no need to enter it here.
           </p>

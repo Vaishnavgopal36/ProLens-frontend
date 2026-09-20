@@ -91,7 +91,7 @@ export function AdminDashboardPage() {
                 Monitored progress, resource loads, and milestones
               </p>
             </div>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-3xs font-bold text-muted-foreground">
               5 showing
             </span>
           </div>
@@ -115,7 +115,7 @@ export function AdminDashboardPage() {
                       <p className="text-xs font-semibold text-foreground leading-none">
                         {row.name}
                       </p>
-                      <p className="text-[11px] text-muted-foreground leading-none">
+                      <p className="text-2xs text-muted-foreground leading-none">
                         {row.subname}
                       </p>
                     </div>
@@ -135,7 +135,7 @@ export function AdminDashboardPage() {
                             ? "warning"
                             : "destructive"
                       }
-                      className="text-[10px] uppercase font-bold px-2 py-0.5"
+                      className="text-3xs uppercase font-bold px-2 py-0.5"
                     >
                       {row.status}
                     </Badge>
@@ -146,7 +146,7 @@ export function AdminDashboardPage() {
                   <TableCell className="text-right">
                     <button
                       type="button"
-                      className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+                      className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       View
                     </button>
@@ -156,14 +156,20 @@ export function AdminDashboardPage() {
             </TableBody>
           </Table>
 
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
+          <div className="flex items-center justify-between text-2xs text-muted-foreground px-1">
             <span>Showing 5 of 14 projects</span>
             <div className="flex gap-2">
-              <button type="button" className="hover:text-foreground">
+              <button
+                type="button"
+                className="hover:text-foreground rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 Previous
               </button>
               <span>•</span>
-              <button type="button" className="hover:text-foreground">
+              <button
+                type="button"
+                className="hover:text-foreground rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 Next
               </button>
             </div>
@@ -192,7 +198,7 @@ export function AdminDashboardPage() {
                   <p className="text-xs font-semibold text-foreground">
                     {team.department}
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     {team.details}
                   </p>
                 </div>
@@ -209,7 +215,7 @@ export function AdminDashboardPage() {
                 <p className="font-semibold text-foreground">
                   Target capacity nominal
                 </p>
-                <p className="text-muted-foreground text-[11px]">
+                <p className="text-muted-foreground text-2xs">
                   Overall 84% capacity is allocated across units.
                 </p>
               </div>
@@ -217,7 +223,7 @@ export function AdminDashboardPage() {
 
             <button
               type="button"
-              className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline pt-1 block"
+              className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline pt-1 block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               Manage user directory →
             </button>

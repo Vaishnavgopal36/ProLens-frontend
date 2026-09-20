@@ -2,11 +2,10 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/app/app-shell";
 import { ProjectsListPage, ProjectDetailPage } from "@/features/projects";
 import { DashboardPage } from "@/features/dashboard";
-import { OrgInsightsPage } from "@/features/org-insights";
+import { OrgInsightsPage, MyInsightsPage } from "@/features/org-insights";
 import { TimesheetPage } from "@/features/timesheets";
 import { CalendarPage } from "@/features/calendar";
-
-
+import { OrganizationsDirectoryPage } from "@/features/super-admin";
 
 export const router = createBrowserRouter([
   {
@@ -29,10 +28,10 @@ export const router = createBrowserRouter([
         path: "calendar",
         element: <CalendarPage />,
       },
-      // 4. Time Reporting Domain 
+      // 4. Time Reporting Domain
       {
-      path: "timesheets",
-      element: <TimesheetPage />,
+        path: "timesheets",
+        element: <TimesheetPage />,
       },
 
       // 5. Projects Domain
@@ -55,7 +54,12 @@ export const router = createBrowserRouter([
       },
       {
         path: "my-insights",
-        element: <OrgInsightsPage scope="personal" />,
+        element: <MyInsightsPage />,
+      },
+      // 6. Super Admin Domain
+      {
+        path: "organizations",
+        element: <OrganizationsDirectoryPage />,
       },
       {
         path: "*",

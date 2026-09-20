@@ -47,15 +47,15 @@ export function CalendarEventCard({
         }
       }}
       className={cn(
-        "rounded-md border p-1.5 text-left cursor-pointer transition-all hover:opacity-90 hover:shadow-xs outline-none select-none",
+        "rounded-md border p-1.5 text-left cursor-pointer transition-all hover:opacity-90 hover:shadow-xs select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         event.colorBg,
-        event.colorBorder
+        event.colorBorder,
       )}
     >
       <p
         className={cn(
           "truncate text-xs font-bold leading-tight",
-          event.colorText
+          event.colorText,
         )}
       >
         {event.title}
@@ -63,12 +63,12 @@ export function CalendarEventCard({
 
       {/* Time window or marketing subtext matching the prototype */}
       {event.category === "Marketing" ? (
-        <p className="truncate text-[10px] text-[#854D0E]/80 mt-0.5">
+        <p className="truncate text-3xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">
           {event.desc || "AdSense + FB, Target ..."}
         </p>
       ) : (
         timeDisplay && (
-          <p className="truncate text-[10px] opacity-75 font-normal mt-0.5">
+          <p className="truncate text-3xs opacity-75 font-normal mt-0.5">
             {timeDisplay}
           </p>
         )

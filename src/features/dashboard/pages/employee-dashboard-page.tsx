@@ -68,7 +68,7 @@ export function EmployeeDashboardPage() {
             <h2 className="text-sm font-semibold text-foreground">
               My active priorities
             </h2>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-3xs font-bold text-muted-foreground">
               4 assigned
             </span>
           </div>
@@ -95,7 +95,7 @@ export function EmployeeDashboardPage() {
                             ? "accent"
                             : "neutral"
                       }
-                      className="text-[10px] uppercase font-bold px-2 py-0.5"
+                      className="text-3xs uppercase font-bold px-2 py-0.5"
                     >
                       {row.priority}
                     </Badge>
@@ -114,7 +114,7 @@ export function EmployeeDashboardPage() {
                       variant={
                         row.status === "In progress" ? "secondary" : "outline"
                       }
-                      className="text-[10px] uppercase font-semibold px-2 py-0.5"
+                      className="text-3xs uppercase font-semibold px-2 py-0.5"
                     >
                       {row.status}
                     </Badge>
@@ -166,14 +166,14 @@ export function EmployeeDashboardPage() {
 
             <button
               type="button"
-              className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline pt-2 block"
+              className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline pt-2 block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               View full timesheet →
             </button>
           </Card>
         </div>
       </div>
-      
+
       <UpcomingActivities />
 
       {/* 3. MODAL COMPONENT: Placed at the bottom so it renders on top when logTimeOpen is true */}

@@ -260,7 +260,7 @@ export function ProjectSettingsDialog({
 
             {/* Sprint Settings Section */}
             <div className="space-y-2.5 rounded-lg border border-border-subtle bg-canvas-bg/50 p-3">
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <Icon icon={Timer} size={13} />
                 <span>Sprint Configuration</span>
               </div>
@@ -329,13 +329,13 @@ export function ProjectSettingsDialog({
             {/* Timeline & Delivery Deadlines */}
             <div className="space-y-2.5 rounded-lg border border-border-subtle bg-canvas-bg/50 p-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <Icon icon={CalendarIcon} size={13} />
                   <span>Project Deadlines</span>
                 </div>
 
                 {isManager && (
-                  <div className="flex items-center rounded-md border border-border-subtle bg-canvas-surface p-0.5 text-[10px]">
+                  <div className="flex items-center rounded-md border border-border-subtle bg-canvas-surface p-0.5 text-3xs">
                     <button
                       type="button"
                       onClick={() => setDateMode("exact")}

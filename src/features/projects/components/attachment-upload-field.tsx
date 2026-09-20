@@ -27,9 +27,11 @@ function formatBytes(bytes: number) {
 
 function iconFor(name: string) {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
-  if (["png", "jpg", "jpeg", "gif", "svg", "webp"].includes(ext)) return ImageIcon;
+  if (["png", "jpg", "jpeg", "gif", "svg", "webp"].includes(ext))
+    return ImageIcon;
   if (["zip", "rar", "7z", "tar", "gz"].includes(ext)) return FileArchive;
-  if (["json", "js", "ts", "tsx", "sql", "yml", "yaml"].includes(ext)) return FileCode;
+  if (["json", "js", "ts", "tsx", "sql", "yml", "yaml"].includes(ext))
+    return FileCode;
   if (["pdf", "doc", "docx", "txt", "md"].includes(ext)) return FileText;
   return FileIcon;
 }
@@ -65,7 +67,7 @@ export function AttachmentUploadField({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex items-center gap-1 text-[11px] font-medium text-teal-600 dark:text-teal-400 hover:underline"
+          className="flex items-center gap-1 text-2xs font-medium text-teal-600 dark:text-teal-400 hover:underline"
         >
           <Icon icon={Upload} size={12} />
           Upload file
@@ -85,7 +87,7 @@ export function AttachmentUploadField({
       </div>
 
       {attachments.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border-subtle bg-canvas-bg/40 px-2.5 py-3 text-center text-[11px] text-muted-foreground">
+        <p className="rounded-md border border-dashed border-border-subtle bg-canvas-bg/40 px-2.5 py-3 text-center text-2xs text-muted-foreground">
           No files attached yet.
         </p>
       ) : (
@@ -106,7 +108,7 @@ export function AttachmentUploadField({
                   <p className="truncate text-xs font-medium text-foreground">
                     {file.name}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">{file.size}</p>
+                  <p className="text-3xs text-muted-foreground">{file.size}</p>
                 </div>
                 <a
                   href={file.url}

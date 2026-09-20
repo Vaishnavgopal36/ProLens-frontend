@@ -6,12 +6,15 @@ import {
   Clock,
   TrendingUp,
   Activity,
+  Building2,
   PanelLeftClose,
   PanelLeftOpen,
   LogOut,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useUI, useAuth, type UserRole } from "@/app/providers";
+import { useUI, useAuth } from "@/app/providers";
+import { usePermissions } from "@/hooks/use-permissions";
+import type { UserRole } from "@/app/providers";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -49,18 +52,20 @@ const ROLE_NAV_ITEMS: Record<UserRole, NavItem[]> = {
   ],
   admin: [
     { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+    { title: "Projects", href: "/projects", icon: FolderKanban },
     { title: "Activity", href: "#activity", icon: Activity },
     { title: "Org Insights", href: "/org-insights", icon: TrendingUp },
   ],
   super_admin: [
     { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
-    { title: "Org Insights", href: "/org-insights", icon: TrendingUp },
+    { title: "Organizations", href: "/organizations", icon: Building2 },
   ],
 };
 
 export function AppSidebar() {
   const { isSidebarOpen, setSidebarOpen } = useUI();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const { role } = usePermissions();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [activeHash, setActiveHash] = React.useState("#dashboard");
   const [isLogoHovered, setIsLogoHovered] = React.useState(false);
@@ -69,9 +74,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Directly derive items from AuthContext user role
-  const userRole: UserRole = user?.role ?? "employee";
-  const items = ROLE_NAV_ITEMS[userRole] ?? ROLE_NAV_ITEMS.employee;
+  const items = ROLE_NAV_ITEMS[role] ?? ROLE_NAV_ITEMS.employee;
 
   // Once any routed item matches the current URL, hash-based placeholder
   // items (no page built yet) must never show as active alongside it.

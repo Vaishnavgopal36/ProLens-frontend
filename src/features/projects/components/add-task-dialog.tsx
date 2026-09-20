@@ -356,7 +356,7 @@ export function AddTaskDialog({
       <div className="flex items-center justify-between">
         <Label className="text-xs font-medium">Sub-tasks</Label>
         {subtasks.length > 0 && (
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-2xs text-muted-foreground">
             {subtasks.filter((s) => s.done).length} / {subtasks.length} done
           </span>
         )}
@@ -364,7 +364,7 @@ export function AddTaskDialog({
 
       <div className="space-y-1 rounded-md border border-border-subtle bg-canvas-bg/40 p-2">
         {subtasks.length === 0 && !isAddingSubtask && (
-          <p className="px-1 py-1 text-[11px] text-muted-foreground">
+          <p className="px-1 py-1 text-2xs text-muted-foreground">
             No sub-tasks yet.
           </p>
         )}
@@ -383,7 +383,9 @@ export function AddTaskDialog({
             <span
               className={cn(
                 "flex-1 text-xs",
-                sub.done ? "line-through text-muted-foreground" : "text-foreground",
+                sub.done
+                  ? "line-through text-muted-foreground"
+                  : "text-foreground",
               )}
             >
               {sub.title}
@@ -431,7 +433,7 @@ export function AddTaskDialog({
           <button
             type="button"
             onClick={() => setIsAddingSubtask(true)}
-            className="flex items-center gap-1 px-1 py-1 text-[11px] font-medium text-teal-600 dark:text-teal-400 hover:underline"
+            className="flex items-center gap-1 px-1 py-1 text-2xs font-medium text-teal-600 dark:text-teal-400 hover:underline"
           >
             <Icon icon={Plus} size={12} />
             Add sub-task
@@ -460,491 +462,147 @@ export function AddTaskDialog({
           onOpenChange(next);
         }}
       >
-      <SheetContent className="sm:max-w-xl w-full overflow-y-auto p-5">
-        <SheetHeader className="space-y-1 pr-8">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
-                <Icon icon={ListTodo} size={17} />
+        <SheetContent className="sm:max-w-xl w-full overflow-y-auto p-5">
+          <SheetHeader className="space-y-1 pr-8">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
+                  <Icon icon={ListTodo} size={17} />
+                </div>
+                <div className="min-w-0">
+                  <SheetTitle className="text-base font-semibold">
+                    {isViewing
+                      ? "Task Overview"
+                      : isEditMode
+                        ? "Edit Task"
+                        : "Add Task to Workspace"}
+                  </SheetTitle>
+                  <SheetDescription className="text-xs truncate">
+                    {isViewing
+                      ? `Viewing details for this task in ${project.name}.`
+                      : isEditMode
+                        ? `Update details for this task in ${project.name}.`
+                        : `Create and assign a new task within ${project.name}.`}
+                  </SheetDescription>
+                </div>
               </div>
-              <div className="min-w-0">
-                <SheetTitle className="text-base font-semibold">
-                  {isViewing
-                    ? "Task Overview"
-                    : isEditMode
-                      ? "Edit Task"
-                      : "Add Task to Workspace"}
-                </SheetTitle>
-                <SheetDescription className="text-xs truncate">
-                  {isViewing
-                    ? `Viewing details for this task in ${project.name}.`
-                    : isEditMode
-                      ? `Update details for this task in ${project.name}.`
-                      : `Create and assign a new task within ${project.name}.`}
-                </SheetDescription>
-              </div>
-            </div>
 
-            {isViewing && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={enterEditMode}
-                className="h-8 gap-1.5 text-xs font-semibold shrink-0"
-              >
-                <Icon icon={Pencil} size={13} />
-                Edit
-              </Button>
-            )}
-          </div>
-        </SheetHeader>
-
-        {isViewing ? (
-          <div className="space-y-4 pt-4">
-            <div>
-              <h3 className="text-base font-bold text-foreground break-words">
-                {title || "Untitled task"}
-              </h3>
-              {description && (
-                <p className="mt-1.5 text-xs text-muted-foreground whitespace-pre-wrap">
-                  {description}
-                </p>
+              {isViewing && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={enterEditMode}
+                  className="h-8 gap-1.5 text-xs font-semibold shrink-0"
+                >
+                  <Icon icon={Pencil} size={13} />
+                  Edit
+                </Button>
               )}
             </div>
+          </SheetHeader>
 
-            <div className="grid grid-cols-2 gap-3 text-xs rounded-md border border-border-subtle bg-canvas-bg/40 p-3">
+          {isViewing ? (
+            <div className="space-y-4 pt-4">
               <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
-                  Feature / Epic
-                </p>
-                <p className="font-medium text-foreground mt-0.5">{feature}</p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
-                  Status
-                </p>
-                <Badge variant="outline" className="mt-0.5 text-[10px] font-semibold">
-                  {status}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
-                  Priority
-                </p>
-                <p className="font-medium text-foreground mt-0.5">{priority}</p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
-                  Assignee
-                </p>
-                <p className="font-medium text-foreground mt-0.5">{assignee}</p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
-                  Start Date
-                </p>
-                <p className="font-medium text-foreground mt-0.5">
-                  {formatDate(startDate, "—")}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
-                  Due Date
-                </p>
-                <p className="font-medium text-foreground mt-0.5">
-                  {formatDate(dueDate, "—")}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
-                  Estimated Hours
-                </p>
-                <p className="font-medium text-foreground mt-0.5">{estimatedHours}h</p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
-                  Logged Hours
-                </p>
-                <p className="font-medium text-foreground mt-0.5">{loggedHours}h</p>
-              </div>
-            </div>
-
-            {labels.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {labels.map((label) => (
-                  <Badge
-                    key={label}
-                    variant="outline"
-                    className="border-border-subtle bg-canvas-bg/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
-                  >
-                    {label}
-                  </Badge>
-                ))}
-              </div>
-            )}
-
-            {subtasksSection}
-            {attachmentsSection}
-
-            <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={() => setDeleteConfirmOpen(true)}
-                className="gap-1.5"
-              >
-                <Icon icon={Trash2} size={13} />
-                Delete Task
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onOpenChange(false)}
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-3">
-            {/* Title */}
-            <div className="space-y-1">
-              <Label
-                htmlFor="task-title"
-                className={cn("text-xs font-medium", error && "text-destructive")}
-              >
-                Task Title *
-              </Label>
-              <Input
-                id="task-title"
-                placeholder="e.g. Implement Webhook Dispatcher"
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (error) setError(null);
-                }}
-                className={cn(
-                  "h-10 text-sm font-medium bg-canvas-surface transition-colors",
-                  error && "border-destructive focus-visible:ring-destructive/30",
+                <h3 className="text-base font-bold text-foreground break-words">
+                  {title || "Untitled task"}
+                </h3>
+                {description && (
+                  <p className="mt-1.5 text-xs text-muted-foreground whitespace-pre-wrap">
+                    {description}
+                  </p>
                 )}
-                autoFocus
-              />
-              {error && (
-                <p className="text-[11px] font-medium text-destructive">
-                  {error}
-                </p>
-              )}
-            </div>
+              </div>
 
-            {/* Description */}
-            <div className="space-y-1">
-              <Label htmlFor="task-description" className="text-xs font-medium">
-                Description
-              </Label>
-              <textarea
-                id="task-description"
-                rows={3}
-                placeholder="Add scope, notes, or acceptance criteria..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full rounded-md border border-input bg-canvas-surface px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
-              />
-            </div>
-
-            {/* Feature / Status */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="task-feature" className="text-xs font-medium">
-                  Feature / Epic
-                </Label>
-                <Select value={feature} onValueChange={setFeature}>
-                  <SelectTrigger
-                    id="task-feature"
-                    className="h-8 text-xs bg-canvas-surface"
+              <div className="grid grid-cols-2 gap-3 text-xs rounded-md border border-border-subtle bg-canvas-bg/40 p-3">
+                <div>
+                  <p className="text-3xs uppercase tracking-wide text-muted-foreground font-semibold">
+                    Feature / Epic
+                  </p>
+                  <p className="font-medium text-foreground mt-0.5">
+                    {feature}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xs uppercase tracking-wide text-muted-foreground font-semibold">
+                    Status
+                  </p>
+                  <Badge
+                    variant="outline"
+                    className="mt-0.5 text-3xs font-semibold"
                   >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FEATURE_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="task-status" className="text-xs font-medium">
-                  Status
-                </Label>
-                <Select
-                  value={status}
-                  onValueChange={(val) => setStatus(val as TaskFormStatus)}
-                >
-                  <SelectTrigger
-                    id="task-status"
-                    className="h-8 text-xs bg-canvas-surface"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Backlog">Backlog</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Delivered">Delivered</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Priority / Assignee */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="task-priority" className="text-xs font-medium">
-                  Priority
-                </Label>
-                <Select
-                  value={priority}
-                  onValueChange={(val) => setPriority(val as TaskFormPriority)}
-                >
-                  <SelectTrigger
-                    id="task-priority"
-                    className="h-8 text-xs bg-canvas-surface"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="task-assignee" className="text-xs font-medium">
-                  Assignee
-                </Label>
-                <Select value={assignee} onValueChange={setAssignee}>
-                  <SelectTrigger
-                    id="task-assignee"
-                    className="h-8 text-xs bg-canvas-surface"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ASSIGNEE_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Reporter (read-only) */}
-            <div className="space-y-1">
-              <Label className="text-xs font-medium">Reporter</Label>
-              <div className="flex items-center gap-2 rounded-md border border-border-subtle bg-canvas-bg/50 px-2.5 py-1.5">
-                <span className="w-5 h-5 rounded-full bg-navy-500 dark:bg-foreground text-white dark:text-background flex items-center justify-center text-[9px] font-bold shrink-0">
-                  {user?.initials ?? "?"}
-                </span>
-                <span className="text-xs text-foreground">
-                  {user?.name ?? "Unknown User"}
-                </span>
-                <span className="text-[10px] text-muted-foreground ml-auto">
-                  Created this task
-                </span>
-              </div>
-            </div>
-
-            {/* Start / Due Dates */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-medium">Start Date</Label>
-                <Popover
-                  open={isStartCalendarOpen}
-                  onOpenChange={setIsStartCalendarOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "h-8 w-full justify-between px-2.5 text-xs font-normal bg-canvas-surface border-input",
-                        !startDate && "text-muted-foreground",
-                      )}
-                    >
-                      <div className="flex items-center gap-2 truncate">
-                        <Icon
-                          icon={CalendarIcon}
-                          size={13}
-                          className="text-muted-foreground"
-                        />
-                        <span>{formatDate(startDate, "Pick start date")}</span>
-                      </div>
-                      <Icon icon={ChevronDown} size={13} className="opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={(date) => {
-                        setStartDate(date);
-                        setIsStartCalendarOpen(false);
-                      }}
-                      captionLayout="dropdown"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-xs font-medium">Due Date</Label>
-                <Popover
-                  open={isDueCalendarOpen}
-                  onOpenChange={setIsDueCalendarOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "h-8 w-full justify-between px-2.5 text-xs font-normal bg-canvas-surface border-input",
-                        !dueDate && "text-muted-foreground",
-                      )}
-                    >
-                      <div className="flex items-center gap-2 truncate">
-                        <Icon
-                          icon={CalendarIcon}
-                          size={13}
-                          className="text-muted-foreground"
-                        />
-                        <span>{formatDate(dueDate, "Pick due date")}</span>
-                      </div>
-                      <Icon icon={ChevronDown} size={13} className="opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dueDate}
-                      onSelect={(date) => {
-                        setDueDate(date);
-                        setIsDueCalendarOpen(false);
-                      }}
-                      captionLayout="dropdown"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-
-            {/* Time Tracking */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="task-hours" className="text-xs font-medium">
-                  Estimated Hours
-                </Label>
-                <div className="relative">
-                  <Icon
-                    icon={Clock}
-                    size={13}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    id="task-hours"
-                    type="number"
-                    min="0"
-                    value={estimatedHours}
-                    onChange={(e) => setEstimatedHours(e.target.value)}
-                    className="h-8 pl-8 text-xs bg-canvas-surface"
-                  />
+                    {status}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-3xs uppercase tracking-wide text-muted-foreground font-semibold">
+                    Priority
+                  </p>
+                  <p className="font-medium text-foreground mt-0.5">
+                    {priority}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xs uppercase tracking-wide text-muted-foreground font-semibold">
+                    Assignee
+                  </p>
+                  <p className="font-medium text-foreground mt-0.5">
+                    {assignee}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xs uppercase tracking-wide text-muted-foreground font-semibold">
+                    Start Date
+                  </p>
+                  <p className="font-medium text-foreground mt-0.5">
+                    {formatDate(startDate, "—")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xs uppercase tracking-wide text-muted-foreground font-semibold">
+                    Due Date
+                  </p>
+                  <p className="font-medium text-foreground mt-0.5">
+                    {formatDate(dueDate, "—")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xs uppercase tracking-wide text-muted-foreground font-semibold">
+                    Estimated Hours
+                  </p>
+                  <p className="font-medium text-foreground mt-0.5">
+                    {estimatedHours}h
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xs uppercase tracking-wide text-muted-foreground font-semibold">
+                    Logged Hours
+                  </p>
+                  <p className="font-medium text-foreground mt-0.5">
+                    {loggedHours}h
+                  </p>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <Label
-                  htmlFor="task-logged-hours"
-                  className="text-xs font-medium"
-                >
-                  Logged Hours
-                </Label>
-                <div className="relative">
-                  <Icon
-                    icon={Clock}
-                    size={13}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    id="task-logged-hours"
-                    type="number"
-                    min="0"
-                    value={loggedHours}
-                    onChange={(e) => setLoggedHours(e.target.value)}
-                    className="h-8 pl-8 text-xs bg-canvas-surface"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Labels */}
-            <div className="space-y-1">
-              <Label htmlFor="task-labels" className="text-xs font-medium">
-                Labels
-              </Label>
-              <Input
-                id="task-labels"
-                placeholder="Type labels separated by commas, press Enter to add"
-                value={labelInput}
-                onChange={(e) => setLabelInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === ",") {
-                    e.preventDefault();
-                    commitLabelInput();
-                  }
-                }}
-                onBlur={commitLabelInput}
-                className="h-8 text-xs bg-canvas-surface"
-              />
               {labels.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
+                <div className="flex flex-wrap gap-1.5">
                   {labels.map((label) => (
                     <Badge
                       key={label}
                       variant="outline"
-                      className="gap-1 border-border-subtle bg-canvas-bg/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                      className="border-border-subtle bg-canvas-bg/60 px-2 py-0.5 text-3xs font-medium text-muted-foreground"
                     >
                       {label}
-                      <button
-                        type="button"
-                        onClick={() => removeLabel(label)}
-                        className="ml-0.5 rounded-full hover:text-destructive"
-                        aria-label={`Remove label ${label}`}
-                      >
-                        <Icon icon={X} size={10} />
-                      </button>
                     </Badge>
                   ))}
                 </div>
               )}
-            </div>
 
-            {subtasksSection}
-            {attachmentsSection}
+              {subtasksSection}
+              {attachmentsSection}
 
-            <div
-              className={cn(
-                "flex items-center pt-3 border-t border-border-subtle",
-                isEditMode ? "justify-between" : "justify-end gap-2",
-              )}
-            >
-              {isEditMode && (
+              <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
                 <Button
                   type="button"
                   variant="destructive"
@@ -955,29 +613,413 @@ export function AddTaskDialog({
                   <Icon icon={Trash2} size={13} />
                   Delete Task
                 </Button>
-              )}
-              <div className="flex items-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={isEditMode ? cancelEdit : () => onOpenChange(false)}
+                  onClick={() => onOpenChange(false)}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="accent"
-                  size="sm"
-                  className="font-semibold"
-                >
-                  {isEditMode ? "Save Changes" : "Create Task"}
+                  Close
                 </Button>
               </div>
             </div>
-          </form>
-        )}
-      </SheetContent>
+          ) : (
+            <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-3">
+              {/* Title */}
+              <div className="space-y-1">
+                <Label
+                  htmlFor="task-title"
+                  className={cn(
+                    "text-xs font-medium",
+                    error && "text-destructive",
+                  )}
+                >
+                  Task Title *
+                </Label>
+                <Input
+                  id="task-title"
+                  placeholder="e.g. Implement Webhook Dispatcher"
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  className={cn(
+                    "h-10 text-sm font-medium bg-canvas-surface transition-colors",
+                    error &&
+                      "border-destructive focus-visible:ring-destructive/30",
+                  )}
+                  autoFocus
+                />
+                {error && (
+                  <p className="text-2xs font-medium text-destructive">
+                    {error}
+                  </p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1">
+                <Label
+                  htmlFor="task-description"
+                  className="text-xs font-medium"
+                >
+                  Description
+                </Label>
+                <textarea
+                  id="task-description"
+                  rows={3}
+                  placeholder="Add scope, notes, or acceptance criteria..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full rounded-md border border-input bg-canvas-surface px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                />
+              </div>
+
+              {/* Feature / Status */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="task-feature" className="text-xs font-medium">
+                    Feature / Epic
+                  </Label>
+                  <Select value={feature} onValueChange={setFeature}>
+                    <SelectTrigger
+                      id="task-feature"
+                      className="h-8 text-xs bg-canvas-surface"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FEATURE_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="task-status" className="text-xs font-medium">
+                    Status
+                  </Label>
+                  <Select
+                    value={status}
+                    onValueChange={(val) => setStatus(val as TaskFormStatus)}
+                  >
+                    <SelectTrigger
+                      id="task-status"
+                      className="h-8 text-xs bg-canvas-surface"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Backlog">Backlog</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Delivered">Delivered</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Priority / Assignee */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="task-priority"
+                    className="text-xs font-medium"
+                  >
+                    Priority
+                  </Label>
+                  <Select
+                    value={priority}
+                    onValueChange={(val) =>
+                      setPriority(val as TaskFormPriority)
+                    }
+                  >
+                    <SelectTrigger
+                      id="task-priority"
+                      className="h-8 text-xs bg-canvas-surface"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="Low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="task-assignee"
+                    className="text-xs font-medium"
+                  >
+                    Assignee
+                  </Label>
+                  <Select value={assignee} onValueChange={setAssignee}>
+                    <SelectTrigger
+                      id="task-assignee"
+                      className="h-8 text-xs bg-canvas-surface"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ASSIGNEE_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Reporter (read-only) */}
+              <div className="space-y-1">
+                <Label className="text-xs font-medium">Reporter</Label>
+                <div className="flex items-center gap-2 rounded-md border border-border-subtle bg-canvas-bg/50 px-2.5 py-1.5">
+                  <span className="w-5 h-5 rounded-full bg-navy-500 dark:bg-foreground text-white dark:text-background flex items-center justify-center text-4xs font-bold shrink-0">
+                    {user?.initials ?? "?"}
+                  </span>
+                  <span className="text-xs text-foreground">
+                    {user?.name ?? "Unknown User"}
+                  </span>
+                  <span className="text-3xs text-muted-foreground ml-auto">
+                    Created this task
+                  </span>
+                </div>
+              </div>
+
+              {/* Start / Due Dates */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium">Start Date</Label>
+                  <Popover
+                    open={isStartCalendarOpen}
+                    onOpenChange={setIsStartCalendarOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className={cn(
+                          "h-8 w-full justify-between px-2.5 text-xs font-normal bg-canvas-surface border-input",
+                          !startDate && "text-muted-foreground",
+                        )}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <Icon
+                            icon={CalendarIcon}
+                            size={13}
+                            className="text-muted-foreground"
+                          />
+                          <span>
+                            {formatDate(startDate, "Pick start date")}
+                          </span>
+                        </div>
+                        <Icon
+                          icon={ChevronDown}
+                          size={13}
+                          className="opacity-50"
+                        />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={startDate}
+                        onSelect={(date) => {
+                          setStartDate(date);
+                          setIsStartCalendarOpen(false);
+                        }}
+                        captionLayout="dropdown"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium">Due Date</Label>
+                  <Popover
+                    open={isDueCalendarOpen}
+                    onOpenChange={setIsDueCalendarOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className={cn(
+                          "h-8 w-full justify-between px-2.5 text-xs font-normal bg-canvas-surface border-input",
+                          !dueDate && "text-muted-foreground",
+                        )}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <Icon
+                            icon={CalendarIcon}
+                            size={13}
+                            className="text-muted-foreground"
+                          />
+                          <span>{formatDate(dueDate, "Pick due date")}</span>
+                        </div>
+                        <Icon
+                          icon={ChevronDown}
+                          size={13}
+                          className="opacity-50"
+                        />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dueDate}
+                        onSelect={(date) => {
+                          setDueDate(date);
+                          setIsDueCalendarOpen(false);
+                        }}
+                        captionLayout="dropdown"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              {/* Time Tracking */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="task-hours" className="text-xs font-medium">
+                    Estimated Hours
+                  </Label>
+                  <div className="relative">
+                    <Icon
+                      icon={Clock}
+                      size={13}
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      id="task-hours"
+                      type="number"
+                      min="0"
+                      value={estimatedHours}
+                      onChange={(e) => setEstimatedHours(e.target.value)}
+                      className="h-8 pl-8 text-xs bg-canvas-surface"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="task-logged-hours"
+                    className="text-xs font-medium"
+                  >
+                    Logged Hours
+                  </Label>
+                  <div className="relative">
+                    <Icon
+                      icon={Clock}
+                      size={13}
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      id="task-logged-hours"
+                      type="number"
+                      min="0"
+                      value={loggedHours}
+                      onChange={(e) => setLoggedHours(e.target.value)}
+                      className="h-8 pl-8 text-xs bg-canvas-surface"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Labels */}
+              <div className="space-y-1">
+                <Label htmlFor="task-labels" className="text-xs font-medium">
+                  Labels
+                </Label>
+                <Input
+                  id="task-labels"
+                  placeholder="Type labels separated by commas, press Enter to add"
+                  value={labelInput}
+                  onChange={(e) => setLabelInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === ",") {
+                      e.preventDefault();
+                      commitLabelInput();
+                    }
+                  }}
+                  onBlur={commitLabelInput}
+                  className="h-8 text-xs bg-canvas-surface"
+                />
+                {labels.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {labels.map((label) => (
+                      <Badge
+                        key={label}
+                        variant="outline"
+                        className="gap-1 border-border-subtle bg-canvas-bg/60 px-2 py-0.5 text-3xs font-medium text-muted-foreground"
+                      >
+                        {label}
+                        <button
+                          type="button"
+                          onClick={() => removeLabel(label)}
+                          className="ml-0.5 rounded-full hover:text-destructive"
+                          aria-label={`Remove label ${label}`}
+                        >
+                          <Icon icon={X} size={10} />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {subtasksSection}
+              {attachmentsSection}
+
+              <div
+                className={cn(
+                  "flex items-center pt-3 border-t border-border-subtle",
+                  isEditMode ? "justify-between" : "justify-end gap-2",
+                )}
+              >
+                {isEditMode && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setDeleteConfirmOpen(true)}
+                    className="gap-1.5"
+                  >
+                    <Icon icon={Trash2} size={13} />
+                    Delete Task
+                  </Button>
+                )}
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={
+                      isEditMode ? cancelEdit : () => onOpenChange(false)
+                    }
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="accent"
+                    size="sm"
+                    className="font-semibold"
+                  >
+                    {isEditMode ? "Save Changes" : "Create Task"}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          )}
+        </SheetContent>
       </Sheet>
 
       <ConfirmDialog

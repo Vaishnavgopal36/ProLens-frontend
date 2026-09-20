@@ -96,7 +96,7 @@ export function RecentActivityCard() {
           </h3>
         </div>
         <Select value={userFilter} onValueChange={setUserFilter}>
-          <SelectTrigger className="h-7 w-auto text-[11px] bg-canvas-bg border-border-subtle px-2 gap-1">
+          <SelectTrigger className="h-7 w-auto text-2xs bg-canvas-bg border-border-subtle px-2 gap-1">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -120,7 +120,7 @@ export function RecentActivityCard() {
           <div key={item.id} className="flex items-start gap-3">
             <Avatar className="h-7 w-7 shrink-0 border border-border-subtle mt-0.5">
               <AvatarFallback
-                className={`text-[10px] font-bold text-white ${item.avatarBg}`}
+                className={`text-3xs font-bold text-white ${item.avatarBg}`}
               >
                 {item.initials}
               </AvatarFallback>
@@ -134,7 +134,7 @@ export function RecentActivityCard() {
                   {item.target}
                 </span>
               </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-2xs text-muted-foreground mt-0.5">
                 {item.timeAgo}
               </p>
             </div>

@@ -152,9 +152,7 @@ export function AddFeatureDialog({
               autoFocus
             />
             {error && (
-              <p className="text-[11px] font-medium text-destructive">
-                {error}
-              </p>
+              <p className="text-2xs font-medium text-destructive">{error}</p>
             )}
           </div>
 

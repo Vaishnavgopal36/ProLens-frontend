@@ -1,6 +1,6 @@
 import * as React from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Icon } from "@/components/ui/icon";
+import { ConfirmDialog } from "@/components/composed/confirm-dialog";
 import { PROJECT_TAXONOMY } from "../api/mock-data";
 import type { TimeEntry, WorkLocation } from "@/types/timesheet";
 
@@ -43,11 +44,12 @@ export function AddTimeDialog({
 }: AddTimeDialogProps) {
   const [project, setProject] = React.useState(defaultProject);
   const [task, setTask] = React.useState(
-    defaultTask || PROJECT_TAXONOMY[defaultProject]?.tasks[0] || ""
+    defaultTask || PROJECT_TAXONOMY[defaultProject]?.tasks[0] || "",
   );
   const [hours, setHours] = React.useState(2);
   const [mins, setMins] = React.useState(30);
-  const [location, setLocation] = React.useState<WorkLocation>("Tarento Office");
+  const [location, setLocation] =
+    React.useState<WorkLocation>("Tarento Office");
 
   React.useEffect(() => {
     if (defaultProject) {
@@ -98,7 +100,9 @@ export function AddTimeDialog({
 
         <form onSubmit={handleSubmit} className="space-y-3.5 pt-1 text-xs">
           <div>
-            <Label className="block font-medium text-foreground mb-1">Date</Label>
+            <Label className="block font-medium text-foreground mb-1">
+              Date
+            </Label>
             <Input
               value={defaultDateStr}
               readOnly
@@ -107,7 +111,9 @@ export function AddTimeDialog({
           </div>
 
           <div>
-            <Label className="block font-medium text-foreground mb-1">Project *</Label>
+            <Label className="block font-medium text-foreground mb-1">
+              Project *
+            </Label>
             <Select value={project} onValueChange={handleProjectChange}>
               <SelectTrigger className="h-9 text-xs border-border-subtle bg-canvas-surface">
                 <SelectValue />
@@ -123,7 +129,9 @@ export function AddTimeDialog({
           </div>
 
           <div>
-            <Label className="block font-medium text-foreground mb-1">Task *</Label>
+            <Label className="block font-medium text-foreground mb-1">
+              Task *
+            </Label>
             <Select value={task} onValueChange={setTask}>
               <SelectTrigger className="h-9 text-xs border-border-subtle bg-canvas-surface">
                 <SelectValue />
@@ -139,22 +147,24 @@ export function AddTimeDialog({
           </div>
 
           <div>
-            <Label className="block font-medium text-foreground mb-1">Duration *</Label>
+            <Label className="block font-medium text-foreground mb-1">
+              Duration *
+            </Label>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2 bg-canvas-bg/50 border border-border-subtle rounded-md px-3">
-                <span className="text-muted-foreground text-[11px]">Hours</span>
+                <span className="text-muted-foreground text-2xs">Hours</span>
                 <input
                   type="number"
                   min={0}
                   max={23}
                   value={hours}
                   onChange={(e) => setHours(Number(e.target.value))}
-                  className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 focus:ring-0 p-0 text-sm outline-none"
+                  className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 p-0 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   required
                 />
               </div>
               <div className="flex items-center gap-2 bg-canvas-bg/50 border border-border-subtle rounded-md px-3">
-                <span className="text-muted-foreground text-[11px]">Mins</span>
+                <span className="text-muted-foreground text-2xs">Mins</span>
                 <input
                   type="number"
                   min={0}
@@ -162,7 +172,7 @@ export function AddTimeDialog({
                   step={15}
                   value={mins}
                   onChange={(e) => setMins(Number(e.target.value))}
-                  className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 focus:ring-0 p-0 text-sm outline-none"
+                  className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 p-0 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   required
                 />
               </div>
@@ -170,7 +180,9 @@ export function AddTimeDialog({
           </div>
 
           <div>
-            <Label className="block font-medium text-foreground mb-1">Work Location</Label>
+            <Label className="block font-medium text-foreground mb-1">
+              Work Location
+            </Label>
             <Select
               value={location}
               onValueChange={(val) => setLocation(val as WorkLocation)}
@@ -179,7 +191,9 @@ export function AddTimeDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Tarento Office">Tarento Office (Onsite)</SelectItem>
+                <SelectItem value="Tarento Office">
+                  Tarento Office (Onsite)
+                </SelectItem>
                 <SelectItem value="WFH">WFH (Remote)</SelectItem>
                 <SelectItem value="Client Site">Client Site</SelectItem>
               </SelectContent>
@@ -196,7 +210,12 @@ export function AddTimeDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" variant="accent" size="sm" className="text-xs font-semibold">
+            <Button
+              type="submit"
+              variant="accent"
+              size="sm"
+              className="text-xs font-semibold"
+            >
               Save Entry
             </Button>
           </DialogFooter>
@@ -224,7 +243,8 @@ export function EditTimeDialog({
 }: EditTimeDialogProps) {
   const [hours, setHours] = React.useState(0);
   const [mins, setMins] = React.useState(0);
-  const [location, setLocation] = React.useState<WorkLocation>("Tarento Office");
+  const [location, setLocation] =
+    React.useState<WorkLocation>("Tarento Office");
   const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -271,7 +291,9 @@ export function EditTimeDialog({
 
           <form onSubmit={handleUpdate} className="space-y-3.5 pt-1 text-xs">
             <div>
-              <Label className="block font-medium text-foreground mb-1">Date</Label>
+              <Label className="block font-medium text-foreground mb-1">
+                Date
+              </Label>
               <Input
                 value={entry.dateStr}
                 readOnly
@@ -281,7 +303,9 @@ export function EditTimeDialog({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="block font-medium text-foreground mb-1">Project</Label>
+                <Label className="block font-medium text-foreground mb-1">
+                  Project
+                </Label>
                 <Input
                   value={entry.project}
                   readOnly
@@ -289,7 +313,9 @@ export function EditTimeDialog({
                 />
               </div>
               <div>
-                <Label className="block font-medium text-foreground mb-1">Task</Label>
+                <Label className="block font-medium text-foreground mb-1">
+                  Task
+                </Label>
                 <Input
                   value={entry.task}
                   readOnly
@@ -299,22 +325,24 @@ export function EditTimeDialog({
             </div>
 
             <div>
-              <Label className="block font-medium text-foreground mb-1">Duration</Label>
+              <Label className="block font-medium text-foreground mb-1">
+                Duration
+              </Label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2 bg-canvas-bg/50 border border-border-subtle rounded-md px-3">
-                  <span className="text-muted-foreground text-[11px]">Hours</span>
+                  <span className="text-muted-foreground text-2xs">Hours</span>
                   <input
                     type="number"
                     min={0}
                     max={23}
                     value={hours}
                     onChange={(e) => setHours(Number(e.target.value))}
-                    className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 focus:ring-0 p-0 text-sm outline-none"
+                    className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 p-0 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     required
                   />
                 </div>
                 <div className="flex items-center gap-2 bg-canvas-bg/50 border border-border-subtle rounded-md px-3">
-                  <span className="text-muted-foreground text-[11px]">Mins</span>
+                  <span className="text-muted-foreground text-2xs">Mins</span>
                   <input
                     type="number"
                     min={0}
@@ -322,7 +350,7 @@ export function EditTimeDialog({
                     step={15}
                     value={mins}
                     onChange={(e) => setMins(Number(e.target.value))}
-                    className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 focus:ring-0 p-0 text-sm outline-none"
+                    className="w-full h-9 bg-transparent text-center font-bold text-foreground border-0 p-0 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     required
                   />
                 </div>
@@ -330,7 +358,9 @@ export function EditTimeDialog({
             </div>
 
             <div>
-              <Label className="block font-medium text-foreground mb-1">Work Location</Label>
+              <Label className="block font-medium text-foreground mb-1">
+                Work Location
+              </Label>
               <Select
                 value={location}
                 onValueChange={(val) => setLocation(val as WorkLocation)}
@@ -339,7 +369,9 @@ export function EditTimeDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Tarento Office">Tarento Office (Onsite)</SelectItem>
+                  <SelectItem value="Tarento Office">
+                    Tarento Office (Onsite)
+                  </SelectItem>
                   <SelectItem value="WFH">WFH (Remote)</SelectItem>
                   <SelectItem value="Client Site">Client Site</SelectItem>
                 </SelectContent>
@@ -367,7 +399,12 @@ export function EditTimeDialog({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" variant="accent" size="sm" className="text-xs font-semibold">
+                <Button
+                  type="submit"
+                  variant="accent"
+                  size="sm"
+                  className="text-xs font-semibold"
+                >
                   Save Changes
                 </Button>
               </div>
@@ -377,41 +414,14 @@ export function EditTimeDialog({
       </Dialog>
 
       {/* Confirmation Sub-Modal */}
-      <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-        <DialogContent className="sm:max-w-[380px] p-5 border-border-subtle bg-canvas-surface space-y-3">
-          <div className="w-9 h-9 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
-            <Icon icon={AlertTriangle} size={20} />
-          </div>
-          <div>
-            <DialogTitle className="text-sm font-bold text-foreground">
-              Delete Time Entry
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground mt-1">
-              Are you sure you want to delete this time entry? This will permanently remove it and recalculate your weekly timesheet.
-            </DialogDescription>
-          </div>
-          <DialogFooter className="pt-2 border-t border-border-subtle gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setConfirmDeleteOpen(false)}
-              className="text-xs"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              onClick={handleExecuteDelete}
-              className="text-xs"
-            >
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title="Delete Time Entry"
+        description="Are you sure you want to delete this time entry? This will permanently remove it and recalculate your weekly timesheet."
+        confirmLabel="Delete"
+        onConfirm={handleExecuteDelete}
+      />
     </>
   );
 }

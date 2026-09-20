@@ -26,6 +26,14 @@ import {
   CardListSkeleton,
   TableSkeleton,
 } from "@/components/composed/skeletons";
+import { BurndownChart } from "@/components/composed/burndown-chart";
+import {
+  BASE_DAILY_DELTAS,
+  BASE_SPRINT_CAPACITY_HOURS,
+  CURRENT_SPRINT_LABEL,
+  SPRINT_TODAY_DAY,
+  SPRINT_TOTAL_DAYS,
+} from "../api/burndown-mock";
 
 type ProjectHealth = "On track" | "At risk" | "Delayed" | "Completed";
 
@@ -103,9 +111,6 @@ const PROJECTS: ProjectPerf[] = [
   },
 ];
 
-// Projects the signed-in employee is staffed on, for the "My Insights" scope.
-const MY_PROJECT_IDS = ["p-1", "p-4"];
-
 const HEALTH_BADGE_CLASSES: Record<ProjectHealth, string> = {
   "On track":
     "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800",
@@ -122,13 +127,6 @@ const HEALTH_BAR_CLASSES: Record<ProjectHealth, string> = {
   Delayed: "bg-rose-500",
   Completed: "bg-navy-500 dark:bg-foreground/70",
 };
-
-const COMPLETION_TREND = [
-  { label: "Week 1", value: 41 },
-  { label: "Week 2", value: 52 },
-  { label: "Week 3", value: 61 },
-  { label: "Week 4", value: 68.4 },
-];
 
 interface EstimatedVsActualChartProps {
   projects: ProjectPerf[];
@@ -203,81 +201,9 @@ function EstimatedVsActualChart({ projects }: EstimatedVsActualChartProps) {
   );
 }
 
-interface TrendPoint {
-  label: string;
-  value: number;
-}
-
-interface CompletionTrendChartProps {
-  trend: TrendPoint[];
-}
-
-function CompletionTrendChart({ trend }: CompletionTrendChartProps) {
-  const width = 560;
-  const height = 200;
-  const padL = 10;
-  const padR = 10;
-  const padT = 20;
-  const padB = 10;
-  const plotW = width - padL - padR;
-  const plotH = height - padT - padB;
-
-  const xFor = (i: number) => padL + (i / (trend.length - 1)) * plotW;
-  const yFor = (value: number) => padT + plotH - (value / 100) * plotH;
-
-  const points = trend.map((d, i) => `${xFor(i)},${yFor(d.value)}`).join(" ");
-  const areaPoints = `${xFor(0)},${padT + plotH} ${points} ${xFor(
-    trend.length - 1,
-  )},${padT + plotH}`;
-
-  return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="w-full h-auto overflow-visible"
-    >
-      {[0, 0.5, 1].map((frac) => (
-        <line
-          key={frac}
-          x1={padL}
-          x2={width - padR}
-          y1={padT + plotH * (1 - frac)}
-          y2={padT + plotH * (1 - frac)}
-          stroke="currentColor"
-          strokeOpacity={0.08}
-          strokeDasharray="3 3"
-        />
-      ))}
-
-      <polygon points={areaPoints} className="fill-teal-500 opacity-10" />
-      <polyline
-        points={points}
-        fill="none"
-        className="stroke-teal-600 dark:stroke-teal-400"
-        strokeWidth={2}
-      />
-      {trend.map((d, i) => (
-        <circle
-          key={d.label}
-          cx={xFor(i)}
-          cy={yFor(d.value)}
-          r={3.5}
-          className="fill-canvas-surface stroke-teal-600 dark:stroke-teal-400"
-          strokeWidth={2}
-        />
-      ))}
-    </svg>
-  );
-}
-
-interface OrgInsightsPageProps {
-  /** "personal" scopes everything to the signed-in employee's own projects. */
-  scope?: "org" | "personal";
-}
-
-export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
+export function OrgInsightsPage() {
   const isLoading = useSimulatedLoading();
   const [period, setPeriod] = React.useState("30d");
-  const isPersonal = scope === "personal";
 
   if (isLoading) {
     return (
@@ -293,30 +219,20 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
     );
   }
 
-  const scopedProjects = isPersonal
-    ? PROJECTS.filter((p) => MY_PROJECT_IDS.includes(p.id))
-    : PROJECTS;
-
-  const activeProjects = scopedProjects.length;
-  const avgCompletion = isPersonal
-    ? Math.round(
-        (scopedProjects.reduce((s, p) => s + p.progress, 0) /
-          scopedProjects.length) *
-          10,
-      ) / 10
-    : 68.4;
-  const totalHoursLogged = scopedProjects.reduce((s, p) => s + p.actual, 0);
-  const atRisk = scopedProjects.filter((p) => p.health === "At risk").length;
-  const delayed = scopedProjects.filter((p) => p.health === "Delayed").length;
+  const activeProjects = PROJECTS.length;
+  const avgCompletion = 68.4;
+  const totalHoursLogged = PROJECTS.reduce((s, p) => s + p.actual, 0);
+  const atRisk = PROJECTS.filter((p) => p.health === "At risk").length;
+  const delayed = PROJECTS.filter((p) => p.health === "Delayed").length;
   const needsAttention = atRisk + delayed;
 
-  const trend = isPersonal
-    ? COMPLETION_TREND.map((d, i) => ({
-        ...d,
-        value:
-          Math.round(avgCompletion * (0.55 + i * 0.15) * 10) / 10,
-      }))
-    : COMPLETION_TREND;
+  // Portfolio-wide burndown — same chart type as a project's Reports tab,
+  // scaled to the portfolio's total estimated hours instead of one project's.
+  const portfolioCapacityHours = PROJECTS.reduce((s, p) => s + p.estimated, 0);
+  const portfolioScale = portfolioCapacityHours / BASE_SPRINT_CAPACITY_HOURS;
+  const portfolioDailyDeltas = BASE_DAILY_DELTAS.map(
+    (d) => Math.round(d * portfolioScale * 10) / 10,
+  );
 
   return (
     <div className="space-y-6">
@@ -327,11 +243,11 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
             <span>Insights</span>
             <Icon icon={ChevronRight} size={12} className="opacity-50" />
             <span className="text-foreground font-semibold">
-              {isPersonal ? "My Performance" : "Portfolio Performance"}
+              Portfolio Performance
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {isPersonal ? "My performance" : "Project performance"}
+            Project performance
           </h1>
         </div>
 
@@ -356,7 +272,7 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
           <p className="text-xs font-medium text-muted-foreground">
-            {isPersonal ? "My active projects" : "Active projects"}
+            Active projects
           </p>
           <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
             {activeProjects}
@@ -365,7 +281,7 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
 
         <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
           <p className="text-xs font-medium text-muted-foreground">
-            {isPersonal ? "My avg. completion" : "Avg. completion"}
+            Avg. completion
           </p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight text-foreground">
@@ -376,7 +292,7 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
 
         <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
           <p className="text-xs font-medium text-muted-foreground">
-            {isPersonal ? "My hours logged" : "Total hours logged"}
+            Total hours logged
           </p>
           <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
             {totalHoursLogged.toFixed(1)}h
@@ -398,7 +314,7 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
                 : "text-muted-foreground",
             )}
           >
-            {isPersonal ? "Needs my attention" : "Needs attention"}
+            Needs attention
           </p>
           <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
             {needsAttention}
@@ -416,12 +332,12 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
             <h3 className="text-sm font-bold text-foreground">
               Estimated vs. actual hours
             </h3>
-            <span className="text-[10px] font-semibold text-muted-foreground">
+            <span className="text-3xs font-semibold text-muted-foreground">
               HRS
             </span>
           </div>
-          <EstimatedVsActualChart projects={scopedProjects} />
-          <div className="mt-3 flex items-center gap-4 text-[11px] text-muted-foreground">
+          <EstimatedVsActualChart projects={PROJECTS} />
+          <div className="mt-3 flex items-center gap-4 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-sm bg-navy-500 dark:bg-foreground/70" />
               Estimated
@@ -434,29 +350,26 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
         </Card>
 
         <Card className="p-5 shadow-xs border-border-subtle bg-canvas-surface">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-foreground">
-              Completion trend
-            </h3>
-            <span className="text-[10px] font-semibold text-muted-foreground">
-              W1 – W4
-            </span>
-          </div>
-          <CompletionTrendChart trend={trend} />
-          <div className="mt-1 grid grid-cols-4 text-center text-[10px] text-muted-foreground">
-            {trend.map((d) => (
-              <span key={d.label}>
-                {d.label} ({d.value}%)
-              </span>
-            ))}
-          </div>
+          <h3 className="text-sm font-bold text-foreground">
+            {CURRENT_SPRINT_LABEL}: Active Effort &amp; Burndown Trajectory
+          </h3>
+          <p className="text-2xs text-muted-foreground mt-0.5 mb-3">
+            Ideal line vs actual remaining effort across a {SPRINT_TOTAL_DAYS}
+            -day sprint window, portfolio-wide
+          </p>
+          <BurndownChart
+            totalHours={portfolioCapacityHours}
+            dailyDeltas={portfolioDailyDeltas}
+            totalDays={SPRINT_TOTAL_DAYS}
+            todayDay={SPRINT_TODAY_DAY}
+          />
         </Card>
       </div>
 
       {/* Project performance table */}
       <Card className="p-5 shadow-xs border-border-subtle bg-canvas-surface overflow-x-auto">
         <h3 className="text-sm font-bold text-foreground mb-3">
-          {isPersonal ? "My projects" : "Project performance"}
+          Project performance
         </h3>
         <Table>
           <TableHeader>
@@ -470,7 +383,7 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {scopedProjects.map((project) => {
+            {PROJECTS.map((project) => {
               const variance =
                 Math.round(
                   ((project.actual - project.estimated) / project.estimated) *
@@ -486,7 +399,7 @@ export function OrgInsightsPage({ scope = "org" }: OrgInsightsPageProps) {
                     <Badge
                       variant="outline"
                       className={cn(
-                        "text-[10px] font-bold",
+                        "text-3xs font-bold",
                         HEALTH_BADGE_CLASSES[project.health],
                       )}
                     >

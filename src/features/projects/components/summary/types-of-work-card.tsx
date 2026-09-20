@@ -65,7 +65,7 @@ export function TypesOfWorkCard({
             Types of Work
           </h3>
         </div>
-        <span className="text-[11px] font-medium text-muted-foreground">
+        <span className="text-2xs font-medium text-muted-foreground">
           {tasksCount + subtasksCount + coreFeaturesCount} items
         </span>
       </div>

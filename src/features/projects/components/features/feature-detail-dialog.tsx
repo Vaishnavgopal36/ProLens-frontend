@@ -9,15 +9,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/app/providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { cn } from "@/lib/utils";
 import type { FeatureStream } from "./mock-data";
 import { TASKS_BY_FEATURE } from "./task-mock-data";
-
-const PRIORITY_BADGE_CLASSES: Record<string, string> = {
-  High: "bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300",
-  Medium: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
-  Low: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
-};
+import { PRIORITY_BADGE_CLASSES } from "@/features/projects/lib/badge-styles";
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
   "To Do": "bg-canvas-overlay text-muted-foreground",
@@ -40,9 +36,9 @@ export function FeatureDetailDialog({
   onOpenChange,
 }: FeatureDetailDialogProps) {
   const { user } = useAuth();
+  const { isEmployee } = usePermissions();
 
   const allTasks = feature ? (TASKS_BY_FEATURE[feature.name] ?? []) : [];
-  const isEmployee = user?.role === "employee";
   const visibleTasks = isEmployee
     ? allTasks.filter((task) => task.assigneeName === user?.name)
     : allTasks;
@@ -81,8 +77,8 @@ export function FeatureDetailDialog({
               variant="outline"
               className={
                 isActive
-                  ? "text-[10px] px-2 py-0.5 font-bold border-teal-500/30 text-teal-600 bg-teal-500/10 dark:text-teal-400"
-                  : "text-[10px] px-2 py-0.5 font-bold border-amber-500/30 text-amber-700 bg-amber-500/10 dark:text-amber-400"
+                  ? "text-3xs px-2 py-0.5 font-bold border-teal-500/30 text-teal-600 bg-teal-500/10 dark:text-teal-400"
+                  : "text-3xs px-2 py-0.5 font-bold border-amber-500/30 text-amber-700 bg-amber-500/10 dark:text-amber-400"
               }
             >
               {feature.status}
@@ -129,7 +125,7 @@ export function FeatureDetailDialog({
                     </h5>
                     <span
                       className={cn(
-                        "shrink-0 px-2 py-0.5 rounded text-[10px] font-semibold",
+                        "shrink-0 px-2 py-0.5 rounded text-3xs font-semibold",
                         PRIORITY_BADGE_CLASSES[task.priority],
                       )}
                     >
@@ -140,17 +136,17 @@ export function FeatureDetailDialog({
                   <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-border-subtle text-xs">
                     <span
                       className={cn(
-                        "px-2 py-0.5 rounded text-[10px] font-semibold",
+                        "px-2 py-0.5 rounded text-3xs font-semibold",
                         STATUS_BADGE_CLASSES[task.status],
                       )}
                     >
                       {task.status}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-muted-foreground text-[11px]">
+                      <span className="text-muted-foreground text-2xs">
                         {task.assigneeName}
                       </span>
-                      <span className="w-5 h-5 rounded-full bg-navy-500 dark:bg-foreground text-white dark:text-background flex items-center justify-center text-[9px] font-bold shrink-0">
+                      <span className="w-5 h-5 rounded-full bg-navy-500 dark:bg-foreground text-white dark:text-background flex items-center justify-center text-4xs font-bold shrink-0">
                         {task.assigneeInitials}
                       </span>
                     </div>

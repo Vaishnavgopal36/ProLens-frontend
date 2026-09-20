@@ -81,7 +81,7 @@ export function ManagerDashboardPage() {
             <h2 className="text-sm font-semibold text-foreground">
               Active &amp; assigned tasks
             </h2>
-            <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-[10px] font-bold text-teal-600 dark:text-teal-400">
+            <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-3xs font-bold text-teal-600 dark:text-teal-400">
               24 total in progress
             </span>
           </div>
@@ -104,7 +104,7 @@ export function ManagerDashboardPage() {
                       <p className="text-xs font-semibold text-foreground leading-none">
                         {task.name}
                       </p>
-                      <p className="text-[11px] text-muted-foreground leading-none">
+                      <p className="text-2xs text-muted-foreground leading-none">
                         {task.subtext}
                       </p>
                     </div>
@@ -115,7 +115,7 @@ export function ManagerDashboardPage() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-[9px] bg-navy-500 text-white font-bold">
+                        <AvatarFallback className="text-4xs bg-navy-500 text-white font-bold">
                           {task.assignee.initials}
                         </AvatarFallback>
                       </Avatar>
@@ -130,7 +130,7 @@ export function ManagerDashboardPage() {
                   <TableCell className="text-right">
                     <button
                       type="button"
-                      className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+                      className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       View
                     </button>
@@ -164,18 +164,18 @@ export function ManagerDashboardPage() {
                       <p className="text-xs font-semibold text-foreground">
                         {proj.name}
                       </p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-2xs text-muted-foreground">
                         {proj.subtext}
                       </p>
                     </div>
-                    <Badge variant="success" className="text-[9px] px-1.5 py-0">
+                    <Badge variant="success" className="text-4xs px-1.5 py-0">
                       {proj.status}
                     </Badge>
                   </div>
 
                   {/* Progress bar */}
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-medium">
+                    <div className="flex justify-between text-2xs font-medium">
                       <span>Progress: {proj.progress}%</span>
                       <span className="text-muted-foreground font-mono">
                         {proj.loggedHours}h logged
@@ -195,19 +195,19 @@ export function ManagerDashboardPage() {
                       {proj.members.map((initials, i) => (
                         <div
                           key={i}
-                          className="flex h-5 w-5 items-center justify-center rounded-full bg-navy-500 text-[8px] font-bold text-white ring-1 ring-canvas-surface"
+                          className="flex h-5 w-5 items-center justify-center rounded-full bg-navy-500 text-5xs font-bold text-white ring-1 ring-canvas-surface"
                         >
                           {initials}
                         </div>
                       ))}
-                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[8px] font-bold text-muted-foreground ring-1 ring-canvas-surface">
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-5xs font-bold text-muted-foreground ring-1 ring-canvas-surface">
                         +{proj.moreMembers}
                       </div>
                     </div>
 
                     <button
                       type="button"
-                      className="flex items-center gap-1 text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+                      className="flex items-center gap-1 text-2xs font-semibold text-teal-600 dark:text-teal-400 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       <span>Open workspace</span>
                       <Icon icon={ArrowRight} size={11} />

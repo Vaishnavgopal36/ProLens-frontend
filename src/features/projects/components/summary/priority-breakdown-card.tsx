@@ -46,7 +46,7 @@ export function PriorityBreakdownCard({
         <button
           type="button"
           onClick={() => onNavigateTab("list")}
-          className="text-[11px] font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:underline"
+          className="text-2xs font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:underline"
         >
           View list
         </button>
@@ -63,7 +63,7 @@ export function PriorityBreakdownCard({
               className="flex flex-1 flex-col items-center justify-end h-full group"
               title={`${priority}: ${count} task${count === 1 ? "" : "s"}`}
             >
-              <span className="text-[11px] font-semibold text-foreground mb-1">
+              <span className="text-2xs font-semibold text-foreground mb-1">
                 {count}
               </span>
               <div
@@ -82,7 +82,7 @@ export function PriorityBreakdownCard({
             <div
               key={priority}
               className={cn(
-                "flex flex-1 items-center justify-center gap-1 text-[11px] font-medium",
+                "flex flex-1 items-center justify-center gap-1 text-2xs font-medium",
                 meta.textClass,
               )}
             >

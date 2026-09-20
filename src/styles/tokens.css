@@ -63,59 +63,61 @@
     --radius: 0.5rem;
   }
 
-  /* Dark Theme — Stripe Connect's own dark-mode appearance tokens, used
-     as-is instead of a derived version of the light-mode brand palette.
-     The brand scales (--teal-*, --gold-*) are also overridden here so
-     every existing bg-teal-500 / text-gold-400 etc. class site-wide
-     picks up Stripe's blue/orange instead of the light-mode teal/gold. */
+  /* Dark Theme — near-black moody palette (bg #0A0B0D / surface #16181C /
+     border #2A2D33 / text #F2F3F5 / accent #4C8DFF), built as full
+     50–900 scales rather than one flat hex per role so existing tint-pair
+     usages (e.g. bg-teal-950 + text-teal-300) keep working. The brand
+     scales (--teal-*, --gold-*) are overridden here so every existing
+     bg-teal-500 / text-gold-400 etc. class site-wide picks up this
+     palette's blue/amber instead of the light-mode teal/gold. */
   .dark {
-    --canvas-bg: #14171d;
-    --canvas-surface: #1b1e25;
-    --canvas-overlay: #2b3039;
+    --canvas-bg: #0a0b0d;
+    --canvas-surface: #16181c;
+    --canvas-overlay: #1f222a;
 
-    --border-subtle: #2b3039;
-    --border-strong: #3d4552;
+    --border-subtle: #2a2d33;
+    --border-strong: #3b3f47;
 
-    --background: 220 17% 10%;
-    --foreground: 220 13% 82%;
-    --card: 225 15% 12%;
-    --card-foreground: 220 13% 82%;
-    --popover: 220 14% 17%;
-    --popover-foreground: 220 13% 82%;
-    --primary: 220 13% 82%;
-    --primary-foreground: 220 17% 10%;
-    --secondary: 210 100% 50%;
+    --background: 220 13% 4%;
+    --foreground: 220 13% 96%;
+    --card: 220 12% 10%;
+    --card-foreground: 220 13% 96%;
+    --popover: 224 15% 14%;
+    --popover-foreground: 220 13% 96%;
+    --primary: 220 13% 96%;
+    --primary-foreground: 220 13% 4%;
+    --secondary: 218 100% 65%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 225 15% 12%;
-    --muted-foreground: 217 20% 62%;
-    --accent: 210 45% 18%;
-    --accent-foreground: 220 13% 82%;
-    --destructive: 349 88% 57%;
+    --muted: 220 12% 12%;
+    --muted-foreground: 218 12% 62%;
+    --accent: 218 40% 18%;
+    --accent-foreground: 220 13% 96%;
+    --destructive: 4 85% 62%;
     --destructive-foreground: 0 0% 100%;
-    --ring: 210 100% 50%;
+    --ring: 218 100% 65%;
 
-    /* Brand scale overrides: Stripe blue in place of teal. */
-    --teal-50: #e6f3ff;
-    --teal-100: #cce7ff;
-    --teal-200: #99ceff;
-    --teal-300: #66b6ff;
-    --teal-400: #339dff;
-    --teal-500: #0085ff;
-    --teal-600: #006dd6;
-    --teal-700: #0057ad;
-    --teal-800: #004184;
-    --teal-900: #002b5b;
+    /* Brand scale overrides: accent blue (#4C8DFF at 500) in place of teal. */
+    --teal-50: #eaf2ff;
+    --teal-100: #d2e4ff;
+    --teal-200: #a6c8ff;
+    --teal-300: #79acff;
+    --teal-400: #5c9cff;
+    --teal-500: #4c8dff;
+    --teal-600: #3d74d6;
+    --teal-700: #2f5bad;
+    --teal-800: #204285;
+    --teal-900: #142a5c;
 
-    /* Brand scale overrides: Stripe warning-orange in place of gold. */
-    --gold-50: #fff1e6;
-    --gold-100: #ffe0c2;
-    --gold-200: #ffc285;
-    --gold-300: #ffa347;
-    --gold-400: #ff8a1a;
-    --gold-500: #f27400;
-    --gold-600: #cc6100;
-    --gold-700: #a34d00;
-    --gold-800: #7a3a00;
-    --gold-900: #522600;
+    /* Brand scale overrides: warn amber (#F5A623 at 500) in place of gold. */
+    --gold-50: #fff6e8;
+    --gold-100: #feeac7;
+    --gold-200: #fdd48e;
+    --gold-300: #fbbc57;
+    --gold-400: #f8ae3c;
+    --gold-500: #f5a623;
+    --gold-600: #cc8712;
+    --gold-700: #a36a0d;
+    --gold-800: #7a4f09;
+    --gold-900: #4a2f05;
   }
 }

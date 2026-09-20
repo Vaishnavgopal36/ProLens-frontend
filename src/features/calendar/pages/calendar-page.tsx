@@ -32,8 +32,18 @@ import type {
 } from "@/types/calendar";
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -45,15 +55,17 @@ export function CalendarPage() {
   const [viewType, setViewType] = React.useState<CalendarViewMode>("month");
   const [timeScope, setTimeScope] = React.useState<TimeScope>("month");
   const [is24HourMode, setIs24HourMode] = React.useState(true);
-  const [activeCategories, setActiveCategories] = React.useState<Set<EventCategory>>(
-    new Set(["Marketing", "Meeting", "Client", "Workshop", "Launch"])
-  );
+  const [activeCategories, setActiveCategories] = React.useState<
+    Set<EventCategory>
+  >(new Set(["Marketing", "Meeting", "Client", "Workshop", "Launch"]));
   const [searchQuery, setSearchQuery] = React.useState("");
 
   // Modals & Selection state
   const [addModalOpen, setAddModalOpen] = React.useState(false);
-  const [selectedDateForAdd, setSelectedDateForAdd] = React.useState("2026-09-12");
-  const [selectedEvent, setSelectedEvent] = React.useState<CalendarEvent | null>(null);
+  const [selectedDateForAdd, setSelectedDateForAdd] =
+    React.useState("2026-09-12");
+  const [selectedEvent, setSelectedEvent] =
+    React.useState<CalendarEvent | null>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
   const [overflowOpen, setOverflowOpen] = React.useState(false);
   const [overflowDay, setOverflowDay] = React.useState(12);
@@ -62,7 +74,9 @@ export function CalendarPage() {
   const [weekStartDay, setWeekStartDay] = React.useState(8);
 
   // Drag and Drop tracking
-  const [draggedEventId, setDraggedEventId] = React.useState<string | null>(null);
+  const [draggedEventId, setDraggedEventId] = React.useState<string | null>(
+    null,
+  );
   const [dragOverDay, setDragOverDay] = React.useState<number | null>(null);
 
   // Time formatter helper
@@ -77,7 +91,8 @@ export function CalendarPage() {
   };
 
   const formatWindow = (start: string, end: string) => {
-    if (start === "00:00" && end === "23:59") return is24HourMode ? "00:00 - 23:59" : "All Day";
+    if (start === "00:00" && end === "23:59")
+      return is24HourMode ? "00:00 - 23:59" : "All Day";
     return `${formatTime(start)} - ${formatTime(end)}`;
   };
 
@@ -116,7 +131,9 @@ export function CalendarPage() {
   const handleDrop = (targetDay: number) => {
     if (!draggedEventId) return;
     setEvents((prev) =>
-      prev.map((ev) => (ev.id === draggedEventId ? { ...ev, day: targetDay } : ev))
+      prev.map((ev) =>
+        ev.id === draggedEventId ? { ...ev, day: targetDay } : ev,
+      ),
     );
     const found = events.find((e) => e.id === draggedEventId);
     toast.success(`Event "${found?.title ?? ""}" moved to Sep ${targetDay}!`);
@@ -150,50 +167,56 @@ export function CalendarPage() {
         activeCategories.has(e.category) &&
         (searchQuery === "" ||
           e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          e.category.toLowerCase().includes(searchQuery.toLowerCase()))
+          e.category.toLowerCase().includes(searchQuery.toLowerCase())),
     );
   }, [events, currentMonth, currentYear, activeCategories, searchQuery]);
 
   return (
-    <section className="max-w-[1340px] mx-auto bg-white border border-[#D8DEE5] rounded-lg shadow-sm p-5 md:p-6 mb-8 text-[#17283C]">
+    <section className="max-w-[1340px] mx-auto bg-canvas-surface border border-border-subtle rounded-lg shadow-sm p-5 md:p-6 mb-8 text-foreground">
       {/* Top Title & Global Search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 gap-3">
-        <h2 className="text-xl font-bold tracking-tight text-[#17283C]">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           Event Calendar
         </h2>
         <div className="relative w-full sm:w-80">
           <Icon
             icon={Search}
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <Input
             placeholder="Search events, clients, tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-8 text-xs bg-[#F8FAFC] border-[#D8DEE5]"
+            className="pl-9 h-8 text-xs bg-canvas-bg border-border-subtle"
           />
         </div>
       </div>
 
       {/* Main Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-6 pt-1 border-b border-slate-100">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-6 pt-1 border-b border-border-subtle">
         {/* Left: Date navigation */}
         <div className="flex items-center space-x-2">
           <button
             type="button"
             onClick={() => changeMonth(-1)}
-            className="w-8 h-8 flex items-center justify-center rounded border border-[#D8DEE5] bg-white hover:bg-slate-50 text-slate-600 text-sm font-semibold transition"
+            aria-label="Previous month"
+            className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle bg-canvas-surface hover:bg-canvas-bg text-muted-foreground text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             &lt;
           </button>
 
-          <div className="flex items-center pl-2.5 pr-2 py-1 border border-[#D8DEE5] rounded bg-white text-xs font-semibold text-slate-800 space-x-1.5">
-            <Icon icon={CalendarIcon} size={14} className="text-slate-500" />
+          <div className="flex items-center pl-2.5 pr-2 py-1 border border-border-subtle rounded bg-canvas-surface text-xs font-semibold text-foreground space-x-1.5">
+            <Icon
+              icon={CalendarIcon}
+              size={14}
+              className="text-muted-foreground"
+            />
             <select
+              aria-label="Month"
               value={currentMonth}
               onChange={(e) => setCurrentMonth(Number(e.target.value))}
-              className="border-0 bg-transparent py-0 pl-1 pr-5 text-xs font-semibold text-slate-800 focus:ring-0 cursor-pointer outline-none"
+              className="border-0 bg-transparent py-0 pl-1 pr-5 text-xs font-semibold text-foreground cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {MONTH_NAMES.map((name, idx) => (
                 <option key={name} value={idx}>
@@ -204,9 +227,10 @@ export function CalendarPage() {
           </div>
 
           <select
+            aria-label="Year"
             value={currentYear}
             onChange={(e) => setCurrentYear(Number(e.target.value))}
-            className="py-1 px-3 border border-[#D8DEE5] rounded bg-white text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer"
+            className="py-1 px-3 border border-border-subtle rounded bg-canvas-surface text-xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="2025">2025</option>
             <option value="2026">2026</option>
@@ -216,7 +240,8 @@ export function CalendarPage() {
           <button
             type="button"
             onClick={() => changeMonth(1)}
-            className="w-8 h-8 flex items-center justify-center rounded border border-[#D8DEE5] bg-white hover:bg-slate-50 text-slate-600 text-sm font-semibold transition"
+            aria-label="Next month"
+            className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle bg-canvas-surface hover:bg-canvas-bg text-muted-foreground text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             &gt;
           </button>
@@ -228,9 +253,9 @@ export function CalendarPage() {
           <button
             type="button"
             onClick={() => setIs24HourMode((prev) => !prev)}
-            className="px-3 py-1.5 border border-[#D8DEE5] rounded bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 flex items-center space-x-1 transition"
+            className="px-3 py-1.5 border border-border-subtle rounded bg-canvas-surface hover:bg-canvas-bg text-xs font-medium text-foreground flex items-center space-x-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Icon icon={Clock} size={14} className="text-slate-500" />
+            <Icon icon={Clock} size={14} className="text-muted-foreground" />
             <span>{is24HourMode ? "24h" : "12h"}</span>
           </button>
 
@@ -239,31 +264,68 @@ export function CalendarPage() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="px-3 py-1.5 border border-[#D8DEE5] rounded bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 flex items-center space-x-1.5 transition"
+                className="px-3 py-1.5 border border-border-subtle rounded bg-canvas-surface hover:bg-canvas-bg text-xs font-medium text-foreground flex items-center space-x-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Icon icon={Filter} size={14} className="text-slate-500" />
+                <Icon
+                  icon={Filter}
+                  size={14}
+                  className="text-muted-foreground"
+                />
                 <span>Filter</span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 p-3 bg-white border border-[#D8DEE5] shadow-xl">
-              <p className="text-xs font-bold text-slate-700 mb-2">Filter Categories</p>
+            <DropdownMenuContent
+              align="end"
+              className="w-56 p-3 bg-canvas-surface border border-border-subtle shadow-xl"
+            >
+              <p className="text-xs font-bold text-foreground mb-2">
+                Filter Categories
+              </p>
               <div className="space-y-2 text-xs">
                 {[
-                  { key: "Marketing" as EventCategory, label: "Ads & Marketing", color: "bg-yellow-400" },
-                  { key: "Meeting" as EventCategory, label: "Internal Meetings", color: "bg-blue-400" },
-                  { key: "Client" as EventCategory, label: "Clients & External", color: "bg-emerald-400" },
-                  { key: "Workshop" as EventCategory, label: "Workshops & Training", color: "bg-purple-400" },
-                  { key: "Launch" as EventCategory, label: "Sprints & Launches", color: "bg-rose-400" },
+                  {
+                    key: "Marketing" as EventCategory,
+                    label: "Ads & Marketing",
+                    color: "bg-yellow-400",
+                  },
+                  {
+                    key: "Meeting" as EventCategory,
+                    label: "Internal Meetings",
+                    color: "bg-blue-400",
+                  },
+                  {
+                    key: "Client" as EventCategory,
+                    label: "Clients & External",
+                    color: "bg-emerald-400",
+                  },
+                  {
+                    key: "Workshop" as EventCategory,
+                    label: "Workshops & Training",
+                    color: "bg-purple-400",
+                  },
+                  {
+                    key: "Launch" as EventCategory,
+                    label: "Sprints & Launches",
+                    color: "bg-rose-400",
+                  },
                 ].map((item) => (
-                  <label key={item.key} className="flex items-center space-x-2 cursor-pointer select-none">
+                  <label
+                    key={item.key}
+                    className="flex items-center space-x-2 cursor-pointer select-none"
+                  >
                     <input
                       type="checkbox"
                       checked={activeCategories.has(item.key)}
                       onChange={() => toggleCategory(item.key)}
-                      className="rounded text-[#1E8F8E] focus:ring-[#1E8F8E] h-3.5 w-3.5"
+                      className="rounded text-teal-600 dark:text-teal-400 focus:ring-teal-500 h-3.5 w-3.5"
                     />
-                    <span className={cn("inline-block w-2.5 h-2.5 rounded-full", item.color)} />
-                    <span className="text-slate-700">{item.label}</span>
+                    <span
+                      className={cn(
+                        "inline-block w-2.5 h-2.5 rounded-full",
+                        item.color,
+                      )}
+                    />
+                    <span className="text-foreground">{item.label}</span>
                   </label>
                 ))}
               </div>
@@ -275,20 +337,50 @@ export function CalendarPage() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="px-3 py-1.5 border border-[#D8DEE5] rounded bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 flex items-center space-x-1.5 transition capitalize"
+                className="px-3 py-1.5 border border-border-subtle rounded bg-canvas-surface hover:bg-canvas-bg text-xs font-medium text-foreground flex items-center space-x-1.5 transition capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Icon icon={CalendarIcon} size={14} className="text-slate-500" />
-                <span>{timeScope === "today" ? "Today" : timeScope === "week" ? "This Week" : timeScope === "month" ? "This Month" : "This Year"}</span>
+                <Icon
+                  icon={CalendarIcon}
+                  size={14}
+                  className="text-muted-foreground"
+                />
+                <span>
+                  {timeScope === "today"
+                    ? "Today"
+                    : timeScope === "week"
+                      ? "This Week"
+                      : timeScope === "month"
+                        ? "This Month"
+                        : "This Year"}
+                </span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44 bg-white border border-[#D8DEE5] shadow-xl py-1">
-              <DropdownMenuItem onClick={() => { setTimeScope("today"); setViewType("day"); }}>
+            <DropdownMenuContent
+              align="end"
+              className="w-44 bg-canvas-surface border border-border-subtle shadow-xl py-1"
+            >
+              <DropdownMenuItem
+                onClick={() => {
+                  setTimeScope("today");
+                  setViewType("day");
+                }}
+              >
                 <span>Today</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setTimeScope("week"); setViewType("week"); }}>
+              <DropdownMenuItem
+                onClick={() => {
+                  setTimeScope("week");
+                  setViewType("week");
+                }}
+              >
                 <span>This Week</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setTimeScope("month"); setViewType("month"); }}>
+              <DropdownMenuItem
+                onClick={() => {
+                  setTimeScope("month");
+                  setViewType("month");
+                }}
+              >
                 <span>This Month</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTimeScope("year")}>
@@ -303,9 +395,12 @@ export function CalendarPage() {
               type="button"
               onClick={() => setViewType("agenda")}
               title="Agenda List View"
+              aria-label="Agenda list view"
+              aria-pressed={viewType === "agenda"}
               className={cn(
-                "p-1.5 border border-[#D8DEE5] rounded hover:bg-slate-50 text-slate-600 transition",
-                viewType === "agenda" && "bg-slate-100 font-semibold"
+                "p-1.5 border border-border-subtle rounded hover:bg-canvas-bg text-muted-foreground transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                viewType === "agenda" &&
+                  "bg-muted font-semibold text-foreground",
               )}
             >
               <Icon icon={List} size={15} />
@@ -314,9 +409,11 @@ export function CalendarPage() {
               type="button"
               onClick={() => setViewType("week")}
               title="Week Column View"
+              aria-label="Week column view"
+              aria-pressed={viewType === "week"}
               className={cn(
-                "p-1.5 border border-[#D8DEE5] rounded hover:bg-slate-50 text-slate-600 transition",
-                viewType === "week" && "bg-slate-100 font-semibold"
+                "p-1.5 border border-border-subtle rounded hover:bg-canvas-bg text-muted-foreground transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                viewType === "week" && "bg-muted font-semibold text-foreground",
               )}
             >
               <Icon icon={Columns} size={15} />
@@ -325,9 +422,12 @@ export function CalendarPage() {
               type="button"
               onClick={() => setViewType("month")}
               title="Month Grid View"
+              aria-pressed={viewType === "month"}
               className={cn(
-                "px-2.5 py-1.5 border border-[#D8DEE5] rounded text-xs flex items-center space-x-1 transition",
-                viewType === "month" ? "bg-slate-100 font-semibold text-slate-900" : "bg-white text-slate-600 hover:bg-slate-50"
+                "px-2.5 py-1.5 border border-border-subtle rounded text-xs flex items-center space-x-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                viewType === "month"
+                  ? "bg-muted font-semibold text-foreground"
+                  : "bg-canvas-surface text-muted-foreground hover:bg-canvas-bg",
               )}
             >
               <Icon icon={Grid} size={14} />
@@ -337,9 +437,11 @@ export function CalendarPage() {
               type="button"
               onClick={() => setViewType("day")}
               title="Day Schedule View"
+              aria-label="Day schedule view"
+              aria-pressed={viewType === "day"}
               className={cn(
-                "p-1.5 border border-[#D8DEE5] rounded hover:bg-slate-50 text-slate-600 transition",
-                viewType === "day" && "bg-slate-100 font-semibold"
+                "p-1.5 border border-border-subtle rounded hover:bg-canvas-bg text-muted-foreground transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                viewType === "day" && "bg-muted font-semibold text-foreground",
               )}
             >
               <Icon icon={LayoutGrid} size={15} />
@@ -353,7 +455,7 @@ export function CalendarPage() {
               setSelectedDateForAdd("2026-09-12");
               setAddModalOpen(true);
             }}
-            className="ml-1 px-3.5 py-1.5 rounded bg-[#0D1218] hover:bg-[#17283C] text-white text-xs font-semibold flex items-center space-x-1.5 shadow-sm border border-amber-500/40 hover:border-amber-400 transition"
+            className="ml-1 px-3.5 py-1.5 rounded bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold flex items-center space-x-1.5 shadow-sm border border-amber-500/40 hover:border-amber-400 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span className="text-amber-400 font-bold">+</span>
             <span>Add Event</span>
@@ -364,26 +466,27 @@ export function CalendarPage() {
       {/* VIEW 1: MONTH VIEW (Canonical Default) */}
       {viewType === "month" && (
         <div className="mt-4">
-          <div className="grid grid-cols-7 border-b border-[#E2E8F0] pb-2 text-center text-xs font-semibold text-slate-700">
+          <div className="grid grid-cols-7 border-b border-border-subtle pb-2 text-center text-xs font-semibold text-foreground">
             {WEEKDAY_HEADERS.map((day) => (
               <div key={day}>{day}</div>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 border-l border-t border-[#E2E8F0] bg-white rounded-b-md">
+          <div className="grid grid-cols-7 border-l border-t border-border-subtle bg-canvas-surface rounded-b-md">
             {gridCells.map((cell, idx) => {
               if (!cell.isCurrent || cell.day === null) {
                 return (
                   <div
                     key={idx}
-                    className="calendar-grid-cell p-2 bg-slate-50/40 opacity-40 min-h-[118px] border-r border-b border-[#E2E8F0]"
+                    className="calendar-grid-cell p-2 bg-canvas-bg/60 opacity-40 min-h-[118px] border-r border-b border-border-subtle"
                   />
                 );
               }
 
               const dayEvents = visibleEvents.filter((e) => e.day === cell.day);
               const primaryEvent = dayEvents[0];
-              const isToday = cell.day === 12 && currentMonth === 8 && currentYear === 2026;
+              const isToday =
+                cell.day === 12 && currentMonth === 8 && currentYear === 2026;
               const isOver = dragOverDay === cell.day;
 
               return (
@@ -399,8 +502,9 @@ export function CalendarPage() {
                     handleDrop(cell.day!);
                   }}
                   className={cn(
-                    "calendar-grid-cell p-2 flex flex-col justify-between bg-white relative hover:bg-slate-50/50 cursor-pointer min-h-[118px] border-r border-b border-[#E2E8F0] transition-colors",
-                    isOver && "bg-emerald-50! border-dashed border-2 border-[#1E8F8E]!"
+                    "calendar-grid-cell p-2 flex flex-col justify-between bg-canvas-surface relative hover:bg-canvas-bg/60 cursor-pointer min-h-[118px] border-r border-b border-border-subtle transition-colors",
+                    isOver &&
+                      "bg-emerald-50! border-dashed border-2 border-teal-500!",
                   )}
                   onClick={() => {
                     const dStr = String(cell.day).padStart(2, "0");
@@ -411,11 +515,11 @@ export function CalendarPage() {
                 >
                   <div className="flex items-center justify-between mb-1 w-full">
                     {isToday ? (
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#0D1218] text-white font-bold text-xs shadow-sm">
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-navy-900 text-white font-bold text-xs shadow-sm">
                         12
                       </span>
                     ) : (
-                      <span className="text-xs font-semibold text-slate-800 ml-0.5">
+                      <span className="text-xs font-semibold text-foreground ml-0.5">
                         {cell.day}
                       </span>
                     )}
@@ -428,7 +532,8 @@ export function CalendarPage() {
                         setSelectedDateForAdd(`${currentYear}-${mStr}-${dStr}`);
                         setAddModalOpen(true);
                       }}
-                      className="text-slate-400 hover:text-[#1E8F8E] hover:bg-slate-100 p-1 rounded transition-colors text-sm font-semibold leading-none flex items-center justify-center w-5 h-5"
+                      className="text-muted-foreground hover:text-teal-600 dark:hover:text-teal-400 hover:bg-muted p-1 rounded transition-colors text-sm font-semibold leading-none flex items-center justify-center w-5 h-5"
+                      aria-label="Add event"
                     >
                       +
                     </button>
@@ -448,16 +553,24 @@ export function CalendarPage() {
                         className={cn(
                           "p-1.5 rounded-md border cursor-pointer hover:opacity-90 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition select-none",
                           primaryEvent.colorBg,
-                          primaryEvent.colorBorder
+                          primaryEvent.colorBorder,
                         )}
                       >
-                        <div className={cn("text-xs font-bold leading-tight truncate", primaryEvent.colorText)}>
+                        <div
+                          className={cn(
+                            "text-xs font-bold leading-tight truncate",
+                            primaryEvent.colorText,
+                          )}
+                        >
                           {primaryEvent.title}
                         </div>
-                        <div className="text-[10px] text-slate-600 truncate mt-0.5">
+                        <div className="text-3xs text-muted-foreground truncate mt-0.5">
                           {primaryEvent.category === "Marketing"
                             ? primaryEvent.desc || "AdSense + FB, Target ..."
-                            : formatWindow(primaryEvent.startTime, primaryEvent.endTime)}
+                            : formatWindow(
+                                primaryEvent.startTime,
+                                primaryEvent.endTime,
+                              )}
                         </div>
                       </div>
                     )}
@@ -473,7 +586,7 @@ export function CalendarPage() {
                           setOverflowDay(cell.day!);
                           setOverflowOpen(true);
                         }}
-                        className="text-[11px] text-slate-500 hover:text-slate-800 font-medium hover:underline"
+                        className="text-2xs text-muted-foreground hover:text-foreground font-medium hover:underline"
                       >
                         +{dayEvents.length - 1} more
                       </button>
@@ -491,56 +604,72 @@ export function CalendarPage() {
         <div className="mt-4">
           <div className="flex items-center justify-between pb-3">
             <div className="flex items-center space-x-3">
-              <h3 className="text-sm font-bold text-slate-800">Week Timeline (Tuesday - Monday)</h3>
-              <span className="text-xs text-slate-400 font-normal">
-                Sep {weekStartDay} – Sep {Math.min(weekStartDay + 6, 30)}, {currentYear}
+              <h3 className="text-sm font-bold text-foreground">
+                Week Timeline (Tuesday - Monday)
+              </h3>
+              <span className="text-xs text-muted-foreground font-normal">
+                Sep {weekStartDay} – Sep {Math.min(weekStartDay + 6, 30)},{" "}
+                {currentYear}
               </span>
             </div>
             <div className="flex items-center space-x-1.5">
               <button
                 type="button"
                 onClick={() => setWeekStartDay((prev) => Math.max(1, prev - 7))}
-                className="w-7 h-7 flex items-center justify-center rounded border border-[#D8DEE5] bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold shadow-sm"
+                aria-label="Previous week"
+                className="w-7 h-7 flex items-center justify-center rounded border border-border-subtle bg-canvas-surface hover:bg-muted text-foreground text-xs font-bold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 &lt;
               </button>
               <button
                 type="button"
                 onClick={() => setWeekStartDay(8)}
-                className="px-2.5 py-1 text-xs font-semibold rounded border border-[#D8DEE5] bg-white hover:bg-slate-100 text-slate-800 shadow-sm"
+                className="px-2.5 py-1 text-xs font-semibold rounded border border-border-subtle bg-canvas-surface hover:bg-muted text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 This Week
               </button>
               <button
                 type="button"
-                onClick={() => setWeekStartDay((prev) => Math.min(24, prev + 7))}
-                className="w-7 h-7 flex items-center justify-center rounded border border-[#D8DEE5] bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold shadow-sm"
+                onClick={() =>
+                  setWeekStartDay((prev) => Math.min(24, prev + 7))
+                }
+                aria-label="Next week"
+                className="w-7 h-7 flex items-center justify-center rounded border border-border-subtle bg-canvas-surface hover:bg-muted text-foreground text-xs font-bold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 &gt;
               </button>
             </div>
           </div>
 
-          <div className="overflow-x-auto border border-slate-200 rounded-lg">
-            <div className="grid grid-cols-7 bg-slate-50 border-b border-slate-200 text-center text-xs font-semibold py-2">
+          <div className="overflow-x-auto border border-border-subtle rounded-lg">
+            <div className="grid grid-cols-7 bg-canvas-bg border-b border-border-subtle text-center text-xs font-semibold py-2">
               {[0, 1, 2, 3, 4, 5, 6].map((i) => {
                 const dayNum = weekStartDay + i;
                 const isToday = dayNum === 12;
                 return (
-                  <div key={i} className={isToday ? "text-[#1E8F8E] font-bold" : "text-slate-700"}>
+                  <div
+                    key={i}
+                    className={
+                      isToday
+                        ? "text-teal-600 dark:text-teal-400 font-bold"
+                        : "text-foreground"
+                    }
+                  >
                     Day {dayNum} {isToday && "(Today)"}
                   </div>
                 );
               })}
             </div>
-            <div className="grid grid-cols-7 divide-x divide-slate-100 bg-white min-h-[400px]">
+            <div className="grid grid-cols-7 divide-x divide-border-subtle bg-canvas-surface min-h-[400px]">
               {[0, 1, 2, 3, 4, 5, 6].map((i) => {
                 const dayNum = weekStartDay + i;
                 const dayEvts = visibleEvents.filter((e) => e.day === dayNum);
                 return (
                   <div key={i} className="p-2 space-y-2">
                     {dayEvts.length === 0 ? (
-                      <div className="text-[11px] text-slate-400 text-center pt-8">No events</div>
+                      <div className="text-2xs text-muted-foreground text-center pt-8">
+                        No events
+                      </div>
                     ) : (
                       dayEvts.map((ev) => (
                         <div
@@ -552,11 +681,13 @@ export function CalendarPage() {
                           className={cn(
                             "p-2 rounded border text-xs cursor-pointer shadow-sm hover:opacity-95",
                             ev.colorBg,
-                            ev.colorBorder
+                            ev.colorBorder,
                           )}
                         >
-                          <span className={cn("font-bold block", ev.colorText)}>{ev.title}</span>
-                          <span className="text-[10px] text-slate-600 block mt-0.5">
+                          <span className={cn("font-bold block", ev.colorText)}>
+                            {ev.title}
+                          </span>
+                          <span className="text-3xs text-muted-foreground block mt-0.5">
                             {formatWindow(ev.startTime, ev.endTime)}
                           </span>
                         </div>
@@ -574,22 +705,38 @@ export function CalendarPage() {
       {viewType === "day" && (
         <div className="mt-4">
           <div className="flex items-center justify-between pb-3">
-            <h3 className="text-sm font-bold text-slate-800">
+            <h3 className="text-sm font-bold text-foreground">
               Daily Schedule - September 12, {currentYear}
             </h3>
-            <span className="text-xs text-[#1E8F8E] font-medium bg-[#1E8F8E]/10 px-2 py-0.5 rounded">
+            <span className="text-xs text-teal-600 dark:text-teal-400 font-medium bg-teal-500/10 px-2 py-0.5 rounded">
               Selected Date View
             </span>
           </div>
 
-          <div className="border border-slate-200 rounded-lg bg-white divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
-            {["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"].map((hour) => {
+          <div className="border border-border-subtle rounded-lg bg-canvas-surface divide-y divide-border-subtle max-h-[600px] overflow-y-auto">
+            {[
+              "08:00",
+              "09:00",
+              "10:00",
+              "11:00",
+              "12:00",
+              "13:00",
+              "14:00",
+              "15:00",
+              "16:00",
+              "17:00",
+              "18:00",
+            ].map((hour) => {
               const matched = visibleEvents.filter(
-                (e) => e.day === 12 && e.startTime.startsWith(hour.split(":")[0])
+                (e) =>
+                  e.day === 12 && e.startTime.startsWith(hour.split(":")[0]),
               );
               return (
-                <div key={hour} className="flex items-start p-3 hover:bg-slate-50 transition">
-                  <span className="w-20 text-xs font-semibold text-slate-400 shrink-0">
+                <div
+                  key={hour}
+                  className="flex items-start p-3 hover:bg-canvas-bg transition"
+                >
+                  <span className="w-20 text-xs font-semibold text-muted-foreground shrink-0">
                     {formatTime(hour)}
                   </span>
                   <div className="flex-1 space-y-1.5">
@@ -604,20 +751,31 @@ export function CalendarPage() {
                           className={cn(
                             "border p-2 rounded text-xs cursor-pointer shadow-sm flex items-center justify-between",
                             ev.colorBg,
-                            ev.colorBorder
+                            ev.colorBorder,
                           )}
                         >
                           <div>
-                            <span className={cn("font-bold", ev.colorText)}>{ev.title}</span>
-                            <p className="text-[11px] text-slate-600">{ev.desc}</p>
+                            <span className={cn("font-bold", ev.colorText)}>
+                              {ev.title}
+                            </span>
+                            <p className="text-2xs text-muted-foreground">
+                              {ev.desc}
+                            </p>
                           </div>
-                          <span className={cn("text-[10px] font-semibold", ev.colorText)}>
+                          <span
+                            className={cn(
+                              "text-3xs font-semibold",
+                              ev.colorText,
+                            )}
+                          >
                             {formatWindow(ev.startTime, ev.endTime)}
                           </span>
                         </div>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-300 italic">Available slot</span>
+                      <span className="text-xs text-muted-foreground/70 italic">
+                        Available slot
+                      </span>
                     )}
                   </div>
                 </div>
@@ -631,8 +789,12 @@ export function CalendarPage() {
       {viewType === "agenda" && (
         <div className="mt-4">
           <div className="flex items-center justify-between pb-3">
-            <h3 className="text-sm font-bold text-slate-800">Month Agenda &amp; Key Deadlines</h3>
-            <span className="text-xs text-slate-500">Chronological Event Stream</span>
+            <h3 className="text-sm font-bold text-foreground">
+              Month Agenda &amp; Key Deadlines
+            </h3>
+            <span className="text-xs text-muted-foreground">
+              Chronological Event Stream
+            </span>
           </div>
 
           <div className="space-y-3">
@@ -645,23 +807,37 @@ export function CalendarPage() {
                     setSelectedEvent(ev);
                     setDetailsOpen(true);
                   }}
-                  className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between hover:border-[#1E8F8E] cursor-pointer transition"
+                  className="bg-canvas-surface p-3 rounded-lg border border-border-subtle shadow-sm flex items-center justify-between hover:border-teal-500 cursor-pointer transition"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded bg-slate-100 flex flex-col items-center justify-center text-slate-800 font-bold shrink-0">
-                      <span className="text-[10px] uppercase font-semibold text-slate-500">Sep</span>
+                    <div className="w-12 h-12 rounded bg-muted flex flex-col items-center justify-center text-foreground font-bold shrink-0">
+                      <span className="text-3xs uppercase font-semibold text-muted-foreground">
+                        Sep
+                      </span>
                       <span className="text-sm">{ev.day}</span>
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900">{ev.title}</h4>
-                      <p className="text-[11px] text-slate-500">{ev.desc || "General scheduled item"}</p>
+                      <h4 className="text-xs font-bold text-foreground">
+                        {ev.title}
+                      </h4>
+                      <p className="text-2xs text-muted-foreground">
+                        {ev.desc || "General scheduled item"}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className={cn("inline-block text-[11px] font-semibold px-2 py-0.5 rounded", ev.colorBg, ev.colorText)}>
+                    <span
+                      className={cn(
+                        "inline-block text-2xs font-semibold px-2 py-0.5 rounded",
+                        ev.colorBg,
+                        ev.colorText,
+                      )}
+                    >
                       {formatWindow(ev.startTime, ev.endTime)}
                     </span>
-                    <span className="block text-[10px] text-slate-400 mt-1">{ev.category}</span>
+                    <span className="block text-3xs text-muted-foreground mt-1">
+                      {ev.category}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -670,27 +846,47 @@ export function CalendarPage() {
       )}
 
       {/* Annual Overview 2026 Grid Cards */}
-      <div className="mt-6 pt-4 border-t border-slate-100">
+      <div className="mt-6 pt-4 border-t border-border-subtle">
         <div className="flex items-center justify-between pb-3">
-          <h3 className="text-sm font-bold text-slate-800">Annual Overview - 2026</h3>
-          <span className="text-xs text-slate-500">12-Month Calendar Schedule</span>
+          <h3 className="text-sm font-bold text-foreground">
+            Annual Overview - 2026
+          </h3>
+          <span className="text-xs text-muted-foreground">
+            12-Month Calendar Schedule
+          </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-3 border-slate-200 bg-white">
-            <div className="text-xs font-bold text-slate-800 mb-1">Q1 (Jan - Mar)</div>
-            <div className="text-[11px] text-slate-500">18 Events • 4 Projects</div>
+          <Card className="p-3 border-border-subtle bg-canvas-surface">
+            <div className="text-xs font-bold text-foreground mb-1">
+              Q1 (Jan - Mar)
+            </div>
+            <div className="text-2xs text-muted-foreground">
+              18 Events • 4 Projects
+            </div>
           </Card>
-          <Card className="p-3 border-slate-200 bg-white">
-            <div className="text-xs font-bold text-slate-800 mb-1">Q2 (Apr - Jun)</div>
-            <div className="text-[11px] text-slate-500">24 Events • 6 Projects</div>
+          <Card className="p-3 border-border-subtle bg-canvas-surface">
+            <div className="text-xs font-bold text-foreground mb-1">
+              Q2 (Apr - Jun)
+            </div>
+            <div className="text-2xs text-muted-foreground">
+              24 Events • 6 Projects
+            </div>
           </Card>
-          <Card className="p-3 border-[#1E8F8E] bg-[#1E8F8E]/5">
-            <div className="text-xs font-bold text-[#1E8F8E] mb-1">Q3 (Jul - Sep) • Current</div>
-            <div className="text-[11px] text-slate-600">32 Events • Active Sprint</div>
+          <Card className="p-3 border-teal-500 bg-teal-500/5">
+            <div className="text-xs font-bold text-teal-600 dark:text-teal-400 mb-1">
+              Q3 (Jul - Sep) • Current
+            </div>
+            <div className="text-2xs text-muted-foreground">
+              32 Events • Active Sprint
+            </div>
           </Card>
-          <Card className="p-3 border-slate-200 bg-white">
-            <div className="text-xs font-bold text-slate-800 mb-1">Q4 (Oct - Dec)</div>
-            <div className="text-[11px] text-slate-500">15 Scheduled Deadlines</div>
+          <Card className="p-3 border-border-subtle bg-canvas-surface">
+            <div className="text-xs font-bold text-foreground mb-1">
+              Q4 (Oct - Dec)
+            </div>
+            <div className="text-2xs text-muted-foreground">
+              15 Scheduled Deadlines
+            </div>
           </Card>
         </div>
       </div>

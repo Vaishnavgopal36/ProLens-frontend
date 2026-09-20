@@ -22,21 +22,23 @@ export function OverflowPopover({
   is24HourMode,
 }: OverflowPopoverProps) {
   const formatTime = (start: string, end: string) => {
-    if (start === "00:00" && end === "23:59") return is24HourMode ? "00:00 - 23:59" : "All Day";
+    if (start === "00:00" && end === "23:59")
+      return is24HourMode ? "00:00 - 23:59" : "All Day";
     return `${start} - ${end}`;
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden p-0 sm:max-w-sm border border-slate-200 bg-white shadow-xl">
-        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <DialogTitle className="font-bold text-xs text-slate-800">
+      <DialogContent className="overflow-hidden p-0 sm:max-w-sm border border-border-subtle bg-canvas-surface shadow-xl">
+        <div className="px-4 py-3 bg-canvas-bg border-b border-border-subtle flex items-center justify-between">
+          <DialogTitle className="font-bold text-xs text-foreground">
             Sep {dayNum}, 2026 ({events.length} events)
           </DialogTitle>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="text-slate-400 hover:text-slate-700 font-bold"
+            aria-label="Close"
+            className="text-muted-foreground hover:text-foreground font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
             <Icon icon={X} size={15} />
           </button>
@@ -53,11 +55,11 @@ export function OverflowPopover({
               className={cn(
                 "border p-2 rounded text-xs cursor-pointer hover:opacity-90 select-none",
                 ev.colorBg,
-                ev.colorBorder
+                ev.colorBorder,
               )}
             >
               <div className={cn("font-bold", ev.colorText)}>{ev.title}</div>
-              <div className="text-[10px] text-slate-600">
+              <div className="text-3xs text-muted-foreground">
                 {formatTime(ev.startTime, ev.endTime)}
               </div>
             </div>

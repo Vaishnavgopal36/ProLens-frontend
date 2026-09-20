@@ -220,7 +220,7 @@ export function LogTimeSheet({
           </div>
 
           {error && (
-            <p className="text-[11px] font-medium text-destructive">{error}</p>
+            <p className="text-2xs font-medium text-destructive">{error}</p>
           )}
 
           <div className="space-y-1">

@@ -14,12 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { BOARD_COLUMNS, type BoardColumnId, type BoardTask } from "./mock-data";
-
-const PRIORITY_BADGE_CLASSES: Record<BoardTask["priority"], string> = {
-  High: "bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300",
-  Medium: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
-  Low: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
-};
+import { PRIORITY_BADGE_CLASSES } from "@/features/projects/lib/badge-styles";
 
 interface KanbanCardProps {
   task: BoardTask;
@@ -69,18 +64,18 @@ export function KanbanCard({
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-canvas-overlay text-muted-foreground">
+        <span className="px-2 py-0.5 rounded text-3xs font-semibold bg-canvas-overlay text-muted-foreground">
           {task.feature}
         </span>
         <div className="flex items-center gap-1.5 shrink-0">
           {isDelivered ? (
-            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-teal-50 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300">
+            <span className="px-2 py-0.5 rounded text-3xs font-semibold bg-teal-50 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300">
               Completed
             </span>
           ) : (
             <span
               className={cn(
-                "px-2 py-0.5 rounded text-[10px] font-semibold",
+                "px-2 py-0.5 rounded text-3xs font-semibold",
                 PRIORITY_BADGE_CLASSES[task.priority],
               )}
             >
@@ -163,7 +158,7 @@ export function KanbanCard({
 
           {hasSubtasks && (
             <div className="mt-2">
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <div className="flex items-center justify-between text-2xs text-muted-foreground">
                 <span>
                   {task.subtasksDone} / {task.subtasksTotal} Sub-tasks Done
                 </span>
@@ -180,14 +175,14 @@ export function KanbanCard({
       )}
 
       <div className="flex items-center justify-between pt-3 mt-3 border-t border-border-subtle text-xs">
-        <span className="font-mono text-[11px] font-semibold text-muted-foreground/70">
+        <span className="font-mono text-2xs font-semibold text-muted-foreground/70">
           {task.code}
         </span>
         <div className="flex items-center gap-1.5">
-          <span className="text-muted-foreground text-[11px]">
+          <span className="text-muted-foreground text-2xs">
             {task.assigneeName}
           </span>
-          <span className="w-5 h-5 rounded-full bg-navy-500 dark:bg-foreground text-white dark:text-background flex items-center justify-center text-[9px] font-bold shrink-0">
+          <span className="w-5 h-5 rounded-full bg-navy-500 dark:bg-foreground text-white dark:text-background flex items-center justify-center text-4xs font-bold shrink-0">
             {task.assigneeInitials}
           </span>
         </div>

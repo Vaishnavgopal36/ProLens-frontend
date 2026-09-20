@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/app/providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { Project, ProjectFilterTab } from "@/types/project";
@@ -16,30 +17,41 @@ import {
 
 export function ProjectsListPage() {
   const { user } = useAuth();
+  const { isEmployee, hasMinimumRole } = usePermissions();
   const isLoading = useSimulatedLoading();
   const [activeFilter, setActiveFilter] =
     React.useState<ProjectFilterTab>("all");
   const [projects, setProjects] = React.useState<Project[]>(MOCK_PROJECTS);
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
 
-  const canCreateProject =
-    user?.role === "manager" ||
-    user?.role === "admin" ||
-    user?.role === "super_admin";
+  // Creating/deleting projects is portfolio-lifecycle ownership — reserved
+  // for admins, not managers (who run day-to-day delivery on projects
+  // someone else provisioned).
+  const canManageProjects = hasMinimumRole("admin");
+
+  // Employees are individual contributors, not portfolio owners — they only
+  // see projects they're actually staffed on. Managers/admins keep full
+  // visibility across the portfolio.
+  const visibleProjects = React.useMemo(() => {
+    if (!isEmployee) return projects;
+    return projects.filter((project) =>
+      project.members.some((member) => member.email === user?.email),
+    );
+  }, [projects, isEmployee, user?.email]);
 
   const counts = React.useMemo(() => {
     return {
-      all: projects.length,
-      ongoing: projects.filter((p) => p.status === "ongoing").length,
-      pending: projects.filter((p) => p.status === "pending").length,
-      completed: projects.filter((p) => p.status === "completed").length,
+      all: visibleProjects.length,
+      ongoing: visibleProjects.filter((p) => p.status === "ongoing").length,
+      pending: visibleProjects.filter((p) => p.status === "pending").length,
+      completed: visibleProjects.filter((p) => p.status === "completed").length,
     };
-  }, [projects]);
+  }, [visibleProjects]);
 
   const filteredProjects = React.useMemo(() => {
-    if (activeFilter === "all") return projects;
-    return projects.filter((p) => p.status === activeFilter);
-  }, [activeFilter, projects]);
+    if (activeFilter === "all") return visibleProjects;
+    return visibleProjects.filter((p) => p.status === activeFilter);
+  }, [activeFilter, visibleProjects]);
 
   const handleCreateProject = (newProject: Project) => {
     setProjects((prev) => [newProject, ...prev]);
@@ -83,19 +95,21 @@ export function ProjectsListPage() {
         </div>
 
         {/* Actions & Filters Header Bar */}
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <ProjectFilters
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-            counts={counts}
-          />
+        <div className="flex flex-col gap-3 w-full sm:w-auto sm:flex-row sm:items-center">
+          <div className="overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-0">
+            <ProjectFilters
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+              counts={counts}
+            />
+          </div>
 
-          {canCreateProject && (
+          {canManageProjects && (
             <Button
               variant="default"
               size="sm"
               onClick={() => setCreateDialogOpen(true)}
-              className="gap-1.5 font-semibold"
+              className="gap-1.5 font-semibold shrink-0 self-start sm:self-auto"
             >
               <Icon icon={Plus} size={15} />
               <span>New Project</span>

@@ -25,7 +25,7 @@ export function MetricCard({ data }: MetricCardProps) {
         {data.badge && (
           <Badge
             variant={data.badge.variant}
-            className="text-[10px] px-1.5 py-0 font-bold uppercase tracking-wider"
+            className="text-3xs px-1.5 py-0 font-bold uppercase tracking-wider"
           >
             {data.badge.text}
           </Badge>

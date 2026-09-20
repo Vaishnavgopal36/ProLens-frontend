@@ -153,7 +153,7 @@ function Tile({
       <span className="w-full text-xs font-medium text-foreground truncate">
         {label}
       </span>
-      <span className="text-[10px] text-muted-foreground">{meta}</span>
+      <span className="text-3xs text-muted-foreground">{meta}</span>
     </button>
   );
 }
@@ -353,7 +353,7 @@ export function AttachmentsTab({
         </div>
       </div>
 
-      <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground px-1">
+      <p className="flex items-center gap-1.5 text-2xs text-muted-foreground px-1">
         <Icon icon={Briefcase} size={12} />
         Files uploaded from a feature or task page land in that folder
         automatically.

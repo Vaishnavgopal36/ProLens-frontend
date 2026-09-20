@@ -1,4 +1,5 @@
-export type UserRole = "employee" | "manager" | "admin" | "super_admin";
+import type { UserRole } from "@/app/providers";
+export type { UserRole } from "@/app/providers";
 
 export type ProjectStatus = "ongoing" | "pending" | "completed";
 

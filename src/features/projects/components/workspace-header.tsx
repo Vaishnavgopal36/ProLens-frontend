@@ -5,10 +5,10 @@ import {
   Briefcase,
   ChevronRight,
   MoreHorizontal,
-  Archive,
   Trash2,
+  X,
 } from "lucide-react";
-import { useAuth } from "@/app/providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,7 +17,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -47,20 +46,16 @@ export function WorkspaceHeader({
   onAddFeature,
   onAddTask,
 }: WorkspaceHeaderProps) {
-  const { user } = useAuth();
+  const { hasMinimumRole } = usePermissions();
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
-  const isManager =
-    user?.role === "manager" ||
-    user?.role === "admin" ||
-    user?.role === "super_admin";
+  // Day-to-day work (features/tasks) is a manager-level capability; deleting
+  // the project itself is portfolio-lifecycle ownership, reserved for admins.
+  const canManageWork = hasMinimumRole("manager");
+  const canDeleteProject = hasMinimumRole("admin");
 
   const isOngoing = project.status === "ongoing";
-
-  const handleArchive = () => {
-    toast.success(`"${project.name}" has been archived.`);
-  };
 
   const handleDelete = () => {
     setDeleteDialogOpen(false);
@@ -120,7 +115,7 @@ export function WorkspaceHeader({
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border shrink-0",
+                  "text-3xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border shrink-0",
                   isOngoing
                     ? "border-teal-500/40 text-teal-600 bg-teal-500/10 dark:text-teal-400"
                     : "border-gold-500/40 text-gold-600 bg-gold-500/10 dark:text-gold-400",
@@ -132,7 +127,7 @@ export function WorkspaceHeader({
               {project.activeSprint && (
                 <Badge
                   variant="outline"
-                  className="text-[10px] font-medium px-2 py-0.5 rounded-full border-border-subtle bg-canvas-surface text-muted-foreground shrink-0"
+                  className="text-3xs font-medium px-2 py-0.5 rounded-full border-border-subtle bg-canvas-surface text-muted-foreground shrink-0"
                 >
                   {project.activeSprint}
                 </Badge>
@@ -146,7 +141,7 @@ export function WorkspaceHeader({
         </div>
 
         {/* Right: Clean Avatar Filter & Action Button Stack */}
-        <div className="flex flex-col items-start sm:items-end gap-2.5 shrink-0">
+        <div className="flex w-full min-w-0 flex-col items-start gap-2.5 sm:w-auto sm:items-end sm:shrink-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
               Filter by:
@@ -171,7 +166,7 @@ export function WorkspaceHeader({
                   >
                     <Avatar className="h-7 w-7 border-2 border-canvas-bg">
                       <AvatarImage src={member.avatarUrl} alt={member.name} />
-                      <AvatarFallback className="text-[10px] font-bold bg-navy-500 text-white dark:bg-foreground dark:text-background">
+                      <AvatarFallback className="text-3xs font-bold bg-navy-500 text-white dark:bg-foreground dark:text-background">
                         {member.initials}
                       </AvatarFallback>
                     </Avatar>
@@ -179,60 +174,69 @@ export function WorkspaceHeader({
                 );
               })}
             </div>
+
+            {selectedMemberId && (
+              <button
+                type="button"
+                onClick={() => onSelectMember(null)}
+                className="flex items-center gap-1 rounded-full border border-border-subtle bg-canvas-surface px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-canvas-overlay"
+              >
+                <span>Clear filter</span>
+                <Icon icon={X} size={11} />
+              </button>
+            )}
           </div>
 
           {/* Manager Action Buttons */}
-          {isManager && (
+          {(canManageWork || canDeleteProject) && (
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onAddFeature}
-                className="h-8 gap-1.5 text-xs font-semibold bg-canvas-surface hover:bg-canvas-overlay"
-              >
-                <Icon icon={Plus} size={14} />
-                <span>Add Feature</span>
-              </Button>
-
-              <Button
-                variant="accent"
-                size="sm"
-                onClick={onAddTask}
-                className="h-8 gap-1.5 text-xs font-semibold bg-gold-500 hover:bg-gold-600 text-navy-900 dark:text-navy-950"
-              >
-                <Icon icon={Plus} size={14} />
-                <span>Add Task</span>
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+              {canManageWork && (
+                <>
                   <Button
                     variant="outline"
-                    size="icon"
-                    className="h-8 w-8 shrink-0 bg-canvas-surface hover:bg-canvas-overlay"
-                    aria-label="More project actions"
+                    size="sm"
+                    onClick={onAddFeature}
+                    className="h-8 gap-1.5 text-xs font-semibold bg-canvas-surface hover:bg-canvas-overlay"
                   >
-                    <Icon icon={MoreHorizontal} size={16} />
+                    <Icon icon={Plus} size={14} />
+                    <span>Add Feature</span>
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44">
-                  <DropdownMenuItem
-                    onClick={handleArchive}
-                    className="gap-2 cursor-pointer text-xs"
+
+                  <Button
+                    variant="accent"
+                    size="sm"
+                    onClick={onAddTask}
+                    className="h-8 gap-1.5 text-xs font-semibold bg-gold-500 hover:bg-gold-600 text-navy-900 dark:text-navy-950"
                   >
-                    <Icon icon={Archive} size={14} />
-                    <span>Archive Project</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => setDeleteDialogOpen(true)}
-                    className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
-                  >
-                    <Icon icon={Trash2} size={14} />
-                    <span>Delete Project</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <Icon icon={Plus} size={14} />
+                    <span>Add Task</span>
+                  </Button>
+                </>
+              )}
+
+              {canDeleteProject && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 bg-canvas-surface hover:bg-canvas-overlay"
+                      aria-label="More project actions"
+                    >
+                      <Icon icon={MoreHorizontal} size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuItem
+                      onClick={() => setDeleteDialogOpen(true)}
+                      className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+                    >
+                      <Icon icon={Trash2} size={14} />
+                      <span>Delete Project</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           )}
         </div>

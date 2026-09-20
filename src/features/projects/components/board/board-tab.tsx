@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -160,6 +160,19 @@ export function BoardTab({
     });
   }, [tasks, search, featureFilter, assigneeFilter, priorityFilter]);
 
+  const hasActiveFilters =
+    search.trim().length > 0 ||
+    featureFilter !== ALL_VALUE ||
+    assigneeFilter !== ALL_VALUE ||
+    priorityFilter !== ALL_VALUE;
+
+  const clearFilters = () => {
+    setSearch("");
+    setFeatureFilter(ALL_VALUE);
+    setAssigneeFilter(ALL_VALUE);
+    setPriorityFilter(ALL_VALUE);
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-canvas-surface p-3 rounded-xl border border-border-subtle shadow-xs">
@@ -217,6 +230,17 @@ export function BoardTab({
               <SelectItem value="Low">Low</SelectItem>
             </SelectContent>
           </Select>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="flex items-center gap-1 rounded-full border border-border-subtle bg-canvas-surface px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-canvas-overlay"
+            >
+              <span>Clear filters</span>
+              <Icon icon={X} size={11} />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
