@@ -41,34 +41,29 @@ export function AddActivityDialog({
     "Apex Analytics Platform",
   );
 
-  // Scheduling: Date, Start Time, and Duration components
-  const [scheduledDate, setScheduledDate] = React.useState(
-    () => new Date().toISOString().split("T")[0],
-  );
+  const [scheduledDate, setScheduledDate] = React.useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
   const [startTime, setStartTime] = React.useState("15:00");
   const [durationHours, setDurationHours] = React.useState("1");
   const [durationMinutes, setDurationMinutes] = React.useState("30");
 
-  // Converts 24-hr time (e.g. "15:00") into 12-hr format (e.g. "3:00 PM")
   const formatTime12h = (hours: number, minutes: number) => {
     const period = hours >= 12 ? "PM" : "AM";
     const h12 = hours % 12 || 12;
     return `${h12}:${minutes.toString().padStart(2, "0")} ${period}`;
   };
 
-  // Computes friendly duration text: "1 hour 30 minutes", "45 minutes", "2 hours"
   const getReadableDuration = () => {
     const h = parseInt(durationHours, 10) || 0;
     const m = parseInt(durationMinutes, 10) || 0;
-
     const parts: string[] = [];
     if (h > 0) parts.push(`${h} ${h === 1 ? "hour" : "hours"}`);
     if (m > 0) parts.push(`${m} ${m === 1 ? "minute" : "minutes"}`);
-
     return parts.length > 0 ? parts.join(" ") : "0 minutes";
   };
 
-  // Computes calculated End Time from Start Time + Duration
   const getCalculatedEndTime = () => {
     if (!startTime) return "";
     const [startH, startM] = startTime.split(":").map(Number);
@@ -103,9 +98,6 @@ export function AddActivityDialog({
     const startFormatted = formatTime12h(startH, startM);
     const endFormatted = getCalculatedEndTime();
 
-    // Timestamp format: "2026-09-21, 3:00 PM – 4:30 PM"
-    const formattedTimestamp = `${scheduledDate}, ${startFormatted} – ${endFormatted}`;
-
     const newItem: ActivityItem = {
       id: `act-${Date.now()}`,
       category,
@@ -114,7 +106,8 @@ export function AddActivityDialog({
       projectName: category === "project" ? projectName : undefined,
       title: title.trim(),
       description: description.trim() || "Activity logged via workspace.",
-      timestamp: formattedTimestamp,
+      date: scheduledDate, // Strict YYYY-MM-DD
+      timeWindow: `${startFormatted} – ${endFormatted}`,
       durationHours: getReadableDuration(),
       statusBadge: { label: "Scheduled", variant: "neutral" },
       pinColor: category === "project" ? "teal" : "navy",
@@ -202,7 +195,6 @@ export function AddActivityDialog({
             />
           </div>
 
-          {/* Date, Start Time & Flexible Duration Container */}
           <div className="rounded-md border border-border-subtle bg-canvas-bg/40 p-3 space-y-2.5">
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1.5">
@@ -277,8 +269,7 @@ export function AddActivityDialog({
               </div>
             </div>
 
-            {/* Dynamic Summary Preview */}
-            <div className="flex items-center justify-between rounded-md bg-canvas-surface px-2.5 py-1.5 text-2xs text-muted-foreground border border-border-subtle">
+            <div className="flex items-center justify-between rounded-md bg-canvas-surface px-2.5 py-1.5 text-[11px] text-muted-foreground border border-border-subtle">
               <span>
                 Schedule:{" "}
                 <strong className="text-foreground">

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Trash2, Clock, Calendar, Briefcase, User } from "lucide-react";
+import { Trash2, Pencil, Clock, Calendar, Briefcase, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,25 @@ import type { ActivityItem } from "@/types/activity";
 interface ActivityCardProps {
   item: ActivityItem;
   viewMode: "compact" | "expanded";
+  onSelect: (item: ActivityItem) => void;
+  onEdit: (item: ActivityItem) => void;
   onDelete: (id: string) => void;
 }
 
-export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
+function formatDisplayDate(dateStr: string) {
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+export function ActivityCard({
+  item,
+  viewMode,
+  onSelect,
+  onEdit,
+  onDelete,
+}: ActivityCardProps) {
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const isProject = item.category === "project";
 
@@ -30,12 +45,15 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
     setDeleteOpen(false);
   };
 
+  const formattedDate = formatDisplayDate(item.date);
+
   return (
     <>
       <Card
+        onClick={() => onSelect(item)}
         className={cn(
-          "group relative border-border-subtle bg-canvas-surface transition-all duration-150 hover:border-border-strong hover:shadow-xs",
-          viewMode === "compact" ? "p-3.5" : "p-5",
+          "group relative cursor-pointer border-border-subtle bg-canvas-surface transition-all duration-150 hover:border-border-strong hover:shadow-xs",
+          viewMode === "compact" ? "p-3.5" : "p-5"
         )}
       >
         <div className="flex items-center justify-between gap-2">
@@ -56,16 +74,32 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-1"
+            onClick={(e) => e.stopPropagation()}
+          >
             {item.statusBadge && (
               <Badge
                 variant={item.statusBadge.variant}
-                className="text-3xs px-2 py-0 font-medium"
+                className="text-[10px] px-2 py-0 font-medium mr-1"
               >
                 {item.statusBadge.label}
               </Badge>
             )}
 
+            {/* Edit Pen Button */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onEdit(item)}
+              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-canvas-bg transition-colors"
+              title="Edit activity"
+            >
+              <Icon icon={Pencil} size={13} />
+            </Button>
+
+            {/* Delete Button */}
             <Button
               type="button"
               variant="ghost"
@@ -74,7 +108,7 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
               className="h-7 w-7 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors"
               title="Delete activity"
             >
-              <Icon icon={Trash2} size={14} />
+              <Icon icon={Trash2} size={13} />
             </Button>
           </div>
         </div>
@@ -94,6 +128,7 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
           </p>
         )}
 
+        {/* Formatted Date Display */}
         <div
           className={cn(
             "flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle/60 text-2xs text-muted-foreground",
@@ -102,12 +137,8 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
         >
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 font-medium text-foreground">
-              <Icon
-                icon={Calendar}
-                size={12}
-                className="text-teal-600 dark:text-teal-400"
-              />
-              <span>{item.timestamp}</span>
+              <Icon icon={Calendar} size={12} className="text-teal-600 dark:text-teal-400" />
+              <span>{formattedDate} • {item.timeWindow}</span>
             </span>
 
             <span className="flex items-center gap-1">
@@ -128,7 +159,10 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
       </Card>
 
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent
+          className="sm:max-w-[400px]"
+          onClick={(e) => e.stopPropagation()}
+        >
           <DialogHeader>
             <DialogTitle>Delete Activity</DialogTitle>
             <DialogDescription className="text-xs">
