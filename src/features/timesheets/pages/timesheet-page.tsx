@@ -11,7 +11,6 @@ import {
   Flag,
   CheckCircle2,
   Clock,
-  Printer,
   Building,
   Home,
   Globe,
@@ -32,21 +31,15 @@ import {
 import { cn } from "@/lib/utils";
 import { toLocalISODate } from "@/lib/date";
 import { useModalHotkey } from "@/hooks/use-hotkey";
-import {
-  INITIAL_TIME_ENTRIES,
-  WORK_TAXONOMY,
-  REPORT_PRESETS,
-} from "../api/mock-data";
+import { INITIAL_TIME_ENTRIES, WORK_TAXONOMY } from "../api/mock-data";
 import {
   AddTimeDialog,
   EditTimeDialog,
 } from "../components/time-entry-dialogs";
-import type { TimeEntry, TimesheetTab, WorkLocation } from "@/types/timesheet";
+import type { TimeEntry, WorkLocation } from "@/types/timesheet";
 
 export function TimesheetPage() {
-  const [entries, setEntries] =
-    React.useState<TimeEntry[]>(INITIAL_TIME_ENTRIES);
-  const [activeTab, setActiveTab] = React.useState<TimesheetTab>("tracking");
+  const [entries, setEntries] = React.useState<TimeEntry[]>(INITIAL_TIME_ENTRIES);
   const [weekOffset, setWeekOffset] = React.useState(0);
   const baseWeekStart = new Date(2026, 8, 14); // Sep 14, 2026 (Mon)
 
@@ -54,21 +47,14 @@ export function TimesheetPage() {
   const [projectFilter, setProjectFilter] = React.useState("ALL");
   const [locationFilter, setLocationFilter] = React.useState("ALL");
 
-  // Collapsed state for project report table
-  const [collapsedProjects, setCollapsedProjects] = React.useState<
-    Record<string, boolean>
-  >({});
-
   // Dialog State
   const [addModalOpen, setAddModalOpen] = React.useState(false);
-  const [selectedDateForAdd, setSelectedDateForAdd] =
-    React.useState("2026-09-14");
+  const [selectedDateForAdd, setSelectedDateForAdd] = React.useState("2026-09-14");
   const [presetProjectForAdd, setPresetProjectForAdd] = React.useState("");
   const [presetTaskForAdd, setPresetTaskForAdd] = React.useState("");
 
   const [editModalOpen, setEditModalOpen] = React.useState(false);
-  const [activeEditEntry, setActiveEditEntry] =
-    React.useState<TimeEntry | null>(null);
+  const [activeEditEntry, setActiveEditEntry] = React.useState<TimeEntry | null>(null);
 
   // Helper date generators
   const weekDays = React.useMemo(() => {
@@ -105,14 +91,6 @@ export function TimesheetPage() {
     return `${h}h ${String(m).padStart(2, "0")}m`;
   };
 
-  const formatCol = (totalMinutes: number) => {
-    if (!totalMinutes || totalMinutes <= 0) return "-";
-    const h = Math.floor(totalMinutes / 60);
-    const m = totalMinutes % 60;
-    if (m === 0) return `${h}h`;
-    return `${h}h ${m}m`;
-  };
-
   // Header week range string
   const weekRangeLabel = React.useMemo(() => {
     const startMonth = weekDays[0].toLocaleString("default", {
@@ -127,7 +105,7 @@ export function TimesheetPage() {
       : `${startMonth} ${startDay} – ${endMonth} ${endDay}, ${year}`;
   }, [weekDays]);
 
-  // Calculations for cards
+  // Calculations for summary cards
   const { totalWeeklyMins, projectRollups } = React.useMemo(() => {
     let total = 0;
     const rollups: Record<string, number> = {};
@@ -184,61 +162,23 @@ export function TimesheetPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
-      {/* Top Bar: Shadcn Line Tabs & Right Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
-        {/* Line Tabs */}
-        <div className="flex items-center border-b border-border-subtle gap-6 text-sm font-medium">
-          <button
-            type="button"
-            onClick={() => setActiveTab("tracking")}
-            className={cn(
-              "relative pb-2.5 flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-t-sm",
-              activeTab === "tracking"
-                ? "text-foreground font-semibold border-b-2 border-navy-500 dark:border-teal-400"
-                : "text-muted-foreground hover:text-foreground border-b-2 border-transparent",
-            )}
-          >
-            <Icon
-              icon={Timer}
-              size={18}
-              className={
-                activeTab === "tracking"
-                  ? "text-teal-600 dark:text-teal-400"
-                  : "text-muted-foreground"
-              }
-            />
-            <span>Time Tracking</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("report")}
-            className={cn(
-              "relative pb-2.5 flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-t-sm",
-              activeTab === "report"
-                ? "text-foreground font-semibold border-b-2 border-navy-500 dark:border-teal-400"
-                : "text-muted-foreground hover:text-foreground border-b-2 border-transparent",
-            )}
-          >
-            <Icon
-              icon={Clock}
-              size={18}
-              className={
-                activeTab === "report"
-                  ? "text-teal-600 dark:text-teal-400"
-                  : "text-muted-foreground"
-              }
-            />
-            <span>Project Report</span>
-          </button>
+      {/* Top Controls: Title, Filter, Export & Week Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Time Reporting
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Log, track, and monitor daily effort allocations across active projects and client initiatives.
+          </p>
         </div>
 
-        {/* Action Buttons Bar */}
-        <div className="flex items-center gap-2.5 self-start md:self-auto">
+        {/* Action Buttons & Date Navigator */}
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
           {/* Filter Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="sweep" size="sm" className="h-9 gap-1.5 text-xs">
+              <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
                 <Icon
                   icon={Filter}
                   size={15}
@@ -315,7 +255,7 @@ export function TimesheetPage() {
           {/* Export Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="sweep" size="sm" className="h-9 gap-1.5 text-xs">
+              <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
                 <Icon
                   icon={Download}
                   size={15}
@@ -360,562 +300,255 @@ export function TimesheetPage() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Date Navigator */}
+          <div className="flex items-center gap-1 bg-canvas-surface p-1 rounded-lg border border-border-subtle shadow-xs">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setWeekOffset((prev) => prev - 1)}
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              aria-label="Previous week"
+            >
+              <Icon icon={ChevronLeft} size={15} />
+            </Button>
+
+            <div className="flex items-center gap-1.5 px-2">
+              <Icon
+                icon={CalendarIcon}
+                size={14}
+                className="text-teal-600 dark:text-teal-400"
+              />
+              <span className="text-xs font-semibold text-foreground tabular-nums">
+                {weekRangeLabel}
+              </span>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setWeekOffset((prev) => prev + 1)}
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              aria-label="Next week"
+            >
+              <Icon icon={ChevronRight} size={15} />
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Header Section: Title & Synchronized Date Navigator */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            {activeTab === "tracking" ? "Time Reporting" : "Project Report"}
-          </h1>
-        </div>
-
-        {/* Date Navigator */}
-        <div className="flex items-center gap-1.5 bg-canvas-surface p-1 rounded-lg border border-border-subtle shadow-xs self-start sm:self-auto">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setWeekOffset((prev) => prev - 1)}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            aria-label="Previous week"
-          >
-            <Icon icon={ChevronLeft} size={16} />
-          </Button>
-
-          <div className="flex items-center gap-2 px-2.5">
-            <Icon
-              icon={CalendarIcon}
-              size={16}
-              className="text-teal-600 dark:text-teal-400"
-            />
-            <span className="text-xs font-semibold text-foreground tabular-nums">
-              {weekRangeLabel}
+      {/* Summary Metric Strip Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Logged */}
+        <Card className="p-4 border-border-subtle bg-canvas-surface flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-md bg-teal-500/10 flex items-center justify-center text-teal-600 dark:text-teal-400">
+            <Icon icon={Timer} size={20} />
+          </div>
+          <div>
+            <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
+              Total Logged
+            </span>
+            <span className="text-xl font-bold text-foreground tabular-nums">
+              {formatMins(totalWeeklyMins)}
             </span>
           </div>
+        </Card>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setWeekOffset((prev) => prev + 1)}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            aria-label="Next week"
+        {/* Weekly Target */}
+        <Card className="p-4 border-border-subtle bg-canvas-surface flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
+            <Icon icon={Flag} size={20} />
+          </div>
+          <div>
+            <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
+              Weekly Target
+            </span>
+            <span className="text-xl font-bold text-foreground tabular-nums">
+              40h 00m
+            </span>
+          </div>
+        </Card>
+
+        {/* Difference / Status */}
+        <Card className="p-4 border-border-subtle bg-canvas-surface flex items-center gap-3.5">
+          <div
+            className={cn(
+              "w-10 h-10 rounded-md flex items-center justify-center border",
+              diffMins >= 0
+                ? "bg-teal-500/10 text-teal-600 border-teal-500/20"
+                : "bg-amber-500/10 text-amber-600 border-amber-500/20",
+            )}
           >
-            <Icon icon={ChevronRight} size={16} />
-          </Button>
-        </div>
-      </div>
-
-      {/* ==================== VIEW 1: TIME TRACKING ==================== */}
-      {activeTab === "tracking" && (
-        <div className="space-y-5">
-          {/* Summary Metric Strip Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Total Logged */}
-            <Card className="p-4 border-border-subtle bg-canvas-surface flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-md bg-teal-500/10 flex items-center justify-center text-teal-600 dark:text-teal-400">
-                <Icon icon={Timer} size={20} />
-              </div>
-              <div>
-                <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
-                  Total Logged
-                </span>
-                <span className="text-xl font-bold text-foreground tabular-nums">
-                  {formatMins(totalWeeklyMins)}
-                </span>
-              </div>
-            </Card>
-
-            {/* Weekly Target */}
-            <Card className="p-4 border-border-subtle bg-canvas-surface flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
-                <Icon icon={Flag} size={20} />
-              </div>
-              <div>
-                <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
-                  Weekly Target
-                </span>
-                <span className="text-xl font-bold text-foreground tabular-nums">
-                  40h 00m
-                </span>
-              </div>
-            </Card>
-
-            {/* Difference / Status */}
-            <Card className="p-4 border-border-subtle bg-canvas-surface flex items-center gap-3.5">
-              <div
+            <Icon icon={diffMins >= 0 ? CheckCircle2 : Clock} size={20} />
+          </div>
+          <div>
+            <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
+              Variance
+            </span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span
                 className={cn(
-                  "w-10 h-10 rounded-md flex items-center justify-center border",
+                  "text-base font-bold tabular-nums",
                   diffMins >= 0
-                    ? "bg-teal-500/10 text-teal-600 border-teal-500/20"
-                    : "bg-amber-500/10 text-amber-600 border-amber-500/20",
+                    ? "text-teal-600 dark:text-teal-400"
+                    : "text-amber-600 dark:text-amber-400",
                 )}
               >
-                <Icon icon={diffMins >= 0 ? CheckCircle2 : Clock} size={20} />
-              </div>
-              <div>
-                <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
-                  Variance
-                </span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span
-                    className={cn(
-                      "text-base font-bold tabular-nums",
-                      diffMins >= 0
-                        ? "text-teal-600 dark:text-teal-400"
-                        : "text-amber-600 dark:text-amber-400",
-                    )}
-                  >
-                    {diffMins >= 0
-                      ? `+${Math.floor(diffMins / 60)}h ${diffMins % 60}m`
-                      : `-${Math.floor(Math.abs(diffMins) / 60)}h ${Math.abs(diffMins) % 60}m`}
+                {diffMins >= 0
+                  ? `+${Math.floor(diffMins / 60)}h ${diffMins % 60}m`
+                  : `-${Math.floor(Math.abs(diffMins) / 60)}h ${Math.abs(diffMins) % 60}m`}
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Project Allocation Breakdown */}
+        <Card className="p-3.5 border-border-subtle bg-canvas-surface flex flex-col justify-center">
+          <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block mb-1.5">
+            Project Allocation
+          </span>
+          <div className="flex flex-col gap-1 text-xs">
+            {Object.keys(WORK_TAXONOMY)
+              .filter((proj) => (projectRollups[proj] || 0) > 0)
+              .map((proj) => (
+                <div
+                  key={proj}
+                  className="flex items-center justify-between text-2xs"
+                >
+                  <span className="flex items-center gap-1.5 text-muted-foreground truncate">
+                    <span
+                      className={cn(
+                        "w-1.5 h-1.5 rounded-full shrink-0",
+                        WORK_TAXONOMY[proj]?.dotClass,
+                      )}
+                    />
+                    <span className="truncate max-w-[110px]">{proj}</span>
+                  </span>
+                  <span className="tabular-nums font-semibold text-foreground">
+                    {formatMins(projectRollups[proj] || 0)}
                   </span>
                 </div>
-              </div>
-            </Card>
-
-            {/* Project Allocation Breakdown */}
-            <Card className="p-3.5 border-border-subtle bg-canvas-surface flex flex-col justify-center">
-              <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block mb-1.5">
-                Project Allocation
-              </span>
-              <div className="flex flex-col gap-1 text-xs">
-                {Object.keys(WORK_TAXONOMY)
-                  .filter((proj) => (projectRollups[proj] || 0) > 0)
-                  .map((proj) => (
-                    <div
-                      key={proj}
-                      className="flex items-center justify-between text-2xs"
-                    >
-                      <span className="flex items-center gap-1.5 text-muted-foreground truncate">
-                        <span
-                          className={cn(
-                            "w-1.5 h-1.5 rounded-full shrink-0",
-                            WORK_TAXONOMY[proj]?.dotClass,
-                          )}
-                        />
-                        <span className="truncate max-w-[110px]">{proj}</span>
-                      </span>
-                      <span className="tabular-nums font-semibold text-foreground">
-                        {formatMins(projectRollups[proj] || 0)}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            </Card>
+              ))}
           </div>
+        </Card>
+      </div>
 
-          {/* 7-Day Weekly Columns Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-7 rounded-lg border border-border-subtle bg-canvas-surface shadow-xs overflow-hidden">
-            {weekDays.map((d) => {
-              const iso = formatDateISO(d);
-              const dayShort = d.toLocaleString("default", {
-                weekday: "short",
-              });
-              const dayNum = d.getDate();
-              const dayMonth = d.toLocaleString("default", { month: "short" });
+      {/* 7-Day Weekly Columns Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-7 rounded-lg border border-border-subtle bg-canvas-surface shadow-xs overflow-hidden">
+        {weekDays.map((d) => {
+          const iso = formatDateISO(d);
+          const dayShort = d.toLocaleString("default", {
+            weekday: "short",
+          });
+          const dayNum = d.getDate();
+          const dayMonth = d.toLocaleString("default", { month: "short" });
 
-              let dayEntries = entries.filter((e) => e.dateStr === iso);
-              if (projectFilter !== "ALL")
-                dayEntries = dayEntries.filter(
-                  (e) => e.project === projectFilter,
-                );
-              if (locationFilter !== "ALL")
-                dayEntries = dayEntries.filter(
-                  (e) => e.location === locationFilter,
-                );
+          let dayEntries = entries.filter((e) => e.dateStr === iso);
+          if (projectFilter !== "ALL")
+            dayEntries = dayEntries.filter((e) => e.project === projectFilter);
+          if (locationFilter !== "ALL")
+            dayEntries = dayEntries.filter((e) => e.location === locationFilter);
 
-              const dayMinutes = dayEntries.reduce(
-                (acc, curr) => acc + curr.hours * 60 + curr.mins,
-                0,
-              );
+          const dayMinutes = dayEntries.reduce(
+            (acc, curr) => acc + curr.hours * 60 + curr.mins,
+            0,
+          );
 
-              return (
-                <div
-                  key={iso}
-                  className="p-3 flex flex-col min-h-[480px] border-b border-border-subtle last:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
-                >
-                  {/* Column Header */}
-                  <div className="pb-2.5 border-b border-border-subtle mb-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="leading-tight">
-                        <span className="text-xs font-bold text-foreground block">
-                          {dayShort}
-                        </span>
-                        <span className="text-2xs text-muted-foreground tabular-nums">
-                          {dayNum} {dayMonth}
-                        </span>
-                      </div>
-                      <span
-                        className={cn(
-                          "text-xs tabular-nums font-bold",
-                          dayMinutes > 0
-                            ? "text-foreground"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        {formatMins(dayMinutes)}
-                      </span>
-                    </div>
-
-                    <Button
-                      variant="sweep"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedDateForAdd(iso);
-                        setPresetProjectForAdd("");
-                        setPresetTaskForAdd("");
-                        setAddModalOpen(true);
-                      }}
-                      className="mt-2 h-8 w-full gap-1.5 text-xs font-semibold"
-                    >
-                      <Icon icon={Plus} size={16} />
-                      <span>Add Time</span>
-                    </Button>
+          return (
+            <div
+              key={iso}
+              className="p-3 flex flex-col min-h-[480px] border-b border-border-subtle last:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
+            >
+              {/* Column Header */}
+              <div className="pb-2.5 border-b border-border-subtle mb-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="leading-tight">
+                    <span className="text-xs font-bold text-foreground block">
+                      {dayShort}
+                    </span>
+                    <span className="text-2xs text-muted-foreground tabular-nums">
+                      {dayNum} {dayMonth}
+                    </span>
                   </div>
-
-                  {/* Day Entries List */}
-                  <div className="space-y-2 flex-1">
-                    {dayEntries.length === 0 ? (
-                      <p className="text-2xs text-muted-foreground/60 text-center py-6">
-                        No time entries
-                      </p>
-                    ) : (
-                      dayEntries.map((item) => (
-                        <div
-                          key={item.id}
-                          onClick={() => {
-                            setActiveEditEntry(item);
-                            setEditModalOpen(true);
-                          }}
-                          className="bg-canvas-surface border border-border-subtle hover:border-teal-500 rounded-lg p-2.5 shadow-xs cursor-pointer transition flex flex-col justify-between gap-2 group"
-                        >
-                          <div>
-                            <div className="flex items-center justify-between gap-1">
-                              <span className="text-3xs font-bold text-muted-foreground uppercase tracking-tight truncate max-w-[90px]">
-                                {item.project}
-                              </span>
-                              {renderLocationBadge(item.location)}
-                            </div>
-                            <h5 className="text-xs font-semibold text-foreground mt-1 leading-snug group-hover:text-teal-600 dark:group-hover:text-teal-400 transition">
-                              {item.task}
-                            </h5>
-                            {item.activity && (
-                              <p className="mt-0.5 truncate text-2xs text-muted-foreground">
-                                {item.activity}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
-                            <span className="text-2xs tabular-nums font-bold text-teal-600 dark:text-teal-400">
-                              {item.hours}h {String(item.mins).padStart(2, "0")}
-                              m
-                            </span>
-                            <Icon
-                              icon={Edit2}
-                              size={13}
-                              className="text-muted-foreground/40 group-hover:text-teal-600 transition"
-                            />
-                          </div>
-                        </div>
-                      ))
+                  <span
+                    className={cn(
+                      "text-xs tabular-nums font-bold",
+                      dayMinutes > 0
+                        ? "text-foreground"
+                        : "text-muted-foreground",
                     )}
-                  </div>
+                  >
+                    {formatMins(dayMinutes)}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
-      {/* ==================== VIEW 2: PROJECT REPORT ==================== */}
-      {activeTab === "report" && (
-        <div className="space-y-4">
-          {/* Summary Bar */}
-          <Card className="px-5 py-3 border-border-subtle bg-canvas-surface flex items-center gap-5 text-xs shadow-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-teal-500" />
-              <span className="text-muted-foreground font-medium">
-                Total Hours:
-              </span>
-              <span className="font-bold text-foreground text-sm tabular-nums">
-                {formatMins(totalWeeklyMins)}
-              </span>
-            </div>
-            <div className="h-4 w-px bg-border-subtle" />
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-navy-500" />
-              <span className="text-muted-foreground font-medium">
-                Active Projects:
-              </span>
-              <span className="font-bold text-foreground text-sm">3</span>
-            </div>
-          </Card>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedDateForAdd(iso);
+                    setPresetProjectForAdd("");
+                    setPresetTaskForAdd("");
+                    setAddModalOpen(true);
+                  }}
+                  className="mt-2 h-8 w-full gap-1.5 text-xs font-semibold"
+                >
+                  <Icon icon={Plus} size={16} />
+                  <span>Add Time</span>
+                </Button>
+              </div>
 
-          {/* Data Table */}
-          <div className="rounded-lg border border-border-subtle bg-canvas-surface shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-canvas-bg/60 border-b border-border-subtle text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    <th className="py-3 px-5 min-w-[260px]">Project / Task</th>
-                    {weekDays.slice(0, 5).map((d) => (
-                      <th
-                        key={d.toISOString()}
-                        className="py-3 px-3 text-center w-24"
-                      >
-                        {d.toLocaleString("default", { weekday: "short" })}{" "}
-                        <span className="text-muted-foreground block font-normal text-3xs">
-                          {d.toLocaleString("default", { month: "short" })}{" "}
-                          {d.getDate()}
+              {/* Day Entries List */}
+              <div className="space-y-2 flex-1">
+                {dayEntries.length === 0 ? (
+                  <p className="text-2xs text-muted-foreground/60 text-center py-6">
+                    No time entries
+                  </p>
+                ) : (
+                  dayEntries.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        setActiveEditEntry(item);
+                        setEditModalOpen(true);
+                      }}
+                      className="bg-canvas-surface border border-border-subtle hover:border-teal-500 rounded-lg p-2.5 shadow-xs cursor-pointer transition flex flex-col justify-between gap-2 group"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-3xs font-bold text-muted-foreground uppercase tracking-tight truncate max-w-[90px]">
+                            {item.project}
+                          </span>
+                          {renderLocationBadge(item.location)}
+                        </div>
+                        <h5 className="text-xs font-semibold text-foreground mt-1 leading-snug group-hover:text-teal-600 dark:group-hover:text-teal-400 transition">
+                          {item.task}
+                        </h5>
+                        {item.activity && (
+                          <p className="mt-0.5 truncate text-2xs text-muted-foreground">
+                            {item.activity}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+                        <span className="text-2xs tabular-nums font-bold text-teal-600 dark:text-teal-400">
+                          {item.hours}h {String(item.mins).padStart(2, "0")}m
                         </span>
-                      </th>
-                    ))}
-                    <th className="py-3 px-5 text-right w-28 font-bold text-foreground">
-                      Total
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody className="divide-y divide-border-subtle/70">
-                  {Object.keys(WORK_TAXONOMY).map((projKey) => {
-                    if (projectFilter !== "ALL" && projectFilter !== projKey)
-                      return null;
-                    const isCollapsed = !!collapsedProjects[projKey];
-                    const pMeta = WORK_TAXONOMY[projKey];
-
-                    // Project totals across Mon-Fri
-                    const projDailyMins = [0, 0, 0, 0, 0];
-                    let projTotalM = 0;
-
-                    weekDays.slice(0, 5).forEach((dayObj, dayIdx) => {
-                      const iso = formatDateISO(dayObj);
-                      const userEntries = entries.filter(
-                        (e) => e.project === projKey && e.dateStr === iso,
-                      );
-                      const userM = userEntries.reduce(
-                        (acc, c) => acc + c.hours * 60 + c.mins,
-                        0,
-                      );
-
-                      let presetM = 0;
-                      if (REPORT_PRESETS[projKey]) {
-                        Object.keys(REPORT_PRESETS[projKey]).forEach((t) => {
-                          presetM += Math.round(
-                            (REPORT_PRESETS[projKey][t][dayIdx] || 0) * 60,
-                          );
-                        });
-                      }
-
-                      const finalM = Math.max(userM, presetM);
-                      projDailyMins[dayIdx] = finalM;
-                      projTotalM += finalM;
-                    });
-
-                    // Only show projects/activities that have time this week.
-                    if (projTotalM === 0) return null;
-
-                    return (
-                      <React.Fragment key={projKey}>
-                        {/* Parent Project Accordion Row */}
-                        <tr
-                          onClick={() =>
-                            setCollapsedProjects((prev) => ({
-                              ...prev,
-                              [projKey]: !prev[projKey],
-                            }))
-                          }
-                          className="bg-canvas-bg/30 hover:bg-teal-500/5 transition-colors cursor-pointer select-none border-b border-border-subtle"
-                        >
-                          <td className="py-3 px-5 flex items-center gap-2.5">
-                            <span className="text-muted-foreground transition-transform">
-                              <Icon
-                                icon={ChevronDown}
-                                size={16}
-                                className={cn(
-                                  "transition-transform",
-                                  isCollapsed && "-rotate-90",
-                                )}
-                              />
-                            </span>
-                            <span
-                              className={cn(
-                                "w-2 h-2 rounded-full",
-                                pMeta.dotClass,
-                              )}
-                            />
-                            <span className="font-bold text-foreground text-xs">
-                              {projKey}
-                            </span>
-                            <span
-                              className={cn(
-                                "px-2 py-0.5 rounded text-3xs font-medium ml-1",
-                                pMeta.badgeClass,
-                              )}
-                            >
-                              {pMeta.tasks.length} tasks
-                            </span>
-                          </td>
-
-                          {projDailyMins.map((m, idx) => (
-                            <td
-                              key={idx}
-                              className={cn(
-                                "py-3 px-3 text-center tabular-nums font-semibold",
-                                m > 0
-                                  ? "text-foreground bg-canvas-bg/40"
-                                  : "text-muted-foreground/50",
-                              )}
-                            >
-                              {formatCol(m)}
-                            </td>
-                          ))}
-
-                          <td className="py-3 px-5 text-right tabular-nums font-extrabold text-foreground text-xs">
-                            {formatMins(projTotalM)}
-                          </td>
-                        </tr>
-
-                        {/* Nested Task Child Rows */}
-                        {!isCollapsed &&
-                          pMeta.tasks.map((taskName) => {
-                            let taskTotalM = 0;
-                            return (
-                              <tr
-                                key={taskName}
-                                className="bg-canvas-surface hover:bg-canvas-bg/50 transition-colors text-foreground"
-                              >
-                                <td className="py-2.5 px-5 pl-12 flex items-center gap-2 text-xs">
-                                  <span className="text-muted-foreground/50 tabular-nums">
-                                    ↳
-                                  </span>
-                                  <span className="font-medium text-foreground">
-                                    {taskName}
-                                  </span>
-                                </td>
-
-                                {weekDays.slice(0, 5).map((dayObj, dayIdx) => {
-                                  const iso = formatDateISO(dayObj);
-                                  const userMatches = entries.filter(
-                                    (e) =>
-                                      e.project === projKey &&
-                                      e.task === taskName &&
-                                      e.dateStr === iso,
-                                  );
-                                  const userM = userMatches.reduce(
-                                    (acc, c) => acc + c.hours * 60 + c.mins,
-                                    0,
-                                  );
-                                  const presetM = Math.round(
-                                    (REPORT_PRESETS[projKey]?.[taskName]?.[
-                                      dayIdx
-                                    ] || 0) * 60,
-                                  );
-                                  const cellM = userM > 0 ? userM : presetM;
-                                  taskTotalM += cellM;
-
-                                  return (
-                                    <td
-                                      key={iso}
-                                      onClick={() => {
-                                        const match = userMatches[0];
-                                        if (match) {
-                                          setActiveEditEntry(match);
-                                          setEditModalOpen(true);
-                                        } else {
-                                          setSelectedDateForAdd(iso);
-                                          setPresetProjectForAdd(projKey);
-                                          setPresetTaskForAdd(taskName);
-                                          setAddModalOpen(true);
-                                        }
-                                      }}
-                                      className="py-2.5 px-3 text-center tabular-nums cursor-pointer hover:bg-teal-500/10 text-muted-foreground transition group"
-                                      title="Click to edit or add time"
-                                    >
-                                      {cellM > 0 ? (
-                                        <span className="font-semibold text-teal-600 dark:text-teal-400 group-hover:underline">
-                                          {formatCol(cellM)}
-                                        </span>
-                                      ) : (
-                                        <span className="text-muted-foreground/30 group-hover:text-teal-600 group-hover:font-bold">
-                                          +
-                                        </span>
-                                      )}
-                                    </td>
-                                  );
-                                })}
-
-                                <td className="py-2.5 px-5 text-right tabular-nums font-bold text-foreground text-xs">
-                                  {formatMins(taskTotalM)}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                      </React.Fragment>
-                    );
-                  })}
-                </tbody>
-
-                <tfoot>
-                  <tr className="bg-canvas-bg/80 border-t-2 border-border-subtle font-bold text-xs text-foreground">
-                    <td className="py-3.5 px-5 uppercase tracking-wider text-2xs text-muted-foreground">
-                      Total
-                    </td>
-                    {[0, 1, 2, 3, 4].map((dayIdx) => {
-                      let colMins = 0;
-                      Object.keys(WORK_TAXONOMY).forEach((p) => {
-                        const iso = formatDateISO(weekDays[dayIdx]);
-                        const userM = entries
-                          .filter((e) => e.project === p && e.dateStr === iso)
-                          .reduce((acc, c) => acc + c.hours * 60 + c.mins, 0);
-                        let presetM = 0;
-                        if (REPORT_PRESETS[p]) {
-                          Object.keys(REPORT_PRESETS[p]).forEach((t) => {
-                            presetM += Math.round(
-                              (REPORT_PRESETS[p][t][dayIdx] || 0) * 60,
-                            );
-                          });
-                        }
-                        colMins += Math.max(userM, presetM);
-                      });
-
-                      return (
-                        <td
-                          key={dayIdx}
-                          className="py-3.5 px-3 text-center tabular-nums text-foreground"
-                        >
-                          {formatMins(colMins)}
-                        </td>
-                      );
-                    })}
-                    <td className="py-3.5 px-5 text-right tabular-nums text-sm text-teal-600 dark:text-teal-400 font-extrabold">
-                      {formatMins(totalWeeklyMins)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+                        <Icon
+                          icon={Edit2}
+                          size={13}
+                          className="text-muted-foreground/40 group-hover:text-teal-600 transition"
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-
-            {/* Print Sheet Utility Bar */}
-            <div className="px-5 py-3 bg-canvas-bg/30 border-t border-border-subtle flex items-center justify-between text-xs text-muted-foreground">
-              <span>
-                Showing 3 project breakdowns with nested tasks. Click project
-                row to toggle.
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.print()}
-                className="gap-1.5 text-xs h-7"
-              >
-                <Icon icon={Printer} size={14} />
-                <span>Print Sheet</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </div>
 
       {/* MODAL 1: ADD TIME */}
       <AddTimeDialog

@@ -40,7 +40,6 @@ const ROW_STATUS: Record<ProjectStatus, AdminProjectRow["status"]> = {
   completed: "Active",
 };
 
-/** Overview rows are summaries; settings needs the full project record. */
 function projectForRow(row: AdminProjectRow): Project {
   const known = MOCK_PROJECTS.find((p) => p.name === row.name);
   if (known) return known;
@@ -66,22 +65,17 @@ function projectForRow(row: AdminProjectRow): Project {
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
-  const [editingRow, setEditingRow] = React.useState<AdminProjectRow | null>(
-    null,
-  );
+  const [editingRow, setEditingRow] = React.useState<AdminProjectRow | null>(null);
   const isLoading = useSimulatedLoading();
   const [createOpen, setCreateOpen] = React.useState(false);
   const [projectRows, setProjectRows] = React.useState(ADMIN_PROJECTS_TABLE);
 
-  // Ctrl/⌘ + K toggles "new project".
   useModalHotkey({
     open: createOpen,
     onOpen: () => setCreateOpen(true),
     onClose: () => setCreateOpen(false),
   });
 
-  // Same shared dialog the Projects page uses; surface the new project at the
-  // top of the overview table.
   const handleCreateProject = (project: Project) => {
     setProjectRows((prev) => [
       {
@@ -147,16 +141,16 @@ export function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Middle 2-Column Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left (2 cols): Active projects table */}
-        <div className="lg:col-span-2 space-y-3">
-          <div className="flex items-center justify-between">
+      {/* Middle 2-Column Section: Fixed 390px with inner scrolling */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        {/* Left Card: All active projects table */}
+        <Card className="lg:col-span-2 p-5 border-border-subtle bg-canvas-surface flex flex-col h-[390px] min-h-[390px] max-h-[390px] overflow-hidden">
+          <div className="flex items-center justify-between pb-3 shrink-0">
             <div>
               <h2 className="text-sm font-semibold text-foreground">
                 All active projects
               </h2>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Monitored progress, resource loads, and milestones
               </p>
             </div>
@@ -165,144 +159,133 @@ export function AdminDashboardPage() {
             </span>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Manager</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Hours logged</TableHead>
-                <TableHead className="w-[120px] text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projectRows.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-semibold text-foreground leading-none">
-                        {row.name}
-                      </p>
-                      <p className="text-2xs text-muted-foreground leading-none">
-                        {row.subname}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {row.client}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {row.manager}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        row.status === "Active"
-                          ? "success"
-                          : row.status === "On-hold"
-                            ? "warning"
-                            : "destructive"
-                      }
-                      className="text-3xs uppercase font-bold px-2 py-0.5"
-                    >
-                      {row.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right text-xs font-mono font-medium">
-                    {row.hoursLogged.toFixed(1)}h
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setEditingRow(row)}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:text-teal-600 dark:hover:text-teal-400 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        aria-label={`Edit ${row.name}`}
-                      >
-                        <Icon icon={Pencil} size={13} />
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          navigate(
-                            MOCK_PROJECTS.some((p) => p.name === row.name)
-                              ? `/projects/${MOCK_PROJECTS.find((p) => p.name === row.name)!.id}`
-                              : "/projects",
-                          )
-                        }
-                        className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      >
-                        View
-                      </button>
-                    </div>
-                  </TableCell>
+          {/* Internal Scrollable Table Container */}
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto rounded-md border border-border-subtle">
+            <Table className="relative">
+              <TableHeader className="sticky top-0 bg-canvas-surface z-10 shadow-xs">
+                <TableRow>
+                  <TableHead className="bg-canvas-surface">Project</TableHead>
+                  <TableHead className="bg-canvas-surface">Client</TableHead>
+                  <TableHead className="bg-canvas-surface">Manager</TableHead>
+                  <TableHead className="bg-canvas-surface">Status</TableHead>
+                  <TableHead className="text-right bg-canvas-surface">Hours logged</TableHead>
+                  <TableHead className="w-[120px] text-right bg-canvas-surface">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {projectRows.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-semibold text-foreground leading-none">
+                          {row.name}
+                        </p>
+                        <p className="text-2xs text-muted-foreground leading-none">
+                          {row.subname}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {row.client}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {row.manager}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          row.status === "Active"
+                            ? "success"
+                            : row.status === "On-hold"
+                              ? "warning"
+                              : "destructive"
+                        }
+                        className="text-3xs uppercase font-bold px-2 py-0.5"
+                      >
+                        {row.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-xs font-mono font-medium">
+                      {row.hoursLogged.toFixed(1)}h
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setEditingRow(row)}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:text-teal-600 dark:hover:text-teal-400"
+                        >
+                          <Icon icon={Pencil} size={13} />
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate(
+                              MOCK_PROJECTS.some((p) => p.name === row.name)
+                                ? `/projects/${MOCK_PROJECTS.find((p) => p.name === row.name)!.id}`
+                                : "/projects"
+                            )
+                          }
+                          className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+                        >
+                          View
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-          <div className="flex items-center justify-between text-2xs text-muted-foreground px-1">
+          <div className="pt-2 flex items-center justify-between text-2xs text-muted-foreground shrink-0">
             <span>Showing {projectRows.length} of 14 projects</span>
             <div className="flex gap-2">
-              <button
-                type="button"
-                className="hover:text-foreground rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                Previous
-              </button>
+              <button type="button" className="hover:text-foreground">Previous</button>
               <span>•</span>
-              <button
-                type="button"
-                className="hover:text-foreground rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                Next
-              </button>
+              <button type="button" className="hover:text-foreground">Next</button>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Right (1 col): Team Distribution */}
-        <div className="space-y-3">
-          <Card className="p-5 border-border-subtle bg-canvas-surface space-y-4">
+        {/* Right Card: Team Distribution */}
+        <Card className="p-5 border-border-subtle bg-canvas-surface flex flex-col h-[390px] min-h-[390px] max-h-[390px] overflow-hidden justify-between">
+          <div className="pb-3 border-b border-border-subtle shrink-0">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-foreground">
                 Team distribution
               </h3>
               <Icon icon={Users} size={15} className="text-muted-foreground" />
             </div>
-            <p className="text-xs text-muted-foreground -mt-2">
+            <p className="text-2xs text-muted-foreground mt-0.5">
               Resource allocation across active units
             </p>
+          </div>
 
-            <div className="divide-y divide-border-subtle">
-              {ADMIN_TEAM_DISTRIBUTION.map((team, idx) => (
-                <div
-                  key={idx}
-                  className="py-2.5 first:pt-0 last:pb-0 space-y-0.5"
-                >
-                  <p className="text-xs font-semibold text-foreground">
-                    {team.department}
-                  </p>
-                  <p className="text-2xs text-muted-foreground">
-                    {team.details}
-                  </p>
-                </div>
-              ))}
-            </div>
+          {/* Internal Scrollable Breakdown */}
+          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-border-subtle py-1 pr-1">
+            {ADMIN_TEAM_DISTRIBUTION.map((team, idx) => (
+              <div key={idx} className="py-2.5 first:pt-0 last:pb-0 space-y-0.5">
+                <p className="text-xs font-semibold text-foreground">
+                  {team.department}
+                </p>
+                <p className="text-2xs text-muted-foreground">
+                  {team.details}
+                </p>
+              </div>
+            ))}
+          </div>
 
-            <div className="rounded-lg border border-border-subtle bg-canvas-bg/50 p-3 flex items-start gap-2.5">
-              <Icon
-                icon={CheckCircle2}
-                size={15}
-                className="text-teal-500 mt-0.5"
-              />
+          {/* Static Bottom Capacity Box & Link */}
+          <div className="pt-2 border-t border-border-subtle space-y-2 shrink-0">
+            <div className="rounded-lg border border-border-subtle bg-canvas-bg/50 p-2.5 flex items-start gap-2">
+              <Icon icon={CheckCircle2} size={14} className="text-teal-500 mt-0.5" />
               <div className="space-y-0.5 text-xs">
-                <p className="font-semibold text-foreground">
+                <p className="font-semibold text-foreground text-2xs">
                   Target capacity nominal
                 </p>
-                <p className="text-muted-foreground text-2xs">
+                <p className="text-muted-foreground text-3xs leading-tight">
                   Overall 84% capacity is allocated across units.
                 </p>
               </div>
@@ -310,12 +293,12 @@ export function AdminDashboardPage() {
 
             <button
               type="button"
-              className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline pt-1 block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline block"
             >
               Manage user directory →
             </button>
-          </Card>
-        </div>
+          </div>
+        </Card>
       </div>
 
       {/* Bottom scheduled activities */}
@@ -338,8 +321,8 @@ export function AdminDashboardPage() {
                       subname: updated.description || r.subname,
                       status: ROW_STATUS[updated.status],
                     }
-                  : r,
-              ),
+                  : r
+              )
             )
           }
         />
