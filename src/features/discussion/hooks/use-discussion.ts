@@ -9,6 +9,7 @@ import {
 } from "../api/discussion-api";
 import type { DiscussionMessage } from "../api/types";
 import { MAX_MESSAGE_LENGTH } from "../lib/format";
+import type { DiscussionRealtime } from "./use-discussion-socket";
 
 const REFRESH_MS = 10_000;
 
@@ -26,10 +27,15 @@ type LoadState = "idle" | "loading" | "ready" | "error";
 /**
  * Page state for one project's discussion. Only active while `enabled` (the
  * window is open): the newest page loads on first open, older pages prepend
- * on demand, and the newest page is re-polled so teammates' posts show up and
- * are marked read straight away.
+ * on demand. Teammates' posts arrive by push (once the list has loaded, even
+ * while closed); re-polling the newest page is a fallback used only while the
+ * socket is not open, and each (re)connect does one catch-up fetch.
  */
-export function useDiscussion(projectId: string, enabled: boolean) {
+export function useDiscussion(
+  projectId: string,
+  enabled: boolean,
+  realtime: DiscussionRealtime,
+) {
   const { user } = useAuth();
   const [server, setServer] = React.useState<DiscussionMessage[]>([]); // oldest first
   const [pending, setPending] = React.useState<PendingMessage[]>([]);
@@ -47,6 +53,11 @@ export function useDiscussion(projectId: string, enabled: boolean) {
   const mountedRef = React.useRef(true);
   const projectRef = React.useRef(projectId);
   projectRef.current = projectId;
+  const enabledRef = React.useRef(enabled);
+  enabledRef.current = enabled;
+  const userIdRef = React.useRef(user?.id);
+  userIdRef.current = user?.id;
+  const { status: socketStatus, subscribe } = realtime;
 
   React.useEffect(() => {
     mountedRef.current = true;
@@ -108,13 +119,14 @@ export function useDiscussion(projectId: string, enabled: boolean) {
     };
   }, [enabled, attempt, projectId, markReadSafe]);
 
-  // Pull in newer messages while open (and once on every re-open).
+  // Newest-page refresh: one immediate catch-up on open / (re)connect, then a
+  // 10s poll only while the socket is not open.
   React.useEffect(() => {
     if (!enabled || state !== "ready") return;
     let cancelled = false;
 
-    const refresh = () => {
-      if (document.hidden || sendingRef.current > 0) return;
+    const refresh = (force: boolean) => {
+      if ((document.hidden && !force) || sendingRef.current > 0) return;
       fetchMessages(projectId, { limit: DEFAULT_PAGE_SIZE })
         .then((page) => {
           if (cancelled || sendingRef.current > 0) return;
@@ -122,22 +134,74 @@ export function useDiscussion(projectId: string, enabled: boolean) {
             const known = new Set(prev.map((m) => m.id));
             const fresh = page.items.filter((m) => !known.has(m.id));
             if (fresh.length === 0) return prev;
-            markReadSafe();
             return [...prev, ...[...fresh].reverse()];
           });
+          markReadSafe();
         })
         .catch(() => {
           /* try again next tick */
         });
     };
 
-    refresh();
-    const timer = window.setInterval(refresh, REFRESH_MS);
+    refresh(true);
+    if (socketStatus === "open") {
+      return () => {
+        cancelled = true;
+      };
+    }
+    const timer = window.setInterval(() => refresh(false), REFRESH_MS);
     return () => {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [enabled, state, projectId, markReadSafe]);
+  }, [enabled, state, projectId, socketStatus, markReadSafe]);
+
+  // Push events. Applied whenever the list has loaded, even while the window
+  // is closed, so re-opening never shows a gap.
+  React.useEffect(() => {
+    return subscribe({
+      onEvent: (event) => {
+        if (!readyRef.current) return;
+        if (event.type === "message.created") {
+          const message = event.data;
+          const mine = message.author.id === userIdRef.current;
+          if (mine) {
+            // Our own post pushed back: swap out the matching in-flight bubble.
+            setPending((prev) => {
+              const at = prev.findIndex(
+                (p) => p.status === "sending" && p.content === message.content,
+              );
+              return at === -1 ? prev : prev.filter((_, i) => i !== at);
+            });
+          }
+          setServer((prev) =>
+            prev.some((m) => m.id === message.id) ? prev : [...prev, message],
+          );
+          if (enabledRef.current && !mine) markReadSafe();
+        } else if (event.type === "message.updated") {
+          const updated = event.data;
+          setServer((prev) => {
+            const at = prev.findIndex((m) => m.id === updated.id);
+            if (at === -1) return prev;
+            const next = [...prev];
+            next[at] = {
+              ...prev[at],
+              content: updated.content,
+              edited: updated.edited,
+            };
+            return next;
+          });
+        } else {
+          const { id } = event.data;
+          setServer((prev) =>
+            prev.some((m) => m.id === id)
+              ? prev.filter((m) => m.id !== id)
+              : prev,
+          );
+        }
+      },
+    });
+  }, [subscribe, markReadSafe]);
 
   const retryInitial = React.useCallback(() => setAttempt((n) => n + 1), []);
 

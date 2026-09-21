@@ -4,6 +4,7 @@ import { BrandMark } from "@/components/composed/brand-mark";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
+import type { DiscussionSocketStatus } from "../api/types";
 import type { useDiscussion } from "../hooks/use-discussion";
 import { MessageComposer } from "./message-composer";
 import { MessageList } from "./message-list";
@@ -13,6 +14,7 @@ interface DiscussionWindowProps {
   memberCount: number;
   currentUserId: string | undefined;
   discussion: ReturnType<typeof useDiscussion>;
+  connection: DiscussionSocketStatus;
   isMobile: boolean;
   /** Desktop position/size, computed from where the launcher was dropped. */
   style?: React.CSSProperties;
@@ -24,6 +26,7 @@ export function DiscussionWindow({
   memberCount,
   currentUserId,
   discussion,
+  connection,
   isMobile,
   style,
   onClose,
@@ -61,9 +64,15 @@ export function DiscussionWindow({
           <h2 className="truncate text-xs font-semibold">
             {projectName} discussion
           </h2>
-          {memberCount > 0 && (
+          {(memberCount > 0 || connection !== "open") && (
             <p className="text-3xs tabular-nums text-white/70">
-              {memberCount} member{memberCount === 1 ? "" : "s"}
+              {memberCount > 0 &&
+                `${memberCount} member${memberCount === 1 ? "" : "s"}`}
+              {connection !== "open" && (
+                <span role="status" className={cn(memberCount > 0 && "ml-1.5")}>
+                  Reconnecting…
+                </span>
+              )}
             </p>
           )}
         </div>

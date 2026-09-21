@@ -1,6 +1,7 @@
 import { MOCK_PROJECTS } from "@/features/projects/api/mock-data";
 import type {
   DiscussionAuthor,
+  DiscussionEvent,
   DiscussionMessage,
   DiscussionPage,
   FetchMessagesParams,
@@ -9,7 +10,12 @@ import type {
 
 // This module is the only seam to the backend. Every export below maps to one
 // REST endpoint (noted per function); to go live, replace the bodies with
-// fetch calls and delete everything under "MOCK ONLY".
+// fetch calls and delete everything under "MOCK ONLY". The live push channel
+// lives in discussion-socket.ts (its mock transport is deleted separately).
+//
+// MOCK ONLY parts to delete when the real backend is connected: the in-memory
+// store, the simulated teammate, the random send failure, setMockIdentity, and
+// subscribeMockDiscussion (feeds the mock socket transport).
 
 export const DEFAULT_PAGE_SIZE = 30;
 
@@ -70,6 +76,7 @@ export async function sendMessage(
   store.messages.unshift(message);
   // Your own post implies you have seen everything before it.
   store.lastReadAt = message.created_at;
+  emitMock(projectId, { type: "message.created", data: cloneMessage(message) });
   return cloneMessage(message);
 }
 
@@ -105,6 +112,51 @@ interface Store {
 }
 
 const stores = new Map<string, Store>();
+
+// Mock push channel: what the server would broadcast over the WebSocket.
+type MockListener = (event: DiscussionEvent) => void;
+const mockListeners = new Map<string, Set<MockListener>>();
+const mockTickers = new Map<string, number>();
+
+function emitMock(projectId: string, event: DiscussionEvent) {
+  mockListeners.get(projectId)?.forEach((listener) => listener(event));
+}
+
+/**
+ * MOCK ONLY: subscribe to broadcast events for a project. While anyone is
+ * subscribed, the simulated teammate keeps posting even without REST calls.
+ */
+export function subscribeMockDiscussion(
+  projectId: string,
+  listener: MockListener,
+): () => void {
+  let set = mockListeners.get(projectId);
+  if (!set) {
+    set = new Set();
+    mockListeners.set(projectId, set);
+  }
+  set.add(listener);
+  if (!mockTickers.has(projectId)) {
+    mockTickers.set(
+      projectId,
+      window.setInterval(
+        () => maybeSimulateTeammate(getStore(projectId)),
+        5_000,
+      ),
+    );
+  }
+  return () => {
+    const current = mockListeners.get(projectId);
+    if (!current) return;
+    current.delete(listener);
+    if (current.size === 0) {
+      mockListeners.delete(projectId);
+      const ticker = mockTickers.get(projectId);
+      if (ticker !== undefined) window.clearInterval(ticker);
+      mockTickers.delete(projectId);
+    }
+  };
+}
 let mockIdentity: DiscussionAuthor = { id: "", name: "You", initials: "YO" };
 
 /** The real API reads the caller from the auth token; the mock is told. */
@@ -259,12 +311,17 @@ function maybeSimulateTeammate(store: Store) {
     .filter((a) => a.id !== mockIdentity.id);
   const author = others[Math.floor(Math.random() * others.length)];
   if (!author) return;
-  store.messages.unshift({
+  const message: DiscussionMessage = {
     id: nextId(store),
     project_id: store.projectId,
     author,
     content: SNIPPETS[Math.floor(Math.random() * SNIPPETS.length)],
     created_at: new Date().toISOString(),
     edited: false,
+  };
+  store.messages.unshift(message);
+  emitMock(store.projectId, {
+    type: "message.created",
+    data: cloneMessage(message),
   });
 }

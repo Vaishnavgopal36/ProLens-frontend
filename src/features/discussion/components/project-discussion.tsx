@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-media-query";
 import type { Project } from "@/types/project";
 import { useDiscussion } from "../hooks/use-discussion";
+import { useDiscussionSocket } from "../hooks/use-discussion-socket";
 import { useUnread } from "../hooks/use-unread";
 import {
   LAUNCHER_SIZE,
@@ -30,8 +31,10 @@ export function ProjectDiscussion({ project }: ProjectDiscussionProps) {
   const wasOpen = React.useRef(false);
   const launcher = useDraggableLauncher();
 
-  const discussion = useDiscussion(project.id, open);
-  const { unread, clear } = useUnread(project.id, open);
+  // Open for as long as the widget is mounted, so the badge updates instantly.
+  const realtime = useDiscussionSocket(project.id);
+  const discussion = useDiscussion(project.id, open, realtime);
+  const { unread, clear } = useUnread(project.id, open, realtime);
 
   // Reading happens implicitly while the window is open (the hook marks it).
   React.useEffect(() => {
@@ -81,6 +84,7 @@ export function ProjectDiscussion({ project }: ProjectDiscussionProps) {
           memberCount={project.members.length}
           currentUserId={user?.id}
           discussion={discussion}
+          connection={realtime.status}
           isMobile={isMobile}
           style={windowStyle}
           onClose={close}
