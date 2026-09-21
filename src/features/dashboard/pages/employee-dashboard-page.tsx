@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import { UpcomingActivities } from "../components/upcoming-activities";
 import { LogTimeDialog } from "../components/log-time-dialog";
 
 export function EmployeeDashboardPage() {
+  const navigate = useNavigate();
   const [logTimeOpen, setLogTimeOpen] = React.useState(false);
 
   useModalHotkey({
@@ -78,7 +80,6 @@ export function EmployeeDashboardPage() {
             </span>
           </div>
 
-          {/* Scrollable Container targeting the UI table inner wrapper */}
           <div className="flex-1 min-h-0 overflow-y-auto [&>div]:max-h-[290px] [&>div]:overflow-y-auto">
             <Table>
               <TableHeader className="sticky top-0 bg-canvas-surface z-10">
@@ -98,7 +99,17 @@ export function EmployeeDashboardPage() {
               </TableHeader>
               <TableBody>
                 {EMPLOYEE_PRIORITIES_TABLE.map((row) => (
-                  <TableRow key={row.id}>
+                  <TableRow
+                    key={row.id}
+                    onClick={() =>
+                      navigate(
+                        row.project.toLowerCase().includes("nova")
+                          ? "/projects/proj-2"
+                          : "/projects/proj-1"
+                      )
+                    }
+                    className="cursor-pointer hover:bg-canvas-overlay/60 transition-colors"
+                  >
                     <TableCell>
                       <Badge
                         variant={
@@ -165,7 +176,6 @@ export function EmployeeDashboardPage() {
             </div>
           </div>
 
-          {/* Scrollable list with max-height constraint */}
           <div className="flex-1 min-h-0 overflow-y-auto max-h-[190px] divide-y divide-border-subtle pr-1 my-2">
             {EMPLOYEE_WEEKLY_EFFORT.breakdown.map((item) => (
               <div
@@ -180,13 +190,14 @@ export function EmployeeDashboardPage() {
             ))}
           </div>
 
+          {/* Timesheets Navigation Link */}
           <div className="pt-2 border-t border-border-subtle shrink-0">
-            <button
-              type="button"
+            <Link
+              to="/timesheets"
               className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline block"
             >
               View full timesheet →
-            </button>
+            </Link>
           </div>
         </Card>
       </div>

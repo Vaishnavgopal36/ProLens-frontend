@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Plus, Users, CheckCircle2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -303,12 +303,13 @@ export function AdminDashboardPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline block"
-            >
-              Manage user directory →
-            </button>
+            <Link
+  to="/teams"
+  className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline block"
+>
+  Manage user directory →
+</Link>
+
           </div>
         </Card>
       </div>

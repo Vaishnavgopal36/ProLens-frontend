@@ -477,155 +477,168 @@ export function CalendarPage() {
   );
 
   return (
-    <section className="mx-auto mb-8 max-w-[1340px] space-y-4 rounded-lg border border-border-subtle bg-canvas-surface p-5 text-foreground shadow-sm md:p-6">
-      {/* Header: title + navigation, primary action right-aligned */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="min-w-[13rem] text-xl font-bold tracking-tight">
-            {viewTitle(view, cursor)}
-          </h2>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => step(-1)}
-              aria-label="Previous"
-            >
-              <Icon icon={ChevronLeft} size={16} />
-            </Button>
+    <div className="mx-auto mb-8 max-w-[1340px] space-y-6">
+      {/* Page Header: Title & Subtitle */}
+      <div className="flex flex-col gap-1 pb-1">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Calendar
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Plan sprint milestones, manage team leaves, and schedule delivery events.
+        </p>
+      </div>
+
+      {/* Main Calendar Card */}
+      <section className="space-y-4 rounded-lg border border-border-subtle bg-canvas-surface p-5 text-foreground shadow-sm md:p-6">
+        {/* Date Navigation & Primary Actions */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="min-w-[13rem] text-xl font-bold tracking-tight">
+              {viewTitle(view, cursor)}
+            </h2>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => step(-1)}
+                aria-label="Previous"
+              >
+                <Icon icon={ChevronLeft} size={16} />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => setCursor(today)}
+              >
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => step(1)}
+                aria-label="Next"
+              >
+                <Icon icon={ChevronRight} size={16} />
+              </Button>
+            </div>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs"
-              onClick={() => setCursor(today)}
+              className="h-9 gap-1.5 text-xs font-semibold"
+              onClick={() => setLeaveOpen(true)}
             >
-              Today
+              <Icon icon={CalendarOff} size={16} />
+              Add Leave
             </Button>
             <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => step(1)}
-              aria-label="Next"
+              variant="accent"
+              size="sm"
+              className="h-9 gap-1.5 text-xs font-semibold"
+              title="Add event (Ctrl+K)"
+              onClick={() => openAdd(view === "day" ? cursor : today)}
             >
-              <Icon icon={ChevronRight} size={16} />
+              <Icon icon={Plus} size={16} />
+              Add Event
             </Button>
           </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 gap-1.5 text-xs font-semibold"
-            onClick={() => setLeaveOpen(true)}
-          >
-            <Icon icon={CalendarOff} size={16} />
-            Add Leave
-          </Button>
-          <Button
-            variant="accent"
-            size="sm"
-            className="h-9 gap-1.5 text-xs font-semibold"
-            title="Add event (Ctrl+K)"
-            onClick={() => openAdd(view === "day" ? cursor : today)}
-          >
-            <Icon icon={Plus} size={16} />
-            Add Event
-          </Button>
-        </div>
-      </div>
+        {/* Controls: search + Jira Filter Dropdown on left, View Switcher on right */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border-subtle py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-full sm:w-56">
+              <Icon
+                icon={Search}
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder="Search events…"
+                value={filters.search}
+                onChange={(e) => filters.setSearch(e.target.value)}
+                className="h-8 border-border-subtle bg-canvas-bg pl-9 text-xs"
+              />
+            </div>
 
-      {/* Controls: search + Jira Filter Dropdown on left, View Switcher on right */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border-subtle py-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-full sm:w-56">
-            <Icon
-              icon={Search}
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              placeholder="Search events…"
-              value={filters.search}
-              onChange={(e) => filters.setSearch(e.target.value)}
-              className="h-8 border-border-subtle bg-canvas-bg pl-9 text-xs"
-            />
+            <FilterDropdown filters={filters} />
           </div>
 
-          <FilterDropdown filters={filters} />
-        </div>
-
-        {/* Calendar View Switcher (Month / Week / Day) */}
-        <div className="flex items-center gap-2">
-          <div
-            role="group"
-            aria-label="Calendar view"
-            className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5"
-          >
-            {VIEWS.map((v) => (
-              <button
-                key={v.key}
-                type="button"
-                onClick={() => setView(v.key)}
-                aria-pressed={view === v.key}
-                className={cn(
-                  "rounded-md px-3 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  view === v.key
-                    ? "bg-canvas-surface font-semibold text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {v.label}
-              </button>
-            ))}
+          {/* Calendar View Switcher (Month / Week / Day) */}
+          <div className="flex items-center gap-2">
+            <div
+              role="group"
+              aria-label="Calendar view"
+              className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5"
+            >
+              {VIEWS.map((v) => (
+                <button
+                  key={v.key}
+                  type="button"
+                  onClick={() => setView(v.key)}
+                  aria-pressed={view === v.key}
+                  className={cn(
+                    "rounded-md px-3 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    view === v.key
+                      ? "bg-canvas-surface font-semibold text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {view === "month" && monthView}
-      {view === "week" && weekView}
-      {view === "day" && dayView}
+        {view === "month" && monthView}
+        {view === "week" && weekView}
+        {view === "day" && dayView}
 
-      <ScheduleEventDialog
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        defaultDate={addDate}
-        onAddEvent={(ev) => setEvents((prev) => [...prev, ev])}
-      />
+        <ScheduleEventDialog
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          defaultDate={addDate}
+          onAddEvent={(ev) => setEvents((prev) => [...prev, ev])}
+        />
 
-      <EventDetailsDialog
-        event={selected}
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-        onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
-        is24HourMode={false}
-      />
+        <EventDetailsDialog
+          event={selected}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
+          is24HourMode={false}
+        />
 
-      <ApplyLeaveDialog
-        open={leaveOpen}
-        onOpenChange={setLeaveOpen}
-        defaultDate={toISO(view === "day" ? cursor : today)}
-        onApplyLeave={(evs) => setEvents((prev) => [...prev, ...evs])}
-      />
+        <ApplyLeaveDialog
+          open={leaveOpen}
+          onOpenChange={setLeaveOpen}
+          defaultDate={toISO(view === "day" ? cursor : today)}
+          onApplyLeave={(evs) => setEvents((prev) => [...prev, ...evs])}
+        />
 
-      <OverflowPopover
-        open={overflowDate !== null}
-        onOpenChange={(o) => !o && setOverflowDate(null)}
-        dateLabel={
-          overflowDate
-            ? fmt(overflowDate, {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })
-            : ""
-        }
-        events={overflowDate ? eventsOn(overflowDate) : []}
-        onSelectEvent={openEvent}
-        is24HourMode={false}
-      />
-    </section>
+        <OverflowPopover
+          open={overflowDate !== null}
+          onOpenChange={(o) => !o && setOverflowDate(null)}
+          dateLabel={
+            overflowDate
+              ? fmt(overflowDate, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : ""
+          }
+          events={overflowDate ? eventsOn(overflowDate) : []}
+          onSelectEvent={openEvent}
+          is24HourMode={false}
+        />
+      </section>
+    </div>
   );
 }
