@@ -1,6 +1,9 @@
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import * as React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Plus, ArrowRight } from "lucide-react";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
@@ -19,6 +22,7 @@ import {
 } from "../api/mock-data";
 import { MetricCard } from "../components/metric-card";
 import { UpcomingActivities } from "../components/upcoming-activities";
+import { LogTimeDialog } from "../components/log-time-dialog";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import {
   PageHeaderSkeleton,
@@ -28,7 +32,15 @@ import {
 } from "@/components/composed/skeletons";
 
 export function ManagerDashboardPage() {
+  const navigate = useNavigate();
   const isLoading = useSimulatedLoading();
+  const [logTimeOpen, setLogTimeOpen] = React.useState(false);
+
+  useModalHotkey({
+    open: logTimeOpen,
+    onOpen: () => setLogTimeOpen(true),
+    onClose: () => setLogTimeOpen(false),
+  });
 
   if (isLoading) {
     return (
@@ -48,7 +60,7 @@ export function ManagerDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
+      {/* Top Header with + Log time button */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
@@ -57,6 +69,22 @@ export function ManagerDashboardPage() {
           <p className="text-xs sm:text-sm text-muted-foreground">
             Supervising 2 assigned projects and 12 team members
           </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="rounded-lg border border-border-subtle bg-canvas-surface px-3 py-1.5 text-xs text-muted-foreground font-medium">
+            Current month
+          </div>
+
+          <Button
+            variant="accent"
+            size="sm"
+            onClick={() => setLogTimeOpen(true)}
+            className="gap-1.5 font-semibold text-xs h-8"
+          >
+            <Icon icon={Plus} size={15} />
+            <span>Log time</span>
+          </Button>
         </div>
       </div>
 
@@ -67,7 +95,7 @@ export function ManagerDashboardPage() {
         ))}
       </div>
 
-      {/* Middle 2-Column Section: Locked to 390px */}
+      {/* Middle 2-Column Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* Left Card: Active tasks table */}
         <Card
@@ -84,7 +112,6 @@ export function ManagerDashboardPage() {
             </span>
           </div>
 
-          {/* Internal Scrollable Table Container */}
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto rounded-md border border-border-subtle">
             <Table className="relative">
               <TableHeader className="sticky top-0 bg-canvas-surface z-10 shadow-xs">
@@ -99,54 +126,57 @@ export function ManagerDashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {MANAGER_TASKS_TABLE.map((task) => (
-                  <TableRow key={task.id}>
-                    <TableCell>
-                      <div className="space-y-0.5">
-                        <p className="text-xs font-semibold text-foreground leading-none">
-                          {task.name}
-                        </p>
-                        <p className="text-2xs text-muted-foreground leading-none">
-                          {task.subtext}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {task.project}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="text-4xs bg-navy-500 text-white font-bold">
-                            {task.assignee.initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs text-foreground font-medium">
-                          {task.assignee.name}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {task.dueDate}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <button
-                        type="button"
-                        className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
-                      >
+                {MANAGER_TASKS_TABLE.map((task) => {
+                  const targetProjectId = task.project.toLowerCase().includes("nova")
+                    ? "proj-2"
+                    : "proj-1";
+
+                  return (
+                    <TableRow
+                      key={task.id}
+                      onClick={() => navigate(`/projects/${targetProjectId}`)}
+                      className="cursor-pointer hover:bg-canvas-overlay/60 transition-colors"
+                    >
+                      <TableCell>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-semibold text-foreground leading-none">
+                            {task.name}
+                          </p>
+                          <p className="text-2xs text-muted-foreground leading-none">
+                            {task.subtext}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {task.project}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="text-4xs bg-navy-500 text-white font-bold">
+                              {task.assignee.initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs text-foreground font-medium">
+                            {task.assignee.name}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {task.dueDate}
+                      </TableCell>
+                      <TableCell className="text-right">
                         <Link
-                          to={`/projects/${
-                            task.project.toLowerCase().includes("nova")
-                              ? "proj-2"
-                              : "proj-1"
-                          }`}
+                          to={`/projects/${targetProjectId}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
                         >
                           View
                         </Link>
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
@@ -163,7 +193,6 @@ export function ManagerDashboardPage() {
             </span>
           </div>
 
-          {/* Internal Scrollable Projects List */}
           <div className="flex-1 min-h-0 overflow-y-auto space-y-3 py-2 pr-1">
             {MANAGER_PROJECTS_LIST.map((proj) => (
               <div
@@ -236,6 +265,7 @@ export function ManagerDashboardPage() {
       </div>
 
       <UpcomingActivities />
+      <LogTimeDialog open={logTimeOpen} onOpenChange={setLogTimeOpen} />
     </div>
   );
 }

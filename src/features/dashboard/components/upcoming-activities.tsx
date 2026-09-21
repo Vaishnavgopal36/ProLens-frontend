@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Calendar, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { MOCK_ACTIVITIES } from "../api/mock-data";
 
 export function UpcomingActivities() {
+  const navigate = useNavigate();
   const hasActivities = MOCK_ACTIVITIES.length > 0;
 
   return (
@@ -20,12 +21,12 @@ export function UpcomingActivities() {
           </span>
         </div>
 
-        {/* Updated Navigation Link */}
+        {/* View full schedule link */}
         <Link
-          to="/calendar"
+          to="/activity"
           className="flex items-center gap-1 text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline"
         >
-          <span>View calendar</span>
+          <span>View schedule</span>
           <Icon icon={ArrowRight} size={13} />
         </Link>
       </div>
@@ -35,10 +36,18 @@ export function UpcomingActivities() {
           {MOCK_ACTIVITIES.map((activity) => (
             <div
               key={activity.id}
-              className="flex flex-col justify-between rounded-lg border border-border-subtle bg-canvas-bg/50 p-3.5 space-y-3"
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/activity?id=${activity.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  navigate(`/activity?id=${activity.id}`);
+                }
+              }}
+              className="group flex flex-col justify-between rounded-lg border border-border-subtle bg-canvas-bg/50 p-3.5 space-y-3 cursor-pointer transition-all hover:border-border-strong hover:shadow-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <div className="flex items-start justify-between gap-2">
-                <span className="text-xs font-semibold text-foreground">
+                <span className="text-xs font-semibold text-foreground group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                   {activity.title}
                 </span>
                 <Badge
