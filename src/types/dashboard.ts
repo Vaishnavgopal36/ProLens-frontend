@@ -51,6 +51,14 @@ export interface ManagerTaskRow {
   dueDate: string; // e.g., "Tomorrow", "Sep 18"
 }
 
+
+export interface ManagerProjectMember {
+  name: string;
+  initials: string;
+  avatarUrl?: string;
+}
+
+
 // 6. Manager View: "My projects" right card item
 export interface ManagerProjectItem {
   id: string;
@@ -59,7 +67,7 @@ export interface ManagerProjectItem {
   status: string; // e.g., "Active"
   progress: number; // e.g., 82 (for percentage bar)
   loggedHours: number; // e.g., 186.5
-  members: string[]; // Array of member initials: ["AM", "ER", "MC"]
+  members: ManagerProjectMember[]; // <-- Updated from string[] to ManagerProjectMember[]
   moreMembers: number; // Count for "+3" overflow avatar
 }
 

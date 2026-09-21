@@ -1,8 +1,11 @@
+import * as React from "react";
+import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -128,12 +131,22 @@ export function ManagerDashboardPage() {
                     {task.dueDate}
                   </TableCell>
                   <TableCell className="text-right">
-                    <button
-                      type="button"
-                      className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="h-7 px-2.5 text-[11px] font-semibold border-border-subtle hover:border-teal-600 hover:text-teal-600 transition-colors"
                     >
-                      View
-                    </button>
+                      <Link
+                        to={`/projects/${
+                          task.project.toLowerCase().includes("nova")
+                            ? "proj-2"
+                            : "proj-1"
+                        }`}
+                      >
+                        View
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -189,29 +202,34 @@ export function ManagerDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Member avatars */}
+                  {/* Avatars & Workspace Link */}
                   <div className="flex items-center justify-between pt-1">
-                    <div className="flex -space-x-1.5">
-                      {proj.members.map((initials, i) => (
-                        <div
-                          key={i}
-                          className="flex h-5 w-5 items-center justify-center rounded-full bg-navy-500 text-[8px] font-bold text-white ring-1 ring-canvas-surface"
-                        >
-                          {initials}
-                        </div>
-                      ))}
-                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[8px] font-bold text-muted-foreground ring-1 ring-canvas-surface">
+                    <div className="flex items-center -space-x-1.5 overflow-hidden">
+                      {proj.members.map((m: any, i: number) => {
+                        const initial = typeof m === "string" ? m : m?.initials ?? "";
+                        const name = typeof m === "string" ? m : m?.name ?? initial;
+                        return (
+                          <div
+                            key={i}
+                            title={name}
+                            className="flex h-6 w-6 items-center justify-center rounded-full bg-navy-500 text-[9px] font-bold text-white ring-1 ring-canvas-surface"
+                          >
+                            {initial}
+                          </div>
+                        );
+                      })}
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground ring-1 ring-canvas-surface">
                         +{proj.moreMembers}
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      className="flex items-center gap-1 text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+                    <Link
+                      to={`/projects/${proj.id}`}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline transition-colors"
                     >
                       <span>Open workspace</span>
-                      <Icon icon={ArrowRight} size={11} />
-                    </button>
+                      <Icon icon={ArrowRight} size={14} />
+                    </Link>
                   </div>
                 </div>
               ))}

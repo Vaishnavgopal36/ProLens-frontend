@@ -5,6 +5,7 @@ import { DashboardPage } from "@/features/dashboard";
 import { OrgInsightsPage } from "@/features/org-insights";
 import { TimesheetPage } from "@/features/timesheets";
 import { CalendarPage } from "@/features/calendar";
+import { ActivityPage } from "@/features/activity";
 
 
 
@@ -33,6 +34,11 @@ export const router = createBrowserRouter([
       {
       path: "timesheets",
       element: <TimesheetPage />,
+      },
+
+      {
+      path: "activity",
+      element: <ActivityPage />,
       },
 
       // 5. Projects Domain
