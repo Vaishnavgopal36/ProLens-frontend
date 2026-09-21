@@ -19,7 +19,6 @@ export interface ListUsersParams {
 
 export interface CreateUserPayload {
   email: string;
-  password: string;
   password?: string;
   first_name?: string | null;
   last_name?: string | null;

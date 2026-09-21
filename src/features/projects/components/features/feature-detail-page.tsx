@@ -11,8 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
-import { FilterBar, useFilters } from "@/components/composed/filters";
-import type { FilterFieldDef } from "@/components/composed/filters";
 import { FilterBar, useFilters, type FilterFieldDef } from "@/components/composed/filters";
 import { cn } from "@/lib/utils";
 import { PRIORITY_BADGE_CLASSES } from "@/features/projects/lib/badge-styles";

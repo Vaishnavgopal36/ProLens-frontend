@@ -6,7 +6,6 @@ export interface FeatureStreamAvatar {
 export interface FeatureStream {
   id: string;
   name: string;
-  status: "ACTIVE" | "COMPLETED ";
   status: "ACTIVE" | "COMPLETED";
   progress: number;
   description: string;

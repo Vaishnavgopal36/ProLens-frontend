@@ -160,7 +160,6 @@ export function ProjectDetailPage() {
   }, [dbProject, projectPatch]);
 
   if (isProjectLoading || isLoading) {
-  if (isProjectLoading) {
     return (
       <div className="space-y-6">
         <WorkspaceHeaderSkeleton />

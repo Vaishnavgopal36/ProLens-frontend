@@ -164,7 +164,6 @@ export function mapFeatureToStream(f: FeatureRead): FeatureStream {
     id: f.id,
     name: f.name,
     description: f.description || "",
-    status: f.status === "done" ? "COMPLETED " : "ACTIVE",
     status: f.status === "done" ? "COMPLETED" : "ACTIVE",
     progress: f.status === "done" ? 100 : f.status === "in_progress" ? 50 : 0,
     tasksCount: 0,
