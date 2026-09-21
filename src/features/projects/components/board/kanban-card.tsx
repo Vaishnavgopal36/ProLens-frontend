@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 import {
   CalendarDays,
   CheckCircle2,
@@ -66,10 +67,10 @@ export function KanbanCard({
     : 0;
 
   return (
-    <div
+    <motion.div
       ref={touchDrag.ref}
       draggable
-      onDragStart={(event) => {
+      onDragStartCapture={(event) => {
         // A long press can also start a native drag on some browsers; the
         // touch drag owns that gesture.
         if (touchDrag.dragging) {
@@ -81,7 +82,7 @@ export function KanbanCard({
         setIsDragging(true);
         onDragStart(task.id);
       }}
-      onDragEnd={() => {
+      onDragEndCapture={() => {
         setIsDragging(false);
         onDragEnd();
       }}
@@ -89,20 +90,44 @@ export function KanbanCard({
         // The release of a touch drag also fires a click; ignore that one.
         if (!touchDrag.wasDragged()) onClick(task.id);
       }}
-      style={
-        touchDrag.dragging
+      whileHover={
+        touchDrag.dragging || isDragging
+          ? undefined
+          : {
+              y: -2,
+              scale: 1.01,
+              transition: { type: "spring", stiffness: 400, damping: 25 },
+            }
+      }
+      whileTap={
+        touchDrag.dragging || isDragging
+          ? undefined
+          : {
+              scale: 0.98,
+              transition: { type: "spring", stiffness: 400, damping: 25 },
+            }
+      }
+      animate={{
+        opacity: isDragging ? 0.4 : 1,
+      }}
+      transition={{
+        duration: 0.18,
+        ease: "easeOut",
+      }}
+      style={{
+        willChange: "transform, opacity",
+        ...(touchDrag.dragging
           ? {
               transform: `translate3d(${touchDrag.offset.x}px, ${touchDrag.offset.y}px, 0) scale(1.03)`,
             }
-          : undefined
-      }
+          : {}),
+      }}
       className={cn(
-        "bg-canvas-surface p-3.5 rounded-lg border border-border-subtle shadow-xs hover:shadow-md cursor-grab active:cursor-grabbing transition group [-webkit-touch-callout:none]",
-        isDragging && "opacity-40",
+        "bg-canvas-surface p-3.5 rounded-lg border border-border-subtle shadow-xs hover:shadow-md cursor-grab active:cursor-grabbing group [-webkit-touch-callout:none]",
         // Lifted while a finger is dragging it: above siblings, no hit-testing
         // (so the column beneath can be found), and no transition lag.
         touchDrag.dragging &&
-          "pointer-events-none relative z-50 rotate-1 cursor-grabbing shadow-xl transition-none",
+          "pointer-events-none relative z-50 rotate-1 cursor-grabbing shadow-xl",
       )}
     >
       <div className="flex items-center justify-between gap-2">
@@ -234,6 +259,6 @@ export function KanbanCard({
           </span>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

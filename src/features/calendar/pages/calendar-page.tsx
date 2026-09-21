@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-  CalendarOff,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Search,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Parasol, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -577,7 +571,7 @@ export function CalendarPage() {
               className="h-9 gap-1.5 text-xs font-semibold"
               onClick={() => setLeaveOpen(true)}
             >
-              <Icon icon={CalendarOff} size={16} />
+              <Icon icon={Parasol} size={16} />
               Add Leave
             </Button>
             <Button

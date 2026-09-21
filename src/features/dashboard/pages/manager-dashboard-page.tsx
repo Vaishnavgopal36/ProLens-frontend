@@ -72,10 +72,6 @@ export function ManagerDashboardPage() {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <div className="rounded-lg border border-border-subtle bg-canvas-surface px-3 py-1.5 text-xs text-muted-foreground font-medium">
-            Current month
-          </div>
-
           <Button
             variant="accent"
             size="sm"
@@ -127,7 +123,9 @@ export function ManagerDashboardPage() {
               </TableHeader>
               <TableBody>
                 {MANAGER_TASKS_TABLE.map((task) => {
-                  const targetProjectId = task.project.toLowerCase().includes("nova")
+                  const targetProjectId = task.project
+                    .toLowerCase()
+                    .includes("nova")
                     ? "proj-2"
                     : "proj-1";
 

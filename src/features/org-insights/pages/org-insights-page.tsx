@@ -242,7 +242,7 @@ export function OrgInsightsPage() {
         <div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium mb-1"></div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            Project performance
+            Organizational performance
           </h1>
         </div>
 
