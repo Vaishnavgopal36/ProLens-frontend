@@ -1,128 +1,155 @@
-import { Clock, User, Folder, MoreHorizontal } from "lucide-react";
+import * as React from "react";
+import { Trash2, Clock, Calendar, Briefcase, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { ActivityItem } from "@/types/activity";
 
 interface ActivityCardProps {
   item: ActivityItem;
+  viewMode: "compact" | "expanded";
+  onDelete: (id: string) => void;
 }
 
-export function ActivityCard({ item }: ActivityCardProps) {
-  const pinBg =
-    item.pinColor === "teal"
-      ? "bg-teal-600"
-      : item.pinColor === "gold"
-      ? "bg-gold-500"
-      : item.pinColor === "secondary"
-      ? "bg-teal-700"
-      : "bg-navy-500 dark:bg-slate-500";
+export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const isProject = item.category === "project";
+
+  const handleDeleteConfirm = () => {
+    onDelete(item.id);
+    setDeleteOpen(false);
+  };
 
   return (
-    <div className="group relative ml-12">
-      {/* Timeline Node Pin */}
-      <div className="absolute -left-12 top-5 flex h-6 w-6 items-center justify-center rounded-full bg-canvas-surface shadow-xs ring-4 ring-canvas-bg">
-        <span className={cn("h-2.5 w-2.5 rounded-full", pinBg)} />
-      </div>
-
-      <Card className="flex flex-col justify-between gap-3 border-border-subtle bg-canvas-surface p-5 transition-all hover:border-border-strong hover:shadow-sm md:flex-row md:items-start">
-        <div className="flex-1 space-y-2">
-          {/* Badge Row */}
+    <>
+      <Card
+        className={cn(
+          "group relative border-border-subtle bg-canvas-surface transition-all duration-150 hover:border-border-strong hover:shadow-xs",
+          viewMode === "compact" ? "p-3.5" : "p-5"
+        )}
+      >
+        <div className="flex items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="default" className="text-[10px] uppercase font-bold px-2 py-0.5">
-              {item.categoryLabel}
-            </Badge>
-
-            <Badge variant="outline" className="text-[10px] text-muted-foreground px-2 py-0.5">
-              {item.category === "project" ? "Project Activity" : "Non-Project Activity"}
+            <Badge
+              variant={isProject ? "secondary" : "neutral"}
+              className="text-[10px] px-2 py-0.5 uppercase tracking-wider font-bold"
+            >
+              {item.categoryLabel || (isProject ? "Project Activity" : "Non-Project")}
             </Badge>
 
             {item.projectName && (
-              <Badge variant="secondary" className="gap-1 text-[10px] px-2 py-0.5">
-                <Icon icon={Folder} size={11} />
+              <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                <Icon icon={Briefcase} size={12} className="opacity-70" />
                 <span>{item.projectName}</span>
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {item.statusBadge && (
+              <Badge
+                variant={item.statusBadge.variant}
+                className="text-[10px] px-2 py-0 font-medium"
+              >
+                {item.statusBadge.label}
               </Badge>
             )}
 
-            <Badge variant={item.statusBadge.variant} className="text-[10px] font-semibold px-2 py-0.5">
-              {item.statusBadge.label}
-            </Badge>
-          </div>
-
-          {/* Title & Description */}
-          <div>
-            <h3 className="text-sm font-semibold text-foreground group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-              {item.title}
-            </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {item.description}
-            </p>
-          </div>
-
-          {/* Meta Info Row */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-1 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5 font-medium text-foreground">
-              <Icon icon={Clock} size={13} className="text-muted-foreground" />
-              <span>{item.timestamp}</span>
-            </div>
-
-            {item.loggedBy && (
-              <div className="flex items-center gap-1.5">
-                <Icon icon={User} size={13} />
-                <span>
-                  Logged by <strong className="text-foreground">{item.loggedBy}</strong>
-                </span>
-              </div>
-            )}
-
-            {item.assignees && (
-              <div className="flex items-center gap-1.5">
-                <Icon icon={User} size={13} />
-                <span>
-                  Assignees: <strong className="text-foreground">{item.assignees}</strong>
-                </span>
-              </div>
-            )}
-
-            {item.metaNote && (
-              <div className="flex items-center gap-1 text-teal-600 dark:text-teal-400 font-medium">
-                <Icon icon={item.metaNote.icon} size={13} />
-                <span>{item.metaNote.text}</span>
-              </div>
-            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setDeleteOpen(true)}
+              className="h-7 w-7 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors"
+              title="Delete activity"
+            >
+              <Icon icon={Trash2} size={14} />
+            </Button>
           </div>
         </div>
 
-        {/* Right Duration & Actions Menu */}
-        <div className="flex items-center justify-between md:flex-col md:items-end md:justify-start gap-2 shrink-0 self-end md:self-start">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-canvas-overlay transition-colors"
-                aria-label="Activity options"
-              >
-                <Icon icon={MoreHorizontal} size={18} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-36">
-              <DropdownMenuItem className="text-xs cursor-pointer">View details</DropdownMenuItem>
-              <DropdownMenuItem className="text-xs cursor-pointer">Copy link</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <h3
+          className={cn(
+            "font-semibold text-foreground mt-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors",
+            viewMode === "compact" ? "text-xs" : "text-sm"
+          )}
+        >
+          {item.title}
+        </h3>
 
-          <span className="font-mono text-xs font-semibold text-muted-foreground">
-            {item.durationHours}
-          </span>
+        {viewMode === "expanded" && item.description && (
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+            {item.description}
+          </p>
+        )}
+
+        <div
+          className={cn(
+            "flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle/60 text-[11px] text-muted-foreground",
+            viewMode === "compact" ? "mt-2.5 pt-2" : "mt-3.5 pt-2.5"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5 font-medium text-foreground">
+              <Icon icon={Calendar} size={12} className="text-teal-600 dark:text-teal-400" />
+              <span>{item.timestamp}</span>
+            </span>
+
+            <span className="flex items-center gap-1">
+              <Icon icon={Clock} size={12} className="opacity-70" />
+              <span className="font-semibold text-foreground">{item.durationHours}</span>
+            </span>
+          </div>
+
+          {item.loggedBy && viewMode === "expanded" && (
+            <span className="flex items-center gap-1 text-[10px]">
+              <Icon icon={User} size={11} className="opacity-70" />
+              <span>{item.loggedBy}</span>
+            </span>
+          )}
         </div>
       </Card>
-    </div>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Delete Activity</DialogTitle>
+            <DialogDescription className="text-xs">
+              Are you sure you want to remove{" "}
+              <strong className="text-foreground">{item.title}</strong>? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeleteOpen(false)}
+              className="text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteConfirm}
+              className="text-xs gap-1.5"
+            >
+              <Icon icon={Trash2} size={14} />
+              <span>Delete</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

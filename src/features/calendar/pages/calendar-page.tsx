@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronLeft, ChevronRight, Clock, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -7,27 +7,20 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toLocalISODate } from "@/lib/date";
 import { useModalHotkey } from "@/hooks/use-hotkey";
+import {
+  useFilters,
+  FilterDropdown,
+  type FilterFieldDef,
+} from "@/components/composed/filters";
 import { INITIAL_EVENTS } from "../api/mock-data";
 import { ScheduleEventDialog } from "../components/schedule-event-dialog";
 import { EventDetailsDialog } from "../components/event-details-dialog";
 import { OverflowPopover } from "../components/overflow-popover";
-import type {
-  CalendarEvent,
-  CalendarViewMode,
-  EventCategory,
-} from "@/types/calendar";
+import type { CalendarEvent, CalendarViewMode } from "@/types/calendar";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MAX_PILLS_PER_DAY = 2;
 const HOUR_ROW_PX = 56;
-
-const CATEGORIES: { key: EventCategory; label: string; dot: string }[] = [
-  { key: "Meeting", label: "Meetings", dot: "bg-blue-400" },
-  { key: "Client", label: "Clients", dot: "bg-emerald-400" },
-  { key: "Workshop", label: "Workshops", dot: "bg-purple-400" },
-  { key: "Launch", label: "Launches", dot: "bg-rose-400" },
-  { key: "Marketing", label: "Marketing", dot: "bg-yellow-400" },
-];
 
 const VIEWS: { key: CalendarViewMode; label: string }[] = [
   { key: "month", label: "Month" },
@@ -35,7 +28,23 @@ const VIEWS: { key: CalendarViewMode; label: string }[] = [
   { key: "day", label: "Day" },
 ];
 
-/* ---------- date helpers ---------- */
+const CALENDAR_FILTER_FIELDS: FilterFieldDef<CalendarEvent>[] = [
+  {
+    key: "category",
+    label: "Event Type",
+    accessor: (e) => e.category,
+    options: [
+      { label: "Meetings", value: "Meeting" },
+      { label: "Clients", value: "Client" },
+      { label: "Workshops", value: "Workshop" },
+      { label: "Launches", value: "Launch" },
+      { label: "Marketing", value: "Marketing" },
+      { label: "Leave", value: "Leave" },
+    ],
+  },
+];
+
+/* ---------- date & time helpers ---------- */
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const toISO = toLocalISODate;
@@ -51,6 +60,18 @@ const isAllDay = (e: CalendarEvent) =>
   e.startTime === "00:00" && e.endTime === "23:59";
 const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) =>
   d.toLocaleDateString("en-US", opts);
+
+// Standard 12-Hour conversion
+const formatTime12 = (t: string) => {
+  const [h, m] = t.split(":");
+  const hour = Number(h);
+  return `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
+};
+
+const formatWindow = (e: CalendarEvent) =>
+  isAllDay(e)
+    ? "All day"
+    : `${formatTime12(e.startTime)} – ${formatTime12(e.endTime)}`;
 
 function viewTitle(view: CalendarViewMode, cursor: Date) {
   if (view === "day")
@@ -68,8 +89,6 @@ function viewTitle(view: CalendarViewMode, cursor: Date) {
   }
   return fmt(cursor, { month: "long", year: "numeric" });
 }
-
-/* ---------- small shared pieces ---------- */
 
 function DateBadge({ date, today }: { date: Date; today: Date }) {
   return (
@@ -91,11 +110,12 @@ export function CalendarPage() {
   const [events, setEvents] = React.useState<CalendarEvent[]>(INITIAL_EVENTS);
   const [cursor, setCursor] = React.useState<Date>(today);
   const [view, setView] = React.useState<CalendarViewMode>("month");
-  const [is24Hour, setIs24Hour] = React.useState(true);
-  const [activeCategories, setActiveCategories] = React.useState<
-    Set<EventCategory>
-  >(new Set(CATEGORIES.map((c) => c.key)));
-  const [query, setQuery] = React.useState("");
+
+  const filters = useFilters(
+    events,
+    CALENDAR_FILTER_FIELDS,
+    (e) => `${e.title} ${e.category} ${e.desc ?? ""}`,
+  );
 
   const [addOpen, setAddOpen] = React.useState(false);
   const [addDate, setAddDate] = React.useState(toISO(today));
@@ -106,34 +126,14 @@ export function CalendarPage() {
   const [draggedId, setDraggedId] = React.useState<string | null>(null);
   const [dragOverISO, setDragOverISO] = React.useState<string | null>(null);
 
-  const formatTime = (t: string) => {
-    if (is24Hour) return t;
-    const [h, m] = t.split(":");
-    const hour = Number(h);
-    return `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
-  };
-  const formatWindow = (e: CalendarEvent) =>
-    isAllDay(e)
-      ? "All day"
-      : `${formatTime(e.startTime)} – ${formatTime(e.endTime)}`;
-
   const visible = React.useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return events
-      .filter(
-        (e) =>
-          activeCategories.has(e.category) &&
-          (!q ||
-            e.title.toLowerCase().includes(q) ||
-            e.category.toLowerCase().includes(q) ||
-            e.desc?.toLowerCase().includes(q)),
-      )
-      .sort((a, b) => a.startTime.localeCompare(b.startTime));
-  }, [events, activeCategories, query]);
+    return [...filters.filtered].sort((a, b) =>
+      a.startTime.localeCompare(b.startTime),
+    );
+  }, [filters.filtered]);
 
   const eventsOn = (d: Date) => visible.filter((e) => onDate(e, d));
 
-  /* navigation */
   const step = (dir: 1 | -1) =>
     setCursor((c) => {
       if (view === "day") return addDays(c, dir);
@@ -141,25 +141,16 @@ export function CalendarPage() {
       return new Date(c.getFullYear(), c.getMonth() + dir, 1);
     });
 
-  /* actions */
   const openAdd = (d: Date) => {
     setAddDate(toISO(d));
     setAddOpen(true);
   };
+
   const openEvent = (e: CalendarEvent) => {
     setSelected(e);
     setDetailsOpen(true);
   };
-  const toggleCategory = (key: EventCategory) =>
-    setActiveCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
 
-  // Ctrl/⌘ + K toggles "new event" on the day being viewed (today in
-  // month/week views).
   useModalHotkey({
     open: addOpen,
     onOpen: () => openAdd(view === "day" ? cursor : today),
@@ -210,7 +201,6 @@ export function CalendarPage() {
     },
   });
 
-  /* event chip used in month cells */
   const renderPill = (e: CalendarEvent) => (
     <button
       key={e.id}
@@ -231,7 +221,7 @@ export function CalendarPage() {
     >
       {!isAllDay(e) && (
         <span className="shrink-0 font-medium tabular-nums opacity-70">
-          {formatTime(e.startTime)}
+          {formatTime12(e.startTime)}
         </span>
       )}
       <span className="truncate">{e.title}</span>
@@ -430,7 +420,7 @@ export function CalendarPage() {
               className="group flex border-b border-border-subtle last:border-b-0"
             >
               <span className="w-16 shrink-0 border-r border-border-subtle px-3 py-2 text-2xs tabular-nums text-muted-foreground">
-                {formatTime(`${key}:00`)}
+                {formatTime12(`${key}:00`)}
               </span>
               <div
                 onClick={() => openAdd(cursor)}
@@ -479,171 +469,151 @@ export function CalendarPage() {
   );
 
   return (
-    <section className="mx-auto mb-8 max-w-[1340px] space-y-4 rounded-lg border border-border-subtle bg-canvas-surface p-5 text-foreground shadow-sm md:p-6">
-      {/* Header: title + navigation, primary action right-aligned */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="min-w-[13rem] text-xl font-bold tracking-tight">
-            {viewTitle(view, cursor)}
-          </h2>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => step(-1)}
-              aria-label="Previous"
-            >
-              <Icon icon={ChevronLeft} size={16} />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setCursor(today)}
-            >
-              Today
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => step(1)}
-              aria-label="Next"
-            >
-              <Icon icon={ChevronRight} size={16} />
-            </Button>
-          </div>
-        </div>
-
-        <Button
-          variant="accent"
-          size="sm"
-          className="ml-auto h-9 gap-1.5 text-xs font-semibold"
-          title="Add event (Ctrl+K)"
-          onClick={() => openAdd(view === "day" ? cursor : today)}
-        >
-          <Icon icon={Plus} size={16} />
-          Add Event
-        </Button>
+    <div className="space-y-6">
+      {/* Main Page Heading & Description */}
+      <div>
+        <span className="text-xs text-muted-foreground">
+        </span>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
+          Calendar
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Track sprint reviews, milestones, workshops, and team leaves.
+        </p>
       </div>
 
-      {/* Controls: search + filters on the left, display options on the right */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border-subtle py-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-full sm:w-56">
-            <Icon
-              icon={Search}
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              placeholder="Search events…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="h-8 border-border-subtle bg-canvas-bg pl-9 text-xs"
-            />
+      <section className="mx-auto mb-8 max-w-[1340px] space-y-4 rounded-lg border border-border-subtle bg-canvas-surface p-5 text-foreground shadow-sm md:p-6">
+        {/* Header: title + navigation, primary action right-aligned */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="min-w-[13rem] text-xl font-bold tracking-tight">
+              {viewTitle(view, cursor)}
+            </h2>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => step(-1)}
+                aria-label="Previous"
+              >
+                <Icon icon={ChevronLeft} size={16} />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => setCursor(today)}
+              >
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => step(1)}
+                aria-label="Next"
+              >
+                <Icon icon={ChevronRight} size={16} />
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {CATEGORIES.map((c) => {
-              const on = activeCategories.has(c.key);
-              return (
+
+          <Button
+            variant="accent"
+            size="sm"
+            className="ml-auto h-9 gap-1.5 text-xs font-semibold"
+            title="Add event (Ctrl+K)"
+            onClick={() => openAdd(view === "day" ? cursor : today)}
+          >
+            <Icon icon={Plus} size={16} />
+            Add Event
+          </Button>
+        </div>
+
+        {/* Controls: search + Jira Filter Dropdown on left, View Switcher on right */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-border-subtle py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-full sm:w-56">
+              <Icon
+                icon={Search}
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder="Search events…"
+                value={filters.search}
+                onChange={(e) => filters.setSearch(e.target.value)}
+                className="h-8 border-border-subtle bg-canvas-bg pl-9 text-xs"
+              />
+            </div>
+
+            <FilterDropdown filters={filters} />
+          </div>
+
+          {/* Calendar View Switcher (Month / Week / Day) */}
+          <div className="flex items-center gap-2">
+            <div
+              role="group"
+              aria-label="Calendar view"
+              className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5"
+            >
+              {VIEWS.map((v) => (
                 <button
-                  key={c.key}
+                  key={v.key}
                   type="button"
-                  onClick={() => toggleCategory(c.key)}
-                  aria-pressed={on}
+                  onClick={() => setView(v.key)}
+                  aria-pressed={view === v.key}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-2xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    on
-                      ? "border-border-subtle bg-canvas-surface text-foreground"
-                      : "border-transparent bg-muted/60 text-muted-foreground",
+                    "rounded-md px-3 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    view === v.key
+                      ? "bg-canvas-surface font-semibold text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <span
-                    className={cn(
-                      "h-2 w-2 rounded-full",
-                      on ? c.dot : "bg-muted-foreground/30",
-                    )}
-                  />
-                  {c.label}
+                  {v.label}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1.5 text-xs tabular-nums"
-            onClick={() => setIs24Hour((v) => !v)}
-            aria-label="Toggle 12 or 24 hour time"
-          >
-            <Icon icon={Clock} size={14} className="text-muted-foreground" />
-            {is24Hour ? "24h" : "12h"}
-          </Button>
-          <div
-            role="group"
-            aria-label="Calendar view"
-            className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5"
-          >
-            {VIEWS.map((v) => (
-              <button
-                key={v.key}
-                type="button"
-                onClick={() => setView(v.key)}
-                aria-pressed={view === v.key}
-                className={cn(
-                  "rounded-md px-3 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  view === v.key
-                    ? "bg-canvas-surface font-semibold text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {v.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+        {view === "month" && monthView}
+        {view === "week" && weekView}
+        {view === "day" && dayView}
 
-      {view === "month" && monthView}
-      {view === "week" && weekView}
-      {view === "day" && dayView}
+        <ScheduleEventDialog
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          defaultDate={addDate}
+          onAddEvent={(ev) => setEvents((prev) => [...prev, ev])}
+        />
 
-      <ScheduleEventDialog
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        defaultDate={addDate}
-        onAddEvent={(ev) => setEvents((prev) => [...prev, ev])}
-      />
+        <EventDetailsDialog
+          event={selected}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
+          is24HourMode={false}
+        />
 
-      <EventDetailsDialog
-        event={selected}
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-        onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
-        is24HourMode={is24Hour}
-      />
-
-      <OverflowPopover
-        open={overflowDate !== null}
-        onOpenChange={(o) => !o && setOverflowDate(null)}
-        dateLabel={
-          overflowDate
-            ? fmt(overflowDate, {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })
-            : ""
-        }
-        events={overflowDate ? eventsOn(overflowDate) : []}
-        onSelectEvent={openEvent}
-        is24HourMode={is24Hour}
-      />
-    </section>
+        <OverflowPopover
+          open={overflowDate !== null}
+          onOpenChange={(o) => !o && setOverflowDate(null)}
+          dateLabel={
+            overflowDate
+              ? fmt(overflowDate, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : ""
+          }
+          events={overflowDate ? eventsOn(overflowDate) : []}
+          onSelectEvent={openEvent}
+          is24HourMode={false}
+        />
+      </section>
+    </div>
   );
 }

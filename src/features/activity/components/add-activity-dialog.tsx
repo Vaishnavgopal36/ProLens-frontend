@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -35,7 +37,48 @@ export function AddActivityDialog({
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [projectName, setProjectName] = React.useState("Apex Analytics Platform");
-  const [hours, setHours] = React.useState("1.0");
+
+  // Scheduling: Date, Start Time, and Duration components
+  const [scheduledDate, setScheduledDate] = React.useState(
+    () => new Date().toISOString().split("T")[0]
+  );
+  const [startTime, setStartTime] = React.useState("15:00");
+  const [durationHours, setDurationHours] = React.useState("1");
+  const [durationMinutes, setDurationMinutes] = React.useState("30");
+
+  // Converts 24-hr time (e.g. "15:00") into 12-hr format (e.g. "3:00 PM")
+  const formatTime12h = (hours: number, minutes: number) => {
+    const period = hours >= 12 ? "PM" : "AM";
+    const h12 = hours % 12 || 12;
+    return `${h12}:${minutes.toString().padStart(2, "0")} ${period}`;
+  };
+
+  // Computes friendly duration text: "1 hour 30 minutes", "45 minutes", "2 hours"
+  const getReadableDuration = () => {
+    const h = parseInt(durationHours, 10) || 0;
+    const m = parseInt(durationMinutes, 10) || 0;
+
+    const parts: string[] = [];
+    if (h > 0) parts.push(`${h} ${h === 1 ? "hour" : "hours"}`);
+    if (m > 0) parts.push(`${m} ${m === 1 ? "minute" : "minutes"}`);
+
+    return parts.length > 0 ? parts.join(" ") : "0 minutes";
+  };
+
+  // Computes calculated End Time from Start Time + Duration
+  const getCalculatedEndTime = () => {
+    if (!startTime) return "";
+    const [startH, startM] = startTime.split(":").map(Number);
+    const totalMinutes =
+      startH * 60 +
+      startM +
+      (parseInt(durationHours, 10) || 0) * 60 +
+      (parseInt(durationMinutes, 10) || 0);
+
+    const endH = Math.floor(totalMinutes / 60) % 24;
+    const endM = totalMinutes % 60;
+    return formatTime12h(endH, endM);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,22 +87,39 @@ export function AddActivityDialog({
       return;
     }
 
+    const totalMinutes =
+      (parseInt(durationHours, 10) || 0) * 60 +
+      (parseInt(durationMinutes, 10) || 0);
+
+    if (totalMinutes <= 0) {
+      toast.error("Please select a duration greater than 0 minutes.");
+      return;
+    }
+
+    const [startH, startM] = startTime.split(":").map(Number);
+    const startFormatted = formatTime12h(startH, startM);
+    const endFormatted = getCalculatedEndTime();
+
+    // Timestamp format: "2026-09-21, 3:00 PM – 4:30 PM"
+    const formattedTimestamp = `${scheduledDate}, ${startFormatted} – ${endFormatted}`;
+
     const newItem: ActivityItem = {
       id: `act-${Date.now()}`,
       category,
-      categoryLabel: category === "project" ? "Project Task Completed" : "Team Meeting",
+      categoryLabel:
+        category === "project" ? "Project Task Completed" : "Team Meeting",
       projectName: category === "project" ? projectName : undefined,
       title: title.trim(),
       description: description.trim() || "Activity logged via workspace.",
-      timestamp: "Today, Just now",
-      durationHours: `${hours} hr`,
-      statusBadge: { label: "Completed", variant: "success" },
+      timestamp: formattedTimestamp,
+      durationHours: getReadableDuration(),
+      statusBadge: { label: "Scheduled", variant: "neutral" },
       pinColor: category === "project" ? "teal" : "navy",
       loggedBy: "Alex Morgan",
     };
 
     onAdd(newItem);
-    toast.success("Activity recorded successfully.");
+    toast.success("Activity scheduled successfully.");
     onOpenChange(false);
     setTitle("");
     setDescription("");
@@ -70,16 +130,16 @@ export function AddActivityDialog({
       <DialogContent className="sm:max-w-[460px] p-5 border-border-subtle bg-canvas-surface">
         <DialogHeader className="border-b border-border-subtle pb-3">
           <DialogTitle className="text-base font-semibold text-foreground">
-            Log New Activity
+            Schedule Activity
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Record client milestones, unscheduled tasks, or professional events.
+            Set date, starting time, and duration for your activity.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 pt-1 text-xs">
-          <div>
-            <Label className="block font-medium text-foreground mb-1 text-xs">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-foreground">
               Category
             </Label>
             <Select
@@ -97,8 +157,8 @@ export function AddActivityDialog({
           </div>
 
           {category === "project" && (
-            <div>
-              <Label className="block font-medium text-foreground mb-1 text-xs">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-foreground">
                 Project
               </Label>
               <Select value={projectName} onValueChange={setProjectName}>
@@ -106,19 +166,26 @@ export function AddActivityDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Apex Analytics Platform">Apex Analytics Platform</SelectItem>
-                  <SelectItem value="Nova Mobile Dev">Nova Mobile Dev</SelectItem>
-                  <SelectItem value="Internal Project">Internal Project</SelectItem>
+                  <SelectItem value="Apex Analytics Platform">
+                    Apex Analytics Platform
+                  </SelectItem>
+                  <SelectItem value="Nova Mobile Dev">
+                    Nova Mobile Dev
+                  </SelectItem>
+                  <SelectItem value="Internal Project">
+                    Internal Project
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           )}
 
-          <div>
-            <Label className="block font-medium text-foreground mb-1 text-xs">
+          <div className="space-y-1.5">
+            <Label htmlFor="activity-title" className="text-xs font-medium text-foreground">
               Activity Title *
             </Label>
             <Input
+              id="activity-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Architecture Sprint Demo"
@@ -127,31 +194,103 @@ export function AddActivityDialog({
             />
           </div>
 
-          <div>
-            <Label className="block font-medium text-foreground mb-1 text-xs">
+          {/* Date, Start Time & Flexible Duration Container */}
+          <div className="rounded-md border border-border-subtle bg-canvas-bg/40 p-3 space-y-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="space-y-1.5">
+                <Label htmlFor="sched-date" className="text-xs font-medium text-foreground">
+                  Date
+                </Label>
+                <Input
+                  id="sched-date"
+                  type="date"
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  className="h-9 text-xs border-border-subtle bg-canvas-surface"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="sched-start" className="text-xs font-medium text-foreground">
+                  Start Time
+                </Label>
+                <Input
+                  id="sched-start"
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="h-9 text-xs border-border-subtle bg-canvas-surface"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-foreground">
+                Duration
+              </Label>
+              <div className="grid grid-cols-2 gap-2.5">
+                <Select
+                  value={durationHours}
+                  onValueChange={setDurationHours}
+                >
+                  <SelectTrigger className="h-9 text-xs border-border-subtle bg-canvas-surface">
+                    <SelectValue placeholder="Hours" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">0 hours</SelectItem>
+                    <SelectItem value="1">1 hour</SelectItem>
+                    <SelectItem value="2">2 hours</SelectItem>
+                    <SelectItem value="3">3 hours</SelectItem>
+                    <SelectItem value="4">4 hours</SelectItem>
+                    <SelectItem value="5">5 hours</SelectItem>
+                    <SelectItem value="6">6 hours</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={durationMinutes}
+                  onValueChange={setDurationMinutes}
+                >
+                  <SelectTrigger className="h-9 text-xs border-border-subtle bg-canvas-surface">
+                    <SelectValue placeholder="Minutes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">0 minutes</SelectItem>
+                    <SelectItem value="15">15 minutes</SelectItem>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="45">45 minutes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Dynamic Summary Preview */}
+            <div className="flex items-center justify-between rounded-md bg-canvas-surface px-2.5 py-1.5 text-[11px] text-muted-foreground border border-border-subtle">
+              <span>
+                Schedule:{" "}
+                <strong className="text-foreground">
+                  {startTime ? formatTime12h(...(startTime.split(":").map(Number) as [number, number])) : ""} – {getCalculatedEndTime()}
+                </strong>
+              </span>
+              <Badge variant="secondary" className="font-semibold text-[10px] px-2 py-0">
+                {getReadableDuration()}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="activity-desc" className="text-xs font-medium text-foreground">
               Description
             </Label>
-            <textarea
+            <Textarea
+              id="activity-desc"
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief summary of notes, outcomes, or agenda..."
-              className="w-full p-2.5 rounded-md border border-input bg-canvas-surface text-foreground placeholder:text-muted-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-            />
-          </div>
-
-          <div>
-            <Label className="block font-medium text-foreground mb-1 text-xs">
-              Duration (hours)
-            </Label>
-            <Input
-              type="number"
-              step={0.25}
-              min={0.25}
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-              className="h-9 text-xs border-border-subtle bg-canvas-surface"
-              required
+              className="resize-none text-xs border-border-subtle bg-canvas-surface focus-visible:ring-1"
             />
           </div>
 
@@ -171,7 +310,7 @@ export function AddActivityDialog({
               size="sm"
               className="text-xs h-9 font-semibold"
             >
-              Save Activity
+              Save Schedule
             </Button>
           </DialogFooter>
         </form>

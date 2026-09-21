@@ -23,10 +23,8 @@ import { UpcomingActivities } from "../components/upcoming-activities";
 import { LogTimeDialog } from "../components/log-time-dialog";
 
 export function EmployeeDashboardPage() {
-  // 1. STATE: Controls whether the modal is visible (true) or hidden (false)
   const [logTimeOpen, setLogTimeOpen] = React.useState(false);
 
-  // Ctrl/⌘ + K toggles the log-time modal (dated today).
   useModalHotkey({
     open: logTimeOpen,
     onOpen: () => setLogTimeOpen(true),
@@ -49,7 +47,6 @@ export function EmployeeDashboardPage() {
           </p>
         </div>
 
-        {/* 2. TRIGGER: Clicking this button sets logTimeOpen to true */}
         <Button
           variant="accent"
           size="sm"
@@ -61,7 +58,7 @@ export function EmployeeDashboardPage() {
         </Button>
       </div>
 
-      {/* 4 Top Metric Cards */}
+      {/* Top Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {EMPLOYEE_METRICS.map((metric) => (
           <MetricCard key={metric.id} data={metric} />
@@ -69,73 +66,76 @@ export function EmployeeDashboardPage() {
       </div>
 
       {/* Middle 2-Column Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Priorities table */}
-        <div className="lg:col-span-2 space-y-3">
-          <div className="flex items-center justify-between">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        {/* Left: Priorities Table Card */}
+        <Card className="lg:col-span-2 p-5 border-border-subtle bg-canvas-surface flex flex-col h-[380px]">
+          <div className="flex items-center justify-between pb-3 shrink-0">
             <h2 className="text-sm font-semibold text-foreground">
               My active priorities
             </h2>
             <span className="rounded-full bg-muted px-2 py-0.5 text-3xs font-bold text-muted-foreground">
-              4 assigned
+              {EMPLOYEE_PRIORITIES_TABLE.length} assigned
             </span>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">Priority</TableHead>
-                <TableHead>Task title</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Due date</TableHead>
-                <TableHead className="text-right">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {EMPLOYEE_PRIORITIES_TABLE.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        row.priority === "Urgent"
-                          ? "destructive"
-                          : row.priority === "High"
-                            ? "accent"
-                            : "neutral"
-                      }
-                      className="text-3xs uppercase font-bold px-2 py-0.5"
-                    >
-                      {row.priority}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs font-medium text-foreground">
-                    {row.title}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {row.project}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {row.dueDate}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Badge
-                      variant={
-                        row.status === "In progress" ? "secondary" : "outline"
-                      }
-                      className="text-3xs uppercase font-semibold px-2 py-0.5"
-                    >
-                      {row.status}
-                    </Badge>
-                  </TableCell>
+          {/* Scrollable Container targeting the UI table inner wrapper */}
+          <div className="flex-1 min-h-0 overflow-y-auto [&>div]:max-h-[290px] [&>div]:overflow-y-auto">
+            <Table>
+              <TableHeader className="sticky top-0 bg-canvas-surface z-10">
+                <TableRow>
+                  <TableHead className="w-[100px] bg-canvas-surface">Priority</TableHead>
+                  <TableHead className="bg-canvas-surface">Task title</TableHead>
+                  <TableHead className="bg-canvas-surface">Project</TableHead>
+                  <TableHead className="bg-canvas-surface">Due date</TableHead>
+                  <TableHead className="text-right bg-canvas-surface">Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {EMPLOYEE_PRIORITIES_TABLE.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          row.priority === "Urgent"
+                            ? "destructive"
+                            : row.priority === "High"
+                              ? "accent"
+                              : "neutral"
+                        }
+                        className="text-3xs uppercase font-bold px-2 py-0.5"
+                      >
+                        {row.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs font-medium text-foreground">
+                      {row.title}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {row.project}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {row.dueDate}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge
+                        variant={
+                          row.status === "In progress" ? "secondary" : "outline"
+                        }
+                        className="text-3xs uppercase font-semibold px-2 py-0.5"
+                      >
+                        {row.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
 
-        {/* Right: Weekly effort logged */}
-        <div className="space-y-3">
-          <Card className="p-5 border-border-subtle bg-canvas-surface space-y-4">
+        {/* Right: Weekly Effort Logged Card */}
+        <Card className="p-5 border-border-subtle bg-canvas-surface flex flex-col h-[380px] justify-between">
+          <div className="space-y-3 pb-3 shrink-0 border-b border-border-subtle">
             <h3 className="text-sm font-semibold text-foreground">
               Weekly effort logged
             </h3>
@@ -157,34 +157,35 @@ export function EmployeeDashboardPage() {
                 />
               </div>
             </div>
+          </div>
 
-            <div className="divide-y divide-border-subtle pt-2">
-              {EMPLOYEE_WEEKLY_EFFORT.breakdown.map((item) => (
-                <div
-                  key={item.day}
-                  className="flex items-center justify-between py-2 text-xs"
-                >
-                  <span className="text-muted-foreground">{item.day}</span>
-                  <span className="font-mono font-medium text-foreground">
-                    {item.hours.toFixed(1)}h
-                  </span>
-                </div>
-              ))}
-            </div>
+          {/* Scrollable list with max-height constraint */}
+          <div className="flex-1 min-h-0 overflow-y-auto max-h-[190px] divide-y divide-border-subtle pr-1 my-2">
+            {EMPLOYEE_WEEKLY_EFFORT.breakdown.map((item) => (
+              <div
+                key={item.day}
+                className="flex items-center justify-between py-2 text-xs"
+              >
+                <span className="text-muted-foreground">{item.day}</span>
+                <span className="font-mono font-medium text-foreground">
+                  {item.hours.toFixed(1)}h
+                </span>
+              </div>
+            ))}
+          </div>
 
+          <div className="pt-2 border-t border-border-subtle shrink-0">
             <button
               type="button"
-              className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline pt-2 block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline block"
             >
               View full timesheet →
             </button>
-          </Card>
-        </div>
+          </div>
+        </Card>
       </div>
 
       <UpcomingActivities />
-
-      {/* 3. MODAL COMPONENT: Placed at the bottom so it renders on top when logTimeOpen is true */}
       <LogTimeDialog open={logTimeOpen} onOpenChange={setLogTimeOpen} />
     </div>
   );
