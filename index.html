@@ -22,6 +22,36 @@
       rel="stylesheet"
     />
     <title>ProLens</title>
+
+    <!-- Apply the saved theme before first paint so a refresh doesn't flash
+         white in dark mode. Mirrors UIProvider (src/app/providers.tsx): the
+         stored value is "light" | "dark" | "system", defaulting to dark, and
+         /login is always light. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("prolens_theme") || "dark";
+          var dark =
+            location.pathname !== "/login" &&
+            (stored === "dark" ||
+              (stored === "system" &&
+                matchMedia("(prefers-color-scheme: dark)").matches));
+          document.documentElement.classList.add(dark ? "dark" : "light");
+        } catch (e) {}
+      })();
+    </script>
+    <!-- Same colours as --canvas-bg in src/styles/tokens.css; the app CSS
+         isn't loaded yet at this point. -->
+    <style>
+      html.light {
+        background-color: #eef1f5;
+        color-scheme: light;
+      }
+      html.dark {
+        background-color: #0a0b0d;
+        color-scheme: dark;
+      }
+    </style>
   </head>
 
   <body>

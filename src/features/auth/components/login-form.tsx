@@ -99,23 +99,37 @@ export function LoginForm({
   const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({});
   const [formError, setFormError] = React.useState<string | null>(null);
   const busy = submitting || ssoPending !== null;
+  const formRef = React.useRef<HTMLFormElement>(null);
+  const emailRef = React.useRef<HTMLInputElement>(null);
+  const passwordRef = React.useRef<HTMLInputElement>(null);
 
-  const validate = (): FieldErrors => {
-    const errors: FieldErrors = {};
+  // The Sign in button stays a quiet ghost until there is something valid to
+  // submit: a well-formed email and a typed password.
+  const ready = EMAIL_PATTERN.test(email.trim()) && password.length > 0;
+
+  const validateEmail = (): string | undefined => {
     const trimmed = email.trim();
-    if (!trimmed) errors.email = "Enter your work email address.";
-    else if (!EMAIL_PATTERN.test(trimmed))
-      errors.email = "Enter a valid email address, like name@tarento.com.";
-    if (!password) errors.password = "Enter your password.";
-    return errors;
+    if (!trimmed) return "Enter your work email address.";
+    if (!EMAIL_PATTERN.test(trimmed))
+      return "Enter a valid email address, like name@tarento.com.";
+    return undefined;
   };
+  const validatePassword = (): string | undefined =>
+    password ? undefined : "Enter your password.";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const errors = validate();
+    const errors: FieldErrors = {
+      email: validateEmail(),
+      password: validatePassword(),
+    };
     setFieldErrors(errors);
     setFormError(null);
-    if (Object.keys(errors).length > 0) return;
+    if (errors.email || errors.password) {
+      // Put the cursor on the first field that needs attention.
+      (errors.email ? emailRef : passwordRef).current?.focus();
+      return;
+    }
     setSubmitting(true);
     try {
       await onSubmit({ email: email.trim(), password, remember });
@@ -137,9 +151,29 @@ export function LoginForm({
     }
   };
 
+  /**
+   * Enter drives the whole flow: in the email field it validates and moves on
+   * to the password; anywhere else in the form (password, checkbox) it signs
+   * in. Buttons and links keep their own Enter behaviour.
+   */
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+    if ((e.target as HTMLElement).closest("button, a")) return;
+    e.preventDefault();
+    if (e.target === emailRef.current) {
+      const error = validateEmail();
+      setFieldErrors((prev) => ({ ...prev, email: error }));
+      if (!error) passwordRef.current?.focus();
+      return;
+    }
+    formRef.current?.requestSubmit();
+  };
+
   return (
     <form
+      ref={formRef}
       noValidate
+      onKeyDown={handleKeyDown}
       onSubmit={handleSubmit}
       className={cn("grid gap-5", className)}
       {...props}
@@ -149,7 +183,9 @@ export function LoginForm({
           Email
         </Label>
         <Input
+          ref={emailRef}
           id="email"
+          autoFocus
           type="text"
           inputMode="email"
           autoComplete="email"
@@ -175,6 +211,7 @@ export function LoginForm({
         </div>
         <div className="relative">
           <Input
+            ref={passwordRef}
             id="password"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
@@ -236,10 +273,15 @@ export function LoginForm({
       <div className={REVEAL_CLASS} style={reveal(3)}>
         <Button
           type="submit"
-          variant="accent"
+          variant={ready ? "accent" : "outline"}
           size="lg"
-          className="h-11 w-full rounded-lg text-sm"
-          disabled={busy}
+          className={cn(
+            "h-11 w-full rounded-lg text-sm transition-colors duration-300",
+            !ready && "text-muted-foreground",
+          )}
+          // Truly inactive (not clickable, not focusable) until the form is
+          // ready. Enter in the fields still validates and shows errors.
+          disabled={busy || !ready}
         >
           {submitting && <Loader2 className="animate-spin" />}
           {submitting ? "Signing in…" : "Sign in"}

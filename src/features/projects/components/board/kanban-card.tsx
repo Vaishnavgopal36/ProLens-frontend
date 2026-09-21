@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useLongPressDrag } from "@/hooks/use-long-press-drag";
 import { BOARD_COLUMNS, type BoardColumnId, type BoardTask } from "./mock-data";
 import { PRIORITY_BADGE_CLASSES } from "@/features/projects/lib/badge-styles";
 
@@ -23,6 +24,8 @@ interface KanbanCardProps {
   onDragEnd: () => void;
   onClick: (taskId: string) => void;
   onMoveTask: (taskId: string, columnId: BoardColumnId) => void;
+  /** Column currently under a touch drag (null when not dragging). */
+  onTouchHover: (columnId: BoardColumnId | null) => void;
 }
 
 export function KanbanCard({
@@ -32,8 +35,22 @@ export function KanbanCard({
   onDragEnd,
   onClick,
   onMoveTask,
+  onTouchHover,
 }: KanbanCardProps) {
   const [isDragging, setIsDragging] = useState(false);
+
+  const columnAt = (target: Element | null) =>
+    (target?.closest("[data-kanban-column]") as HTMLElement | null)?.dataset
+      .kanbanColumn as BoardColumnId | undefined;
+
+  // Touch screens can't use HTML5 drag-and-drop: press and hold, then slide.
+  const touchDrag = useLongPressDrag<HTMLDivElement>({
+    onHover: (target) => onTouchHover(columnAt(target) ?? null),
+    onDrop: (target) => {
+      const columnId = columnAt(target);
+      if (columnId) onMoveTask(task.id, columnId);
+    },
+  });
 
   const hasSubtasks =
     typeof task.subtasksDone === "number" &&
@@ -46,8 +63,15 @@ export function KanbanCard({
 
   return (
     <div
+      ref={touchDrag.ref}
       draggable
       onDragStart={(event) => {
+        // A long press can also start a native drag on some browsers; the
+        // touch drag owns that gesture.
+        if (touchDrag.dragging) {
+          event.preventDefault();
+          return;
+        }
         event.dataTransfer.setData("text/plain", task.id);
         event.dataTransfer.effectAllowed = "move";
         setIsDragging(true);
@@ -57,10 +81,24 @@ export function KanbanCard({
         setIsDragging(false);
         onDragEnd();
       }}
-      onClick={() => onClick(task.id)}
+      onClick={() => {
+        // The release of a touch drag also fires a click; ignore that one.
+        if (!touchDrag.wasDragged()) onClick(task.id);
+      }}
+      style={
+        touchDrag.dragging
+          ? {
+              transform: `translate3d(${touchDrag.offset.x}px, ${touchDrag.offset.y}px, 0) scale(1.03)`,
+            }
+          : undefined
+      }
       className={cn(
-        "bg-canvas-surface p-3.5 rounded-lg border border-border-subtle shadow-xs hover:shadow-md cursor-grab active:cursor-grabbing transition group",
+        "bg-canvas-surface p-3.5 rounded-lg border border-border-subtle shadow-xs hover:shadow-md cursor-grab active:cursor-grabbing transition group [-webkit-touch-callout:none]",
         isDragging && "opacity-40",
+        // Lifted while a finger is dragging it: above siblings, no hit-testing
+        // (so the column beneath can be found), and no transition lag.
+        touchDrag.dragging &&
+          "pointer-events-none relative z-50 rotate-1 cursor-grabbing shadow-xl transition-none",
       )}
     >
       <div className="flex items-center justify-between gap-2">

@@ -11,6 +11,9 @@ interface KanbanColumnProps {
   onDragEnd: () => void;
   onDropTask: (taskId: string, columnId: BoardColumnId) => void;
   onCardClick: (taskId: string) => void;
+  /** True while a finger dragging a card is over this column. */
+  isTouchTarget: boolean;
+  onTouchHover: (columnId: BoardColumnId | null) => void;
 }
 
 export function KanbanColumn({
@@ -21,11 +24,14 @@ export function KanbanColumn({
   onDragEnd,
   onDropTask,
   onCardClick,
+  isTouchTarget,
+  onTouchHover,
 }: KanbanColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false);
 
   return (
     <div
+      data-kanban-column={column.id}
       onDragOver={(event) => {
         if (!draggedTaskId) return;
         event.preventDefault();
@@ -41,7 +47,7 @@ export function KanbanColumn({
       }}
       className={cn(
         "bg-canvas-overlay/70 border border-border-subtle rounded-xl p-3 flex flex-col min-h-[520px] transition-colors",
-        isDragOver && "border-teal-500 bg-teal-500/5",
+        (isDragOver || isTouchTarget) && "border-teal-500 bg-teal-500/5",
       )}
     >
       <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-border-subtle">
@@ -71,6 +77,7 @@ export function KanbanColumn({
               onDragEnd={onDragEnd}
               onClick={onCardClick}
               onMoveTask={onDropTask}
+              onTouchHover={onTouchHover}
             />
           ))
         )}

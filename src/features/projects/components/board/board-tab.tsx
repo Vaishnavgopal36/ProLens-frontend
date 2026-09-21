@@ -59,6 +59,8 @@ function formatToday() {
 export function BoardTab({ project }: BoardTabProps) {
   const [tasks, setTasks] = useState<BoardTask[]>(MOCK_BOARD_TASKS);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [touchHoverColumn, setTouchHoverColumn] =
+    useState<BoardColumnId | null>(null);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [isTaskSheetOpen, setIsTaskSheetOpen] = useState(false);
 
@@ -147,7 +149,7 @@ export function BoardTab({ project }: BoardTabProps) {
         searchPlaceholder={`Search cards, tasks in ${project.name}...`}
       >
         <span className="text-xs text-muted-foreground">
-          Drag cards across columns
+          Drag cards across columns (long-press on touch)
         </span>
       </FilterBar>
 
@@ -161,6 +163,8 @@ export function BoardTab({ project }: BoardTabProps) {
             onDragStart={setDraggedTaskId}
             onDragEnd={() => setDraggedTaskId(null)}
             onDropTask={handleDropTask}
+            isTouchTarget={touchHoverColumn === column.id}
+            onTouchHover={setTouchHoverColumn}
             onCardClick={handleCardClick}
           />
         ))}
