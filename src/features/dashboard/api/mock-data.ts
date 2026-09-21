@@ -187,23 +187,32 @@ export const MANAGER_TASKS_TABLE: ManagerTaskRow[] = [
 
 export const MANAGER_PROJECTS_LIST: ManagerProjectItem[] = [
   {
-    id: "p-1",
+    id: "proj-1", // Maps to /projects/proj-1
     name: "Apex Analytics Platform",
     subtext: "Enterprise telemetry streaming",
     status: "Active",
     progress: 82,
     loggedHours: 186.5,
-    members: ["AM", "ER", "MC", "SJ"],
+    members: [
+      { name: "Alex Morgan", initials: "AM" },
+      { name: "Elena Rostova", initials: "ER" },
+      { name: "Marcus Chen", initials: "MC" },
+      { name: "Sarah Jenkins", initials: "SJ" },
+    ],
     moreMembers: 3,
   },
   {
-    id: "p-2",
+    id: "proj-2", // Maps to /projects/proj-2
     name: "Nova Mobile Dev",
     subtext: "Cross-platform client portal",
     status: "Active",
-    progress: 48,
+    progress: 46,
     loggedHours: 135.0,
-    members: ["AM", "MC", "DK"],
+    members: [
+      { name: "Alex Morgan", initials: "AM" },
+      { name: "Marcus Chen", initials: "MC" },
+      { name: "David Kim", initials: "DK" },
+    ],
     moreMembers: 2,
   },
 ];

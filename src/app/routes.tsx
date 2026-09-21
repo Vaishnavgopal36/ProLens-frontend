@@ -7,7 +7,9 @@ import { DashboardPage } from "@/features/dashboard";
 import { OrgInsightsPage, MyInsightsPage } from "@/features/org-insights";
 import { TimesheetPage } from "@/features/timesheets";
 import { CalendarPage } from "@/features/calendar";
-import { OrganizationsDirectoryPage } from "@/features/super-admin";
+import { ActivityPage } from "@/features/activity";
+
+
 
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
@@ -15,8 +17,34 @@ export const router = createBrowserRouter([
     element: <RequireAuth />,
     children: [
       {
-        path: "/",
-        element: <AppShell />,
+        index: true,
+        element: <DashboardPage />,
+      },
+      // 2. Explicit Dashboard URL
+      {
+        path: "dashboard",
+        element: <DashboardPage />,
+      },
+
+      // 3. Calendar Domain
+      {
+        path: "calendar",
+        element: <CalendarPage />,
+      },
+      // 4. Time Reporting Domain 
+      {
+      path: "timesheets",
+      element: <TimesheetPage />,
+      },
+
+      {
+      path: "activity",
+      element: <ActivityPage />,
+      },
+
+      // 5. Projects Domain
+      {
+        path: "projects",
         children: [
           // 1. Root route: Defaults to Dashboard
           {
