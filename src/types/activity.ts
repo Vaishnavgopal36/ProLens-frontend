@@ -25,7 +25,15 @@ export interface ActivityItem {
   durationHours: string;
   statusBadge?: {
     label: string;
-    variant: "default" | "secondary" | "accent" | "outline" | "destructive" | "success" | "warning" | "neutral";
+    variant:
+      | "default"
+      | "secondary"
+      | "accent"
+      | "outline"
+      | "destructive"
+      | "success"
+      | "warning"
+      | "neutral";
   };
   pinColor?: "teal" | "navy" | "gold";
   loggedBy?: string;

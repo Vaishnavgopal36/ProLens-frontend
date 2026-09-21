@@ -48,7 +48,8 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     categoryLabel: "Sprint Review",
     projectName: "Apex Analytics Platform",
     title: "Client Quarterly Architecture Review",
-    description: "Executive presentation with client stakeholders discussing migration phases.",
+    description:
+      "Executive presentation with client stakeholders discussing migration phases.",
     date: todayISO,
     timeWindow: "2:00 PM – 3:30 PM",
     durationHours: "1 hour 30 minutes",
@@ -61,7 +62,8 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     category: "non-project",
     categoryLabel: "Internal Session",
     title: "Engineering Guild: Frontend State Management",
-    description: "Knowledge sharing and patterns review on modern React performance.",
+    description:
+      "Knowledge sharing and patterns review on modern React performance.",
     date: todayISO,
     timeWindow: "4:00 PM – 5:00 PM",
     durationHours: "1 hour",
@@ -75,7 +77,8 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     categoryLabel: "Client Meeting",
     projectName: "Nova Mobile Dev",
     title: "Biometrics SDK Demo & Security Audit",
-    description: "Walkthrough of authentication token exchanges and mobile fallback flows.",
+    description:
+      "Walkthrough of authentication token exchanges and mobile fallback flows.",
     date: tomorrowISO,
     timeWindow: "10:30 AM – 11:30 AM",
     durationHours: "1 hour",
@@ -89,7 +92,8 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     categoryLabel: "Release Sprint",
     projectName: "Apex Analytics Platform",
     title: "Staging Pipeline Verification & Sign-off",
-    description: "Regression test suite run and integration testing before main branch merge.",
+    description:
+      "Regression test suite run and integration testing before main branch merge.",
     date: dayAfterISO,
     timeWindow: "3:00 PM – 4:30 PM",
     durationHours: "1 hour 30 minutes",
@@ -133,12 +137,13 @@ export function ActivityPage() {
     React.useState<ActivityItem[]>(INITIAL_ACTIVITIES);
 
   // Selected Activity State for Details/Edit Modal
-  const [selectedActivity, setSelectedActivity] = React.useState<ActivityItem | null>(null);
+  const [selectedActivity, setSelectedActivity] =
+    React.useState<ActivityItem | null>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
 
   const handleUpdateActivity = (updated: ActivityItem) => {
     setActivities((prev) =>
-      prev.map((item) => (item.id === updated.id ? updated : item))
+      prev.map((item) => (item.id === updated.id ? updated : item)),
     );
     setSelectedActivity(updated);
   };
@@ -226,7 +231,11 @@ export function ActivityPage() {
     });
 
     const formatHeaderDate = (d: Date) =>
-      d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
 
     return [
       {
@@ -269,7 +278,8 @@ export function ActivityPage() {
             Activity Schedule
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Organized timeline for Today, Tomorrow, Day After Tomorrow, and Upcoming initiatives.
+            Organized timeline for Today, Tomorrow, Day After Tomorrow, and
+            Upcoming initiatives.
           </p>
         </div>
 
@@ -383,8 +393,14 @@ export function ActivityPage() {
       <div className="space-y-6">
         {filteredActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 border border-dashed border-border-subtle rounded-xl text-center bg-canvas-surface/40">
-            <Icon icon={Clock} size={24} className="text-muted-foreground mb-2" />
-            <p className="text-sm font-semibold text-foreground">No activities found</p>
+            <Icon
+              icon={Clock}
+              size={24}
+              className="text-muted-foreground mb-2"
+            />
+            <p className="text-sm font-semibold text-foreground">
+              No activities found
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               Try adjusting your search query or switching category filters.
             </p>

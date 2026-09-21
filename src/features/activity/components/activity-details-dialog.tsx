@@ -127,7 +127,8 @@ export function ActivityDetailsDialog({
               variant={isProject ? "secondary" : "neutral"}
               className="text-[10px] px-2 py-0.5 uppercase font-bold"
             >
-              {categoryLabel || (isProject ? "Project Activity" : "Non-Project")}
+              {categoryLabel ||
+                (isProject ? "Project Activity" : "Non-Project")}
             </Badge>
 
             {item.statusBadge && (
@@ -151,7 +152,11 @@ export function ActivityDetailsDialog({
         </DialogHeader>
 
         {isEditing ? (
-          <form id="edit-activity-form" onSubmit={handleSave} className="space-y-3 py-1">
+          <form
+            id="edit-activity-form"
+            onSubmit={handleSave}
+            className="space-y-3 py-1"
+          >
             <div className="space-y-1">
               <Label htmlFor="edit-title" className="text-xs">
                 Activity Title *
@@ -174,7 +179,10 @@ export function ActivityDetailsDialog({
                   value={category}
                   onValueChange={(v) => setCategory(v as ActivityCategory)}
                 >
-                  <SelectTrigger id="edit-category" className="h-8 text-xs bg-canvas-surface border-border-subtle">
+                  <SelectTrigger
+                    id="edit-category"
+                    className="h-8 text-xs bg-canvas-surface border-border-subtle"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -287,7 +295,11 @@ export function ActivityDetailsDialog({
             <div className="grid grid-cols-2 gap-2.5 rounded-lg border border-border-subtle bg-canvas-bg/50 p-3">
               <div className="space-y-1">
                 <span className="text-muted-foreground flex items-center gap-1.5 text-[11px]">
-                  <Icon icon={Calendar} size={13} className="text-teal-600 dark:text-teal-400" />
+                  <Icon
+                    icon={Calendar}
+                    size={13}
+                    className="text-teal-600 dark:text-teal-400"
+                  />
                   <span>Date & Time</span>
                 </span>
                 <p className="font-semibold text-foreground">
@@ -300,7 +312,9 @@ export function ActivityDetailsDialog({
                   <Icon icon={Clock} size={13} className="opacity-70" />
                   <span>Duration</span>
                 </span>
-                <p className="font-semibold text-foreground">{item.durationHours}</p>
+                <p className="font-semibold text-foreground">
+                  {item.durationHours}
+                </p>
               </div>
 
               {item.projectName && (
@@ -309,7 +323,9 @@ export function ActivityDetailsDialog({
                     <Icon icon={Briefcase} size={13} className="opacity-70" />
                     <span>Associated Project</span>
                   </span>
-                  <p className="font-semibold text-foreground truncate">{item.projectName}</p>
+                  <p className="font-semibold text-foreground truncate">
+                    {item.projectName}
+                  </p>
                 </div>
               )}
 
@@ -319,7 +335,9 @@ export function ActivityDetailsDialog({
                     <Icon icon={User} size={13} className="opacity-70" />
                     <span>Logged By</span>
                   </span>
-                  <p className="font-semibold text-foreground">{item.loggedBy}</p>
+                  <p className="font-semibold text-foreground">
+                    {item.loggedBy}
+                  </p>
                 </div>
               )}
             </div>
@@ -329,7 +347,9 @@ export function ActivityDetailsDialog({
                 <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Notes & Summary
                 </span>
-                <p className="text-foreground leading-relaxed pt-0.5">{item.description}</p>
+                <p className="text-foreground leading-relaxed pt-0.5">
+                  {item.description}
+                </p>
               </div>
             )}
           </div>

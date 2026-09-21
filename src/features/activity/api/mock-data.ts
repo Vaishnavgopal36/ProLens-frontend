@@ -1,9 +1,4 @@
-import {
-  History,
-  Layers,
-  GraduationCap,
-  ClockAlert,
-} from "lucide-react";
+import { History, Layers, GraduationCap, ClockAlert } from "lucide-react";
 import type { ActivityItem, ActivityMetric } from "@/types/activity";
 
 // Helper: Format Date object to "YYYY-MM-DD"

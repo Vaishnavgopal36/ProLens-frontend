@@ -27,7 +27,11 @@ function formatDisplayDate(dateStr: string) {
   if (!dateStr) return "";
   const [y, m, d] = dateStr.split("-").map(Number);
   const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 export function ActivityCard({
@@ -53,7 +57,7 @@ export function ActivityCard({
         onClick={() => onSelect(item)}
         className={cn(
           "group relative cursor-pointer border-border-subtle bg-canvas-surface transition-all duration-150 hover:border-border-strong hover:shadow-xs",
-          viewMode === "compact" ? "p-3.5" : "p-5"
+          viewMode === "compact" ? "p-3.5" : "p-5",
         )}
       >
         <div className="flex items-center justify-between gap-2">
@@ -137,8 +141,14 @@ export function ActivityCard({
         >
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 font-medium text-foreground">
-              <Icon icon={Calendar} size={12} className="text-teal-600 dark:text-teal-400" />
-              <span>{formattedDate} • {item.timeWindow}</span>
+              <Icon
+                icon={Calendar}
+                size={12}
+                className="text-teal-600 dark:text-teal-400"
+              />
+              <span>
+                {formattedDate} • {item.timeWindow}
+              </span>
             </span>
 
             <span className="flex items-center gap-1">
