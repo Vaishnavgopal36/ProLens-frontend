@@ -1,5 +1,5 @@
 export type EventCategory =
-  "Meeting" | "Client" | "Workshop" | "Marketing" | "Launch";
+  "Meeting" | "Client" | "Workshop" | "Marketing" | "Launch" | "Leave";
 
 export interface CalendarEvent {
   id: string;

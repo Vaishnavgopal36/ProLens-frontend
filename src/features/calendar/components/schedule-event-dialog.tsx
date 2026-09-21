@@ -1,7 +1,14 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import { Modal, ModalContent, ModalTitle } from "@/components/ui/modal";
+import {
+  Modal,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
+} from "@/components/ui/modal";
 import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,30 +107,27 @@ export function ScheduleEventDialog({
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent className="overflow-hidden p-0 sm:max-w-[500px] [&>button.absolute]:text-white border border-border-subtle bg-canvas-surface">
-        <div className="flex items-center justify-between bg-navy-500 px-6 py-4 text-white">
-          <div className="flex items-center gap-2">
-            <Icon
-              icon={Plus}
-              size={16}
-              className="text-teal-500 dark:text-teal-400"
-            />
-            <ModalTitle className="text-sm font-bold text-white tracking-tight">
-              Schedule New Event
-            </ModalTitle>
+      <ModalContent className="p-5 sm:max-w-[500px]">
+        <ModalHeader className="space-y-1">
+          <div className="flex items-center gap-2.5">
+            <div>
+              <ModalTitle className="text-base font-semibold">
+                Schedule New Event
+              </ModalTitle>
+              <ModalDescription className="text-xs">
+                Add a meeting, workshop or launch to the calendar.
+              </ModalDescription>
+            </div>
           </div>
-        </div>
+        </ModalHeader>
 
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="space-y-4 p-6 text-xs"
+          className="space-y-4 pt-1 text-xs"
         >
           <div>
-            <Label
-              htmlFor="event-title"
-              className="block text-xs font-semibold text-foreground mb-1"
-            >
+            <Label htmlFor="event-title" className="text-xs font-medium">
               Event Title *
             </Label>
             <Input
@@ -136,7 +140,7 @@ export function ScheduleEventDialog({
               }}
               aria-invalid={!!errors.title}
               aria-describedby={errors.title ? "event-title-error" : undefined}
-              className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
+              className="h-8 text-xs bg-canvas-surface"
             />
             <FieldError
               id="event-title-error"
@@ -147,10 +151,7 @@ export function ScheduleEventDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label
-                htmlFor="event-date"
-                className="block text-xs font-semibold text-foreground mb-1"
-              >
+              <Label htmlFor="event-date" className="text-xs font-medium">
                 Date *
               </Label>
               <Input
@@ -163,7 +164,7 @@ export function ScheduleEventDialog({
                 }}
                 aria-invalid={!!errors.date}
                 aria-describedby={errors.date ? "event-date-error" : undefined}
-                className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
+                className="h-8 text-xs bg-canvas-surface"
               />
               <FieldError
                 id="event-date-error"
@@ -172,14 +173,12 @@ export function ScheduleEventDialog({
               />
             </div>
             <div>
-              <Label className="block text-xs font-semibold text-foreground mb-1">
-                Category / Theme *
-              </Label>
+              <Label className="text-xs font-medium">Category / Theme *</Label>
               <Select
                 value={category}
                 onValueChange={(val) => setCategory(val as EventCategory)}
               >
-                <SelectTrigger className="h-9 text-xs border-border-subtle rounded bg-canvas-surface">
+                <SelectTrigger className="h-8 text-xs bg-canvas-surface">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -199,10 +198,7 @@ export function ScheduleEventDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label
-                htmlFor="event-start"
-                className="block text-xs font-semibold text-foreground mb-1"
-              >
+              <Label htmlFor="event-start" className="text-xs font-medium">
                 Start Time *
               </Label>
               <Input
@@ -218,7 +214,7 @@ export function ScheduleEventDialog({
                 aria-describedby={
                   errors.startTime ? "event-start-error" : undefined
                 }
-                className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
+                className="h-8 text-xs bg-canvas-surface"
               />
               <FieldError
                 id="event-start-error"
@@ -227,10 +223,7 @@ export function ScheduleEventDialog({
               />
             </div>
             <div>
-              <Label
-                htmlFor="event-end"
-                className="block text-xs font-semibold text-foreground mb-1"
-              >
+              <Label htmlFor="event-end" className="text-xs font-medium">
                 End Time *
               </Label>
               <Input
@@ -245,7 +238,7 @@ export function ScheduleEventDialog({
                 aria-describedby={
                   errors.endTime ? "event-end-error" : undefined
                 }
-                className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
+                className="h-8 text-xs bg-canvas-surface"
               />
               <FieldError
                 id="event-end-error"
@@ -256,10 +249,7 @@ export function ScheduleEventDialog({
           </div>
 
           <div>
-            <Label
-              htmlFor="event-loc"
-              className="block text-xs font-semibold text-foreground mb-1"
-            >
+            <Label htmlFor="event-loc" className="text-xs font-medium">
               Location / Room
             </Label>
             <Input
@@ -267,15 +257,12 @@ export function ScheduleEventDialog({
               placeholder="e.g., Conf Room B / Zoom"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
+              className="h-8 text-xs bg-canvas-surface"
             />
           </div>
 
           <div>
-            <Label
-              htmlFor="event-desc"
-              className="block text-xs font-semibold text-foreground mb-1"
-            >
+            <Label htmlFor="event-desc" className="text-xs font-medium">
               Description / Notes
             </Label>
             <Input
@@ -283,30 +270,30 @@ export function ScheduleEventDialog({
               placeholder="e.g., AdSense + FB, Target A..."
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
-              className="h-9 text-xs border-border-subtle rounded bg-canvas-surface"
+              className="h-8 text-xs bg-canvas-surface"
             />
           </div>
 
-          <div className="flex items-center justify-end space-x-3 pt-3 border-t border-border-subtle">
+          <ModalFooter className="pt-2">
             <HotkeyHint className="mr-auto" />
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="h-8 border-border-subtle text-muted-foreground hover:bg-canvas-bg text-xs font-medium"
             >
               Cancel
             </Button>
             <Button
               type="submit"
+              variant="default"
               size="sm"
-              className="h-8 bg-navy-900 hover:bg-navy-500 text-white text-xs font-semibold shadow-sm border border-amber-500/30 hover:border-amber-400 flex items-center space-x-1.5"
+              className="gap-1.5 font-semibold"
             >
-              <span className="text-amber-400 font-bold">+</span>
+              <Icon icon={Plus} size={14} />
               <span>Save Event</span>
             </Button>
-          </div>
+          </ModalFooter>
         </form>
       </ModalContent>
     </Modal>

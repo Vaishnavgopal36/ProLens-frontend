@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronLeft, ChevronRight, Clock, Plus, Search } from "lucide-react";
+import { CalendarOff, ChevronLeft, ChevronRight, Clock, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { toLocalISODate } from "@/lib/date";
 import { useModalHotkey } from "@/hooks/use-hotkey";
 import { INITIAL_EVENTS } from "../api/mock-data";
+import { ApplyLeaveDialog } from "../components/apply-leave-dialog";
 import { ScheduleEventDialog } from "../components/schedule-event-dialog";
 import { EventDetailsDialog } from "../components/event-details-dialog";
 import { OverflowPopover } from "../components/overflow-popover";
@@ -27,6 +28,7 @@ const CATEGORIES: { key: EventCategory; label: string; dot: string }[] = [
   { key: "Workshop", label: "Workshops", dot: "bg-purple-400" },
   { key: "Launch", label: "Launches", dot: "bg-rose-400" },
   { key: "Marketing", label: "Marketing", dot: "bg-yellow-400" },
+  { key: "Leave", label: "Leave", dot: "bg-slate-400" },
 ];
 
 const VIEWS: { key: CalendarViewMode; label: string }[] = [
@@ -98,6 +100,7 @@ export function CalendarPage() {
   const [query, setQuery] = React.useState("");
 
   const [addOpen, setAddOpen] = React.useState(false);
+  const [leaveOpen, setLeaveOpen] = React.useState(false);
   const [addDate, setAddDate] = React.useState(toISO(today));
   const [selected, setSelected] = React.useState<CalendarEvent | null>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
@@ -516,16 +519,27 @@ export function CalendarPage() {
           </div>
         </div>
 
-        <Button
-          variant="accent"
-          size="sm"
-          className="ml-auto h-9 gap-1.5 text-xs font-semibold"
-          title="Add event (Ctrl+K)"
-          onClick={() => openAdd(view === "day" ? cursor : today)}
-        >
-          <Icon icon={Plus} size={16} />
-          Add Event
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 gap-1.5 text-xs font-semibold"
+            onClick={() => setLeaveOpen(true)}
+          >
+            <Icon icon={CalendarOff} size={16} />
+            Add Leave
+          </Button>
+          <Button
+            variant="accent"
+            size="sm"
+            className="h-9 gap-1.5 text-xs font-semibold"
+            title="Add event (Ctrl+K)"
+            onClick={() => openAdd(view === "day" ? cursor : today)}
+          >
+            <Icon icon={Plus} size={16} />
+            Add Event
+          </Button>
+        </div>
       </div>
 
       {/* Controls: search + filters on the left, display options on the right */}
@@ -618,6 +632,13 @@ export function CalendarPage() {
         onOpenChange={setAddOpen}
         defaultDate={addDate}
         onAddEvent={(ev) => setEvents((prev) => [...prev, ev])}
+      />
+
+      <ApplyLeaveDialog
+        open={leaveOpen}
+        onOpenChange={setLeaveOpen}
+        defaultDate={toISO(view === "day" ? cursor : today)}
+        onApplyLeave={(evs) => setEvents((prev) => [...prev, ...evs])}
       />
 
       <EventDetailsDialog
