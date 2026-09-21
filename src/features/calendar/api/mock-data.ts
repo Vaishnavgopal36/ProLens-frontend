@@ -272,4 +272,9 @@ export const CATEGORY_COLOR_MAP: Record<
     text: "text-[#9F1239]",
     border: "border-rose-200",
   },
+  Leave: {
+    bg: "bg-[#E2E8F0]",
+    text: "text-[#334155]",
+    border: "border-slate-300",
+  },
 };

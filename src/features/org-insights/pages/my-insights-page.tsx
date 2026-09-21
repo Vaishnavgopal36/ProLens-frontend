@@ -206,42 +206,6 @@ export function MyInsightsPage() {
         </Card>
       </div>
 
-      {/* Sprint burndown */}
-      <Card className="p-5 shadow-xs border-border-subtle bg-canvas-surface max-w-2xl">
-        {hasAssignments ? (
-          <>
-            <h4 className="font-bold text-sm text-foreground">
-              {CURRENT_SPRINT_LABEL}: Active Effort &amp; Burndown Trajectory
-            </h4>
-            <p className="text-2xs text-muted-foreground mt-0.5 mb-3">
-              Ideal line vs actual remaining effort across a {SPRINT_TOTAL_DAYS}
-              -day sprint window
-            </p>
-            <BurndownChart
-              totalHours={sprintCapacityHours}
-              dailyDeltas={dailyDeltas}
-              totalDays={SPRINT_TOTAL_DAYS}
-              todayDay={SPRINT_TODAY_DAY}
-            />
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
-            <Icon
-              icon={TrendingUp}
-              size={20}
-              className="text-muted-foreground/50"
-            />
-            <p className="text-sm font-semibold text-foreground">
-              No sprint activity yet
-            </p>
-            <p className="text-xs text-muted-foreground max-w-xs">
-              You aren't assigned to any projects, so there's no effort to
-              track. Your burndown will appear here once you're staffed on one.
-            </p>
-          </div>
-        )}
-      </Card>
-
       {/* My projects table */}
       <Card className="p-5 shadow-xs border-border-subtle bg-canvas-surface overflow-x-auto">
         <h3 className="text-sm font-bold text-foreground mb-3">My projects</h3>
@@ -305,6 +269,41 @@ export function MyInsightsPage() {
             )}
           </TableBody>
         </Table>
+      </Card>
+      {/* Sprint burndown */}
+      <Card className="p-5 shadow-xs border-border-subtle bg-canvas-surface max-w-2xl">
+        {hasAssignments ? (
+          <>
+            <h4 className="font-bold text-sm text-foreground">
+              {CURRENT_SPRINT_LABEL}: Active Effort &amp; Burndown Trajectory
+            </h4>
+            <p className="text-2xs text-muted-foreground mt-0.5 mb-3">
+              Ideal line vs actual remaining effort across a {SPRINT_TOTAL_DAYS}
+              -day sprint window
+            </p>
+            <BurndownChart
+              totalHours={sprintCapacityHours}
+              dailyDeltas={dailyDeltas}
+              totalDays={SPRINT_TOTAL_DAYS}
+              todayDay={SPRINT_TODAY_DAY}
+            />
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+            <Icon
+              icon={TrendingUp}
+              size={20}
+              className="text-muted-foreground/50"
+            />
+            <p className="text-sm font-semibold text-foreground">
+              No sprint activity yet
+            </p>
+            <p className="text-xs text-muted-foreground max-w-xs">
+              You aren't assigned to any projects, so there's no effort to
+              track. Your burndown will appear here once you're staffed on one.
+            </p>
+          </div>
+        )}
       </Card>
     </div>
   );

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { CalendarOff, ChevronLeft, ChevronRight, Clock, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -13,6 +13,7 @@ import {
   type FilterFieldDef,
 } from "@/components/composed/filters";
 import { INITIAL_EVENTS } from "../api/mock-data";
+import { ApplyLeaveDialog } from "../components/apply-leave-dialog";
 import { ScheduleEventDialog } from "../components/schedule-event-dialog";
 import { EventDetailsDialog } from "../components/event-details-dialog";
 import { OverflowPopover } from "../components/overflow-popover";
@@ -21,6 +22,15 @@ import type { CalendarEvent, CalendarViewMode } from "@/types/calendar";
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MAX_PILLS_PER_DAY = 2;
 const HOUR_ROW_PX = 56;
+
+const CATEGORIES: { key: EventCategory; label: string; dot: string }[] = [
+  { key: "Meeting", label: "Meetings", dot: "bg-blue-400" },
+  { key: "Client", label: "Clients", dot: "bg-emerald-400" },
+  { key: "Workshop", label: "Workshops", dot: "bg-purple-400" },
+  { key: "Launch", label: "Launches", dot: "bg-rose-400" },
+  { key: "Marketing", label: "Marketing", dot: "bg-yellow-400" },
+  { key: "Leave", label: "Leave", dot: "bg-slate-400" },
+];
 
 const VIEWS: { key: CalendarViewMode; label: string }[] = [
   { key: "month", label: "Month" },
@@ -118,6 +128,7 @@ export function CalendarPage() {
   );
 
   const [addOpen, setAddOpen] = React.useState(false);
+  const [leaveOpen, setLeaveOpen] = React.useState(false);
   const [addDate, setAddDate] = React.useState(toISO(today));
   const [selected, setSelected] = React.useState<CalendarEvent | null>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
@@ -469,17 +480,64 @@ export function CalendarPage() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Main Page Heading & Description */}
-      <div>
-        <span className="text-xs text-muted-foreground">
-        </span>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
-          Calendar
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Track sprint reviews, milestones, workshops, and team leaves.
-        </p>
+    <section className="mx-auto mb-8 max-w-[1340px] space-y-4 rounded-lg border border-border-subtle bg-canvas-surface p-5 text-foreground shadow-sm md:p-6">
+      {/* Header: title + navigation, primary action right-aligned */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="min-w-[13rem] text-xl font-bold tracking-tight">
+            {viewTitle(view, cursor)}
+          </h2>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => step(-1)}
+              aria-label="Previous"
+            >
+              <Icon icon={ChevronLeft} size={16} />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setCursor(today)}
+            >
+              Today
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => step(1)}
+              aria-label="Next"
+            >
+              <Icon icon={ChevronRight} size={16} />
+            </Button>
+          </div>
+        </div>
+
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 gap-1.5 text-xs font-semibold"
+            onClick={() => setLeaveOpen(true)}
+          >
+            <Icon icon={CalendarOff} size={16} />
+            Add Leave
+          </Button>
+          <Button
+            variant="accent"
+            size="sm"
+            className="h-9 gap-1.5 text-xs font-semibold"
+            title="Add event (Ctrl+K)"
+            onClick={() => openAdd(view === "day" ? cursor : today)}
+          >
+            <Icon icon={Plus} size={16} />
+            Add Event
+          </Button>
+        </div>
       </div>
 
       <section className="mx-auto mb-8 max-w-[1340px] space-y-4 rounded-lg border border-border-subtle bg-canvas-surface p-5 text-foreground shadow-sm md:p-6">
@@ -597,23 +655,37 @@ export function CalendarPage() {
           is24HourMode={false}
         />
 
-        <OverflowPopover
-          open={overflowDate !== null}
-          onOpenChange={(o) => !o && setOverflowDate(null)}
-          dateLabel={
-            overflowDate
-              ? fmt(overflowDate, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })
-              : ""
-          }
-          events={overflowDate ? eventsOn(overflowDate) : []}
-          onSelectEvent={openEvent}
-          is24HourMode={false}
-        />
-      </section>
-    </div>
+      <ApplyLeaveDialog
+        open={leaveOpen}
+        onOpenChange={setLeaveOpen}
+        defaultDate={toISO(view === "day" ? cursor : today)}
+        onApplyLeave={(evs) => setEvents((prev) => [...prev, ...evs])}
+      />
+
+      <EventDetailsDialog
+        event={selected}
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
+        is24HourMode={is24Hour}
+      />
+
+      <OverflowPopover
+        open={overflowDate !== null}
+        onOpenChange={(o) => !o && setOverflowDate(null)}
+        dateLabel={
+          overflowDate
+            ? fmt(overflowDate, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : ""
+        }
+        events={overflowDate ? eventsOn(overflowDate) : []}
+        onSelectEvent={openEvent}
+        is24HourMode={is24Hour}
+      />
+    </section>
   );
 }
