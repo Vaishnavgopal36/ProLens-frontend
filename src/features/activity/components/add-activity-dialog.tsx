@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { HotkeyHint } from "@/components/ui/hotkey-hint";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -319,6 +320,7 @@ export function AddActivityDialog({
           </div>
 
           <DialogFooter className="pt-2 border-t border-border-subtle flex items-center justify-end gap-2">
+            <HotkeyHint className="mr-auto" />
             <Button
               type="button"
               variant="outline"

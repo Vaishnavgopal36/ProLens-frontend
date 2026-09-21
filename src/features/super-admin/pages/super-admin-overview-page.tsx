@@ -53,9 +53,6 @@ export function SuperAdminOverviewPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span className="text-xs text-muted-foreground">
-            Platform / Overview
-          </span>
           <h1 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
             Super admin overview
           </h1>

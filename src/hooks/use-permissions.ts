@@ -15,6 +15,8 @@ const PERMISSIONS = {
   manage_organizations: ["super_admin"],
   view_org_insights: ["manager", "admin", "super_admin"],
   manage_org_users: ["admin", "super_admin"],
+  // Managers assign employees to their projects but never create projects.
+  create_projects: ["admin", "super_admin"],
 } as const satisfies Record<string, readonly UserRole[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

@@ -1,19 +1,11 @@
 import * as React from "react";
 import { toast } from "sonner";
-import { UserCog } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { FieldError } from "@/components/ui/field-error";
-import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Modal,
-  ModalContent,
-  ModalDescription,
-  ModalHeader,
-  ModalTitle,
-} from "@/components/ui/modal";
 import { useAuth } from "@/app/providers";
 import { MOCK_USERS } from "@/features/users/api/mock-data";
 
@@ -31,11 +23,6 @@ let mockPassword = "password";
 
 const fieldClass = "h-8 text-xs bg-canvas-surface";
 
-interface ProfileSettingsDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
@@ -45,10 +32,27 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function ProfileSettingsDialog({
-  open,
-  onOpenChange,
-}: ProfileSettingsDialogProps) {
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="border-border-subtle bg-canvas-surface p-5 shadow-xs">
+      <div className="mb-4 border-b border-border-subtle pb-3">
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      {children}
+    </Card>
+  );
+}
+
+export function ProfileSettingsPage() {
   const { user, updateUser } = useAuth();
 
   const [firstName, setFirstName] = React.useState("");
@@ -64,18 +68,12 @@ export function ProfileSettingsDialog({
     confirm?: string;
   }>({});
 
-  // Start from the saved name every time the dialog opens.
+  // Start from the saved name; re-sync if it changes elsewhere.
   React.useEffect(() => {
-    if (!open) return;
     const [first = "", ...rest] = (user?.name ?? "").split(" ");
     setFirstName(first);
     setLastName(rest.join(" "));
-    setProfileError(undefined);
-    setCurrent("");
-    setNext("");
-    setConfirm("");
-    setPwErrors({});
-  }, [open, user?.name]);
+  }, [user?.name]);
 
   if (!user) return null;
 
@@ -121,29 +119,22 @@ export function ProfileSettingsDialog({
   };
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent className="max-h-[90vh] overflow-y-auto p-5 sm:max-w-[520px]">
-        <ModalHeader className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-teal-500/20 bg-teal-500/10 text-teal-600 dark:text-teal-400">
-              <Icon icon={UserCog} size={17} />
-            </div>
-            <div>
-              <ModalTitle className="text-base font-semibold">
-                Profile Settings
-              </ModalTitle>
-              <ModalDescription className="text-xs">
-                Your name, sign-in details and password.
-              </ModalDescription>
-            </div>
-          </div>
-        </ModalHeader>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div>
+        <span className="text-xs text-muted-foreground">Account</span>
+        <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-foreground">
+          Profile settings
+        </h1>
+        <p className="text-xs text-muted-foreground sm:text-sm">
+          Your name, sign-in details and password
+        </p>
+      </div>
 
-        <form
-          onSubmit={saveProfile}
-          noValidate
-          className="space-y-4 pt-1 text-xs"
-        >
+      <Section
+        title="Profile"
+        description="Your name is shown across ProLens. Email, role and designation are managed by your admin."
+      >
+        <form onSubmit={saveProfile} noValidate className="space-y-4 text-xs">
           <div className="flex items-center gap-3">
             <Avatar className="h-11 w-11">
               <AvatarImage src={user.avatarUrl} alt={user.name} />
@@ -202,21 +193,17 @@ export function ProfileSettingsDialog({
             </Button>
           </div>
         </form>
+      </Section>
 
+      <Section
+        title="Change password"
+        description={`Use at least ${PASSWORD_MIN_LENGTH} characters.`}
+      >
         <form
           onSubmit={changePassword}
           noValidate
-          className="space-y-3 border-t border-border-subtle pt-4 text-xs"
+          className="space-y-4 text-xs"
         >
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">
-              Change password
-            </h3>
-            <p className="text-2xs text-muted-foreground">
-              Use at least {PASSWORD_MIN_LENGTH} characters.
-            </p>
-          </div>
-
           <div className="space-y-1">
             <Label htmlFor="current-password" className="text-xs font-medium">
               Current password *
@@ -281,7 +268,7 @@ export function ProfileSettingsDialog({
             </Button>
           </div>
         </form>
-      </ModalContent>
-    </Modal>
+      </Section>
+    </div>
   );
 }

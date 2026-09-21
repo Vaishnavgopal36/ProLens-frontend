@@ -8,7 +8,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useFilterHotkey } from "@/hooks/use-hotkey";
 import type { FiltersState } from "./use-filters";
 
 interface FilterDropdownProps<T> {
@@ -21,6 +27,8 @@ export function FilterDropdown<T>({
   className,
 }: FilterDropdownProps<T>) {
   const { fields, selected, setValues, activeCount, clear } = filters;
+  const [open, setOpen] = React.useState(false);
+  useFilterHotkey({ open, onToggle: () => setOpen((o) => !o) });
   const [activeFieldKey, setActiveFieldKey] = React.useState<string>(
     fields[0]?.key || "",
   );
@@ -38,29 +46,39 @@ export function FilterDropdown<T>({
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant={activeCount > 0 ? "secondary" : "outline"}
-            size="sm"
-            className={cn(
-              "h-8 gap-1.5 text-xs font-medium border-border-subtle bg-canvas-surface",
-              activeCount > 0 &&
-                "border-teal-500/50 text-teal-600 dark:text-teal-400 bg-teal-500/5",
-            )}
-          >
-            <Icon icon={FilterIcon} size={14} className="opacity-80" />
-            <span>Filter</span>
-            {activeCount > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-0.5 px-1.5 py-0 text-3xs font-bold rounded-full bg-teal-500 text-white"
+      <Popover open={open} onOpenChange={setOpen}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                variant={activeCount > 0 ? "secondary" : "outline"}
+                size="sm"
+                className={cn(
+                  "h-8 gap-1.5 text-xs font-medium border-border-subtle bg-canvas-surface",
+                  activeCount > 0 &&
+                    "border-teal-500/50 text-teal-600 dark:text-teal-400 bg-teal-500/5",
+                )}
               >
-                {activeCount}
-              </Badge>
-            )}
-          </Button>
-        </PopoverTrigger>
+                <Icon icon={FilterIcon} size={14} className="opacity-80" />
+                <span>Filter</span>
+                {activeCount > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-0.5 px-1.5 py-0 text-3xs font-bold rounded-full bg-teal-500 text-white"
+                  >
+                    {activeCount}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            Filter{" "}
+            <span className="ml-1 rounded bg-white/15 px-1 font-semibold">
+              Shift + F
+            </span>
+          </TooltipContent>
+        </Tooltip>
 
         <PopoverContent
           align="start"

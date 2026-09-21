@@ -18,7 +18,7 @@ import {
 
 export function ProjectsListPage() {
   const { user } = useAuth();
-  const { isEmployee, hasMinimumRole } = usePermissions();
+  const { isEmployee, can } = usePermissions();
   const isLoading = useSimulatedLoading();
   const [activeFilter, setActiveFilter] =
     React.useState<ProjectFilterTab>("all");
@@ -28,7 +28,7 @@ export function ProjectsListPage() {
   // Creating/deleting projects is portfolio-lifecycle ownership — reserved
   // for admins, not managers (who run day-to-day delivery on projects
   // someone else provisioned).
-  const canManageProjects = hasMinimumRole("admin");
+  const canManageProjects = can("create_projects");
 
   // Ctrl/⌘ + K toggles "new project" for roles that can create one.
   useModalHotkey({

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
+import { useModalHotkey } from "@/hooks/use-hotkey";
 import { ActivityCard } from "../components/activity-card";
 import { AddActivityDialog } from "../components/add-activity-dialog";
 import type { ActivityCategory, ActivityItem } from "@/types/activity";
@@ -84,6 +85,13 @@ export function ActivityPage() {
     "expanded",
   );
   const [addOpen, setAddOpen] = React.useState(false);
+
+  // Ctrl/⌘ + K toggles "add activity".
+  useModalHotkey({
+    open: addOpen,
+    onOpen: () => setAddOpen(true),
+    onClose: () => setAddOpen(false),
+  });
   const [activities, setActivities] =
     React.useState<ActivityItem[]>(INITIAL_ACTIVITIES);
 
@@ -164,6 +172,7 @@ export function ActivityPage() {
         <Button
           variant="default"
           size="sm"
+          title="Add activity (Ctrl+K)"
           onClick={() => setAddOpen(true)}
           className="gap-1.5 font-semibold text-xs h-9 self-start sm:self-auto"
         >

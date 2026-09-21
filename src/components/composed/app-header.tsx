@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { Menu, Sun, Moon, Laptop, User, LogOut } from "lucide-react";
 import { useUI, useAuth, type ThemeMode } from "@/app/providers";
 import { Icon } from "@/components/ui/icon";
@@ -12,14 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ProfileSettingsDialog } from "@/features/settings";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
 
 export function AppHeader() {
   const { toggleSidebar, theme, cycleTheme } = useUI();
   const { user, logout } = useAuth();
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false);
-  const [profileOpen, setProfileOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   const getThemeIcon = (mode: ThemeMode) => {
     if (mode === "light") return Sun;
@@ -107,7 +107,7 @@ export function AppHeader() {
 
             {/* Profile Settings */}
             <DropdownMenuItem
-              onClick={() => setProfileOpen(true)}
+              onClick={() => navigate("/profile")}
               className="gap-2.5 cursor-pointer"
             >
               <Icon icon={User} size={16} />
@@ -127,8 +127,6 @@ export function AppHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      <ProfileSettingsDialog open={profileOpen} onOpenChange={setProfileOpen} />
 
       <ConfirmDialog
         open={logoutConfirmOpen}

@@ -1,1 +1,1 @@
-export { ProfileSettingsDialog } from "./components/profile-settings-dialog";
+export { ProfileSettingsPage } from "./pages/profile-settings-page";

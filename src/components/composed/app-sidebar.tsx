@@ -15,6 +15,8 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUI, useAuth } from "@/app/providers";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useSidebarHotkey } from "@/hooks/use-hotkey";
+import { useIsMobile } from "@/hooks/use-media-query";
 import type { UserRole } from "@/app/providers";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -71,6 +73,12 @@ export function AppSidebar() {
   const { logout } = useAuth();
   const { role } = usePermissions();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const isMobile = useIsMobile();
+
+  // Ctrl/⌘ + E: collapse/expand the sidebar (open/close the drawer on mobile).
+  useSidebarHotkey(() =>
+    isMobile ? setSidebarOpen(!isSidebarOpen) : setIsCollapsed((c) => !c),
+  );
   const [activeHash, setActiveHash] = React.useState("#dashboard");
   const [isLogoHovered, setIsLogoHovered] = React.useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false);
