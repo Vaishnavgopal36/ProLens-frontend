@@ -39,9 +39,10 @@ import {
   TableSkeleton,
 } from "@/components/composed/skeletons";
 
-// Teams (governance/roles) and Reports (portfolio-level reporting) are
-// manager-facing concerns — employees only see the tabs relevant to doing
-// their own contributor work on the project.
+// Reports (portfolio-level reporting) is a manager-facing concern — employees
+// only see the tabs relevant to their own contributor work. Teams is visible
+// to everyone (employees get a read-only roster; management actions are gated
+// inside the tab).
 const WORKSPACE_TABS = [
   {
     value: "summary",
@@ -50,7 +51,7 @@ const WORKSPACE_TABS = [
     managerOnly: false,
   },
   { value: "board", label: "Board", icon: Kanban, managerOnly: false },
-  { value: "teams", label: "Teams", icon: Users, managerOnly: true },
+  { value: "teams", label: "Teams", icon: Users, managerOnly: false },
   { value: "features", label: "Features", icon: Layers, managerOnly: false },
   { value: "list", label: "List", icon: ListFilter, managerOnly: false },
   { value: "calendar", label: "Calendar", icon: Calendar, managerOnly: false },

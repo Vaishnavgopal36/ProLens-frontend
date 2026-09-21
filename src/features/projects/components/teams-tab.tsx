@@ -15,6 +15,7 @@ interface TeamsTabProps {
 
 export function TeamsTab({ project }: TeamsTabProps) {
   const { hasMinimumRole } = usePermissions();
+  const isManager = hasMinimumRole("manager");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isInviteDialogOpen, setIsInviteDialogOpen] = React.useState(false);
 
@@ -23,6 +24,7 @@ export function TeamsTab({ project }: TeamsTabProps) {
     open: isInviteDialogOpen,
     onOpen: () => setIsInviteDialogOpen(true),
     onClose: () => setIsInviteDialogOpen(false),
+    disabled: !isManager,
   });
   const [members, setMembers] = React.useState(project.members);
 
@@ -31,8 +33,6 @@ export function TeamsTab({ project }: TeamsTabProps) {
   React.useEffect(() => {
     setMembers(project.members);
   }, [project.id, project.members]);
-
-  const isManager = hasMinimumRole("manager");
 
   const handleRemoveMember = (memberId: string) => {
     const member = members.find((m) => m.id === memberId);
@@ -59,7 +59,9 @@ export function TeamsTab({ project }: TeamsTabProps) {
             Project Team &amp; Governance
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage team permissions and operational designations.
+            {isManager
+              ? "Manage team permissions and operational designations."
+              : "Everyone working on this project and their roles."}
           </p>
         </div>
 
