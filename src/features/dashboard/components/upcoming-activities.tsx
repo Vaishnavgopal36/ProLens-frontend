@@ -6,6 +6,8 @@ import { Icon } from "@/components/ui/icon";
 import { MOCK_ACTIVITIES } from "../api/mock-data";
 
 export function UpcomingActivities() {
+  const hasActivities = MOCK_ACTIVITIES.length > 0;
+
   return (
     <Card className="border-border-subtle bg-canvas-surface p-5 space-y-4">
       <div className="flex items-center justify-between">
@@ -28,7 +30,7 @@ export function UpcomingActivities() {
         </Link>
       </div>
 
-      {MOCK_ACTIVITIES.length > 0 ? (
+      {hasActivities ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {MOCK_ACTIVITIES.map((activity) => (
             <div
@@ -41,9 +43,7 @@ export function UpcomingActivities() {
                 </span>
                 <Badge
                   variant={
-                    activity.type === "Project Activity"
-                      ? "secondary"
-                      : "neutral"
+                    activity.type === "Project Activity" ? "secondary" : "neutral"
                   }
                   className="text-[9px] px-1.5 py-0 uppercase"
                 >
@@ -56,6 +56,11 @@ export function UpcomingActivities() {
                   <Icon icon={Calendar} size={12} className="opacity-70" />
                   <span>{activity.time}</span>
                 </div>
+                {activity.project && (
+                  <p className="text-[11px] font-medium text-foreground/80 truncate">
+                    {activity.project}
+                  </p>
+                )}
               </div>
             </div>
           ))}
