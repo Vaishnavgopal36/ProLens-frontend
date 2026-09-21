@@ -114,11 +114,8 @@ export function AdminDashboardPage() {
       {/* Top Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span className="text-xs text-muted-foreground">
-            Organization / Overview
-          </span>
           <h1 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
-            Executive overview
+            Overview
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
             Company-wide project health and resource allocation
