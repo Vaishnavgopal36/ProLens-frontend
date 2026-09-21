@@ -43,9 +43,11 @@ export function UpcomingActivities() {
                 </span>
                 <Badge
                   variant={
-                    activity.type === "Project Activity" ? "secondary" : "neutral"
+                    activity.type === "Project Activity"
+                      ? "secondary"
+                      : "neutral"
                   }
-                  className="text-[9px] px-1.5 py-0 uppercase"
+                  className="text-4xs px-1.5 py-0 uppercase"
                 >
                   {activity.type}
                 </Badge>
@@ -57,7 +59,7 @@ export function UpcomingActivities() {
                   <span>{activity.time}</span>
                 </div>
                 {activity.project && (
-                  <p className="text-[11px] font-medium text-foreground/80 truncate">
+                  <p className="text-2xs font-medium text-foreground/80 truncate">
                     {activity.project}
                   </p>
                 )}

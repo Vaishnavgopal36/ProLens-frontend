@@ -4,11 +4,12 @@ export interface MetricCardData {
   label: string; // e.g., "Active projects", "Org delivery rate"
   value: string | number; // e.g., 14, "74.2%", "2,140.0h"
   subtext?: string; // e.g., "Across 4 departments" (optional)
+  /** Where the problem is; shown as a link while the badge is destructive. */
+  alertLink?: { to: string; label: string };
   badge?: {
     text: string; // e.g., "+2.4%", "Alert"
     variant: "success" | "warning" | "destructive" | "neutral";
   };
-  highlight?: boolean; // Flags warning state (e.g., Manager yellow card)
 }
 
 // 2. Upcoming activity item (bottom row in all views)
@@ -51,13 +52,11 @@ export interface ManagerTaskRow {
   dueDate: string; // e.g., "Tomorrow", "Sep 18"
 }
 
-
 export interface ManagerProjectMember {
   name: string;
   initials: string;
   avatarUrl?: string;
 }
-
 
 // 6. Manager View: "My projects" right card item
 export interface ManagerProjectItem {

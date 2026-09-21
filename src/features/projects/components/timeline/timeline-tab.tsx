@@ -1,7 +1,8 @@
 import * as React from "react";
-import { GanttChartSquare, AlertTriangle, ChevronRight } from "lucide-react";
+import { GanttChartSquare, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { KpiAlertLink } from "@/components/composed/kpi-alert-link";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types/project";
@@ -127,7 +128,7 @@ export function TimelineTab({ project }: TimelineTabProps) {
           <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Project Window
           </p>
-          <p className="mt-1 text-lg font-bold text-foreground">
+          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {project.activeSprint || "Active"}
           </p>
           <p className="text-2xs text-muted-foreground mt-0.5">
@@ -138,7 +139,7 @@ export function TimelineTab({ project }: TimelineTabProps) {
           <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Timeline Progress
           </p>
-          <p className="mt-1 text-lg font-bold text-foreground">
+          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {avgProgress}%
           </p>
           <p className="text-2xs text-muted-foreground mt-0.5">
@@ -149,34 +150,28 @@ export function TimelineTab({ project }: TimelineTabProps) {
           <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Scheduled Workstreams
           </p>
-          <p className="mt-1 text-lg font-bold text-foreground">
+          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {STREAMS.length}
           </p>
           <p className="text-2xs text-muted-foreground mt-0.5">
             {totalTasks} total tasks on roadmap
           </p>
         </Card>
-        <Card
-          className={cn(
-            "p-4 shadow-xs",
-            atRiskStreams.length > 0 &&
-              "border-amber-500/40 bg-amber-500/5 dark:bg-amber-500/10",
-          )}
-        >
-          <p
-            className={cn(
-              "text-3xs font-bold uppercase tracking-wide flex items-center gap-1",
-              atRiskStreams.length > 0
-                ? "text-amber-700 dark:text-amber-400"
-                : "text-muted-foreground",
-            )}
-          >
+        <Card className="p-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
+              Needs Attention
+            </p>
             {atRiskStreams.length > 0 && (
-              <Icon icon={AlertTriangle} size={11} />
+              <Badge
+                variant="destructive"
+                className="text-3xs px-1.5 py-0 font-bold uppercase tracking-wider"
+              >
+                Alert
+              </Badge>
             )}
-            Needs Attention
-          </p>
-          <p className="mt-1 text-lg font-bold text-foreground">
+          </div>
+          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {atRiskStreams.length} stream{atRiskStreams.length === 1 ? "" : "s"}
           </p>
           <p className="text-2xs text-muted-foreground mt-0.5 truncate">
@@ -184,10 +179,15 @@ export function TimelineTab({ project }: TimelineTabProps) {
               ? atRiskStreams.map((s) => s.name).join(", ")
               : "All streams on pace"}
           </p>
+          {atRiskStreams.length > 0 && (
+            <KpiAlertLink to="#timeline-gantt">
+              View at-risk streams
+            </KpiAlertLink>
+          )}
         </Card>
       </div>
 
-      <Card className="p-5 shadow-xs">
+      <Card id="timeline-gantt" tabIndex={-1} className="p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Icon
@@ -282,7 +282,7 @@ export function TimelineTab({ project }: TimelineTabProps) {
                                     "bg-muted-foreground",
                                 )}
                               />
-                              <span className="font-mono text-muted-foreground/70 shrink-0">
+                              <span className="tabular-nums text-muted-foreground/70 shrink-0">
                                 {task.code}
                               </span>
                               <span className="font-medium text-foreground truncate flex-1">

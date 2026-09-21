@@ -1,7 +1,14 @@
 import * as React from "react";
-import { Trash2 } from "lucide-react";
+import { CalendarDays, CalendarOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Modal, ModalContent, ModalTitle } from "@/components/ui/modal";
+import {
+  Modal,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
+} from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
@@ -45,19 +52,32 @@ export function EventDetailsDialog({
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent className="overflow-hidden p-0 sm:max-w-md border border-border-subtle bg-canvas-surface shadow-2xl">
-        <div className="px-6 py-4 bg-muted border-b border-border-subtle flex items-center justify-between">
-          <ModalTitle className="font-bold text-sm text-foreground">
-            {event.title}
-          </ModalTitle>
-        </div>
+      <ModalContent className="p-5 sm:max-w-md">
+        <ModalHeader className="space-y-1">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-teal-500/20 bg-teal-500/10 text-teal-600 dark:text-teal-400">
+              <Icon
+                icon={event.category === "Leave" ? CalendarOff : CalendarDays}
+                size={17}
+              />
+            </div>
+            <div className="min-w-0">
+              <ModalTitle className="truncate text-base font-semibold">
+                {event.title}
+              </ModalTitle>
+              <ModalDescription className="text-xs">
+                {event.category === "Leave" ? "Leave details" : "Event details"}
+              </ModalDescription>
+            </div>
+          </div>
+        </ModalHeader>
 
-        <div className="p-6 space-y-3 text-xs">
+        <div className="space-y-3 pt-1 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground font-medium">Category:</span>
+            <span className="font-medium text-muted-foreground">Category</span>
             <span
               className={cn(
-                "px-2 py-0.5 rounded font-semibold text-2xs",
+                "rounded px-2 py-0.5 text-2xs font-semibold",
                 event.colorBg,
                 event.colorText,
               )}
@@ -67,37 +87,40 @@ export function EventDetailsDialog({
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground font-medium">Date:</span>
-            <span className="font-bold text-foreground">
-              September {event.day}, {event.year}
+            <span className="font-medium text-muted-foreground">Date</span>
+            <span className="font-semibold text-foreground">
+              {new Date(event.year, event.month, event.day).toLocaleDateString(
+                "en-US",
+                { month: "long", day: "numeric", year: "numeric" },
+              )}
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground font-medium">
-              Time Window:
+            <span className="font-medium text-muted-foreground">
+              Time window
             </span>
-            <span className="font-bold text-foreground">
+            <span className="font-semibold tabular-nums text-foreground">
               {formatTime(event.startTime)} - {formatTime(event.endTime)}
             </span>
           </div>
 
-          <div className="pt-2 border-t border-border-subtle">
-            <span className="text-muted-foreground font-medium block mb-1">
-              Details &amp; Context:
+          <div className="space-y-1 border-t border-border-subtle pt-3">
+            <span className="block font-medium text-muted-foreground">
+              Details &amp; context
             </span>
-            <p className="text-foreground bg-canvas-bg p-2.5 rounded border border-border-subtle leading-relaxed italic">
+            <p className="rounded border border-border-subtle bg-canvas-bg p-2.5 leading-relaxed text-foreground">
               {event.desc || "No specific sub-description provided."}
             </p>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-border-subtle">
+          <ModalFooter className="pt-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setDeleteConfirmOpen(true)}
-              className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive gap-1"
+              className="mr-auto gap-1.5 text-destructive"
             >
               <Icon icon={Trash2} size={14} />
               <span>Delete</span>
@@ -105,7 +128,7 @@ export function EventDetailsDialog({
             <Button type="button" size="sm" onClick={() => onOpenChange(false)}>
               Done
             </Button>
-          </div>
+          </ModalFooter>
         </div>
       </ModalContent>
 

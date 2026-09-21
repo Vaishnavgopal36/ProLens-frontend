@@ -171,7 +171,7 @@ export function ListTab({ project }: ListTabProps) {
                   >
                     <TableCell className="pl-4">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-2xs text-muted-foreground">
+                        <span className="tabular-nums text-2xs text-muted-foreground">
                           {task.code}
                         </span>
                         <span
@@ -230,7 +230,7 @@ export function ListTab({ project }: ListTabProps) {
                     <TableCell className="text-xs text-muted-foreground">
                       {task.subtasksCompleted}/{task.subtasksTotal} Completed
                     </TableCell>
-                    <TableCell className="pr-4 font-mono text-xs text-foreground">
+                    <TableCell className="pr-4 tabular-nums text-xs text-foreground">
                       {task.loggedHours}h / {task.estimatedHours}h
                     </TableCell>
                   </TableRow>

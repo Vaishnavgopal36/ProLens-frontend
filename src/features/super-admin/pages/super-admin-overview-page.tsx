@@ -91,7 +91,7 @@ export function SuperAdminOverviewPage() {
                 className="text-muted-foreground"
               />
             </div>
-            <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+            <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {kpi.key === "totalHoursLogged"
                 ? `${MOCK_PLATFORM_METRICS[kpi.key].toFixed(1)}h`
                 : MOCK_PLATFORM_METRICS[kpi.key].toLocaleString()}

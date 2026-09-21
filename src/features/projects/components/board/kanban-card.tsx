@@ -213,7 +213,7 @@ export function KanbanCard({
       )}
 
       <div className="flex items-center justify-between pt-3 mt-3 border-t border-border-subtle text-xs">
-        <span className="font-mono text-2xs font-semibold text-muted-foreground/70">
+        <span className="tabular-nums text-2xs font-semibold text-muted-foreground/70">
           {task.code}
         </span>
         <div className="flex items-center gap-1.5">

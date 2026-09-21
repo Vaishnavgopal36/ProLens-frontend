@@ -133,7 +133,7 @@ export function TeamMembersTable({
                 </span>
               </TableCell>
               <TableCell className="text-right">
-                <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 font-mono">
+                <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 tabular-nums">
                   {member.hoursLogged.toFixed(1)}h
                 </span>
               </TableCell>

@@ -13,7 +13,7 @@ import type { FiltersState } from "./use-filters";
 
 interface FilterDropdownProps<T> {
   filters: FiltersState<T>;
-  className?: string;   
+  className?: string;
 }
 
 export function FilterDropdown<T>({
@@ -22,11 +22,10 @@ export function FilterDropdown<T>({
 }: FilterDropdownProps<T>) {
   const { fields, selected, setValues, activeCount, clear } = filters;
   const [activeFieldKey, setActiveFieldKey] = React.useState<string>(
-    fields[0]?.key || ""
+    fields[0]?.key || "",
   );
 
-  const activeField =
-    fields.find((f) => f.key === activeFieldKey) || fields[0];
+  const activeField = fields.find((f) => f.key === activeFieldKey) || fields[0];
 
   const handleToggleOption = (fieldKey: string, optionValue: string) => {
     const currentList = selected[fieldKey] || [];
@@ -47,7 +46,7 @@ export function FilterDropdown<T>({
             className={cn(
               "h-8 gap-1.5 text-xs font-medium border-border-subtle bg-canvas-surface",
               activeCount > 0 &&
-                "border-teal-500/50 text-teal-600 dark:text-teal-400 bg-teal-500/5"
+                "border-teal-500/50 text-teal-600 dark:text-teal-400 bg-teal-500/5",
             )}
           >
             <Icon icon={FilterIcon} size={14} className="opacity-80" />
@@ -55,7 +54,7 @@ export function FilterDropdown<T>({
             {activeCount > 0 && (
               <Badge
                 variant="secondary"
-                className="ml-0.5 px-1.5 py-0 text-[10px] font-bold rounded-full bg-teal-500 text-white"
+                className="ml-0.5 px-1.5 py-0 text-3xs font-bold rounded-full bg-teal-500 text-white"
               >
                 {activeCount}
               </Badge>
@@ -70,14 +69,14 @@ export function FilterDropdown<T>({
         >
           {/* Top Jira Header Bar */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-border-subtle bg-canvas-bg/60">
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
               Fields
             </span>
             {activeCount > 0 && (
               <button
                 type="button"
                 onClick={clear}
-                className="text-[11px] font-medium text-destructive hover:underline"
+                className="text-2xs font-medium text-destructive hover:underline"
               >
                 Clear all
               </button>
@@ -101,12 +100,12 @@ export function FilterDropdown<T>({
                       "w-full text-left px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center justify-between",
                       isCurrent
                         ? "bg-canvas-surface text-foreground font-semibold shadow-xs"
-                        : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface/50"
+                        : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface/50",
                     )}
                   >
                     <span className="truncate">{field.label}</span>
                     {count > 0 && (
-                      <span className="h-4 w-4 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 font-bold text-[9px] flex items-center justify-center">
+                      <span className="h-4 w-4 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 font-bold text-4xs flex items-center justify-center">
                         {count}
                       </span>
                     )}
@@ -119,7 +118,7 @@ export function FilterDropdown<T>({
             <div className="flex-1 p-2 flex flex-col justify-between">
               {activeField && (
                 <div className="space-y-1 overflow-y-auto max-h-[190px] pr-1">
-                  <div className="pb-1.5 mb-1 border-b border-border-subtle text-[11px] font-medium text-muted-foreground">
+                  <div className="pb-1.5 mb-1 border-b border-border-subtle text-2xs font-medium text-muted-foreground">
                     <span>{activeField.label}</span>
                   </div>
 
@@ -143,7 +142,7 @@ export function FilterDropdown<T>({
                               "h-3.5 w-3.5 rounded border flex items-center justify-center transition-colors",
                               isChecked
                                 ? "bg-teal-500 border-teal-500 text-white"
-                                : "border-border-subtle bg-canvas-bg"
+                                : "border-border-subtle bg-canvas-bg",
                             )}
                           >
                             {isChecked && (
@@ -154,7 +153,7 @@ export function FilterDropdown<T>({
                             className={cn(
                               isChecked
                                 ? "font-semibold text-foreground"
-                                : "text-muted-foreground"
+                                : "text-muted-foreground",
                             )}
                           >
                             {option.label}

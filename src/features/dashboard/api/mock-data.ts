@@ -65,6 +65,10 @@ export const ADMIN_METRICS: MetricCardData[] = [
     value: "2 projects",
     badge: { text: "Alert", variant: "destructive" },
     subtext: "1 delayed, 1 budget alert",
+    alertLink: {
+      to: "/org-insights#project-performance",
+      label: "View at-risk projects",
+    },
   },
 ];
 
@@ -145,8 +149,8 @@ export const MANAGER_METRICS: MetricCardData[] = [
     id: "mgr-4",
     label: "Tasks needing attention",
     value: "2 items",
-
-    highlight: true, // Highlights the amber warning card from the design
+    badge: { text: "Alert", variant: "destructive" },
+    alertLink: { to: "#manager-tasks", label: "View tasks" },
   },
 ];
 

@@ -35,20 +35,21 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
       <Card
         className={cn(
           "group relative border-border-subtle bg-canvas-surface transition-all duration-150 hover:border-border-strong hover:shadow-xs",
-          viewMode === "compact" ? "p-3.5" : "p-5"
+          viewMode === "compact" ? "p-3.5" : "p-5",
         )}
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <Badge
               variant={isProject ? "secondary" : "neutral"}
-              className="text-[10px] px-2 py-0.5 uppercase tracking-wider font-bold"
+              className="text-3xs px-2 py-0.5 uppercase tracking-wider font-bold"
             >
-              {item.categoryLabel || (isProject ? "Project Activity" : "Non-Project")}
+              {item.categoryLabel ||
+                (isProject ? "Project Activity" : "Non-Project")}
             </Badge>
 
             {item.projectName && (
-              <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+              <span className="flex items-center gap-1 text-2xs font-medium text-muted-foreground">
                 <Icon icon={Briefcase} size={12} className="opacity-70" />
                 <span>{item.projectName}</span>
               </span>
@@ -59,7 +60,7 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
             {item.statusBadge && (
               <Badge
                 variant={item.statusBadge.variant}
-                className="text-[10px] px-2 py-0 font-medium"
+                className="text-3xs px-2 py-0 font-medium"
               >
                 {item.statusBadge.label}
               </Badge>
@@ -81,7 +82,7 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
         <h3
           className={cn(
             "font-semibold text-foreground mt-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors",
-            viewMode === "compact" ? "text-xs" : "text-sm"
+            viewMode === "compact" ? "text-xs" : "text-sm",
           )}
         >
           {item.title}
@@ -95,24 +96,30 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
 
         <div
           className={cn(
-            "flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle/60 text-[11px] text-muted-foreground",
-            viewMode === "compact" ? "mt-2.5 pt-2" : "mt-3.5 pt-2.5"
+            "flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle/60 text-2xs text-muted-foreground",
+            viewMode === "compact" ? "mt-2.5 pt-2" : "mt-3.5 pt-2.5",
           )}
         >
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 font-medium text-foreground">
-              <Icon icon={Calendar} size={12} className="text-teal-600 dark:text-teal-400" />
+              <Icon
+                icon={Calendar}
+                size={12}
+                className="text-teal-600 dark:text-teal-400"
+              />
               <span>{item.timestamp}</span>
             </span>
 
             <span className="flex items-center gap-1">
               <Icon icon={Clock} size={12} className="opacity-70" />
-              <span className="font-semibold text-foreground">{item.durationHours}</span>
+              <span className="font-semibold text-foreground">
+                {item.durationHours}
+              </span>
             </span>
           </div>
 
           {item.loggedBy && viewMode === "expanded" && (
-            <span className="flex items-center gap-1 text-[10px]">
+            <span className="flex items-center gap-1 text-3xs">
               <Icon icon={User} size={11} className="opacity-70" />
               <span>{item.loggedBy}</span>
             </span>
@@ -126,7 +133,8 @@ export function ActivityCard({ item, viewMode, onDelete }: ActivityCardProps) {
             <DialogTitle>Delete Activity</DialogTitle>
             <DialogDescription className="text-xs">
               Are you sure you want to remove{" "}
-              <strong className="text-foreground">{item.title}</strong>? This action cannot be undone.
+              <strong className="text-foreground">{item.title}</strong>? This
+              action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0 pt-2">

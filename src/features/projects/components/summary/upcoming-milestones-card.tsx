@@ -49,23 +49,22 @@ const ALL_TASKS: MilestoneTask[] = [
 ];
 
 interface UpcomingMilestonesCardProps {
-  selectedMember: ProjectMember | null;
+  selectedMembers: ProjectMember[];
   activeSprintName?: string;
   onNavigateTab?: (tabValue: string) => void;
 }
 
 export function UpcomingMilestonesCard({
-  selectedMember,
+  selectedMembers,
   activeSprintName = "Sprint 4",
   onNavigateTab,
 }: UpcomingMilestonesCardProps) {
   // Filter tasks if an individual contributor is filtered
   const visibleTasks = React.useMemo(() => {
-    if (!selectedMember) return ALL_TASKS;
-    return ALL_TASKS.filter(
-      (t) => t.assignee.toLowerCase() === selectedMember.name.toLowerCase(),
-    );
-  }, [selectedMember]);
+    if (selectedMembers.length === 0) return ALL_TASKS;
+    const names = selectedMembers.map((m) => m.name.toLowerCase());
+    return ALL_TASKS.filter((t) => names.includes(t.assignee.toLowerCase()));
+  }, [selectedMembers]);
 
   return (
     <Card className="border-border-subtle bg-canvas-surface p-5 space-y-3 shadow-xs">
@@ -135,7 +134,8 @@ export function UpcomingMilestonesCard({
           ))
         ) : (
           <div className="py-6 text-center text-xs text-muted-foreground">
-            No active sprint tasks assigned to {selectedMember?.name}.
+            No active sprint tasks assigned to{" "}
+            {selectedMembers.map((m) => m.name).join(", ")}.
           </div>
         )}
       </div>

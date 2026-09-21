@@ -36,11 +36,13 @@ export function AddActivityDialog({
   const [category, setCategory] = React.useState<ActivityCategory>("project");
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [projectName, setProjectName] = React.useState("Apex Analytics Platform");
+  const [projectName, setProjectName] = React.useState(
+    "Apex Analytics Platform",
+  );
 
   // Scheduling: Date, Start Time, and Duration components
   const [scheduledDate, setScheduledDate] = React.useState(
-    () => new Date().toISOString().split("T")[0]
+    () => new Date().toISOString().split("T")[0],
   );
   const [startTime, setStartTime] = React.useState("15:00");
   const [durationHours, setDurationHours] = React.useState("1");
@@ -151,7 +153,9 @@ export function AddActivityDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="project">Project Activity</SelectItem>
-                <SelectItem value="non-project">Non-Project Activity</SelectItem>
+                <SelectItem value="non-project">
+                  Non-Project Activity
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -181,7 +185,10 @@ export function AddActivityDialog({
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="activity-title" className="text-xs font-medium text-foreground">
+            <Label
+              htmlFor="activity-title"
+              className="text-xs font-medium text-foreground"
+            >
               Activity Title *
             </Label>
             <Input
@@ -198,7 +205,10 @@ export function AddActivityDialog({
           <div className="rounded-md border border-border-subtle bg-canvas-bg/40 p-3 space-y-2.5">
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1.5">
-                <Label htmlFor="sched-date" className="text-xs font-medium text-foreground">
+                <Label
+                  htmlFor="sched-date"
+                  className="text-xs font-medium text-foreground"
+                >
                   Date
                 </Label>
                 <Input
@@ -212,7 +222,10 @@ export function AddActivityDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="sched-start" className="text-xs font-medium text-foreground">
+                <Label
+                  htmlFor="sched-start"
+                  className="text-xs font-medium text-foreground"
+                >
                   Start Time
                 </Label>
                 <Input
@@ -231,10 +244,7 @@ export function AddActivityDialog({
                 Duration
               </Label>
               <div className="grid grid-cols-2 gap-2.5">
-                <Select
-                  value={durationHours}
-                  onValueChange={setDurationHours}
-                >
+                <Select value={durationHours} onValueChange={setDurationHours}>
                   <SelectTrigger className="h-9 text-xs border-border-subtle bg-canvas-surface">
                     <SelectValue placeholder="Hours" />
                   </SelectTrigger>
@@ -267,21 +277,35 @@ export function AddActivityDialog({
             </div>
 
             {/* Dynamic Summary Preview */}
-            <div className="flex items-center justify-between rounded-md bg-canvas-surface px-2.5 py-1.5 text-[11px] text-muted-foreground border border-border-subtle">
+            <div className="flex items-center justify-between rounded-md bg-canvas-surface px-2.5 py-1.5 text-2xs text-muted-foreground border border-border-subtle">
               <span>
                 Schedule:{" "}
                 <strong className="text-foreground">
-                  {startTime ? formatTime12h(...(startTime.split(":").map(Number) as [number, number])) : ""} – {getCalculatedEndTime()}
+                  {startTime
+                    ? formatTime12h(
+                        ...(startTime.split(":").map(Number) as [
+                          number,
+                          number,
+                        ]),
+                      )
+                    : ""}{" "}
+                  – {getCalculatedEndTime()}
                 </strong>
               </span>
-              <Badge variant="secondary" className="font-semibold text-[10px] px-2 py-0">
+              <Badge
+                variant="secondary"
+                className="font-semibold text-3xs px-2 py-0"
+              >
                 {getReadableDuration()}
               </Badge>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="activity-desc" className="text-xs font-medium text-foreground">
+            <Label
+              htmlFor="activity-desc"
+              className="text-xs font-medium text-foreground"
+            >
               Description
             </Label>
             <Textarea

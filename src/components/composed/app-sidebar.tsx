@@ -7,6 +7,7 @@ import {
   TrendingUp,
   Activity,
   Building2,
+  Users,
   PanelLeftClose,
   PanelLeftOpen,
   LogOut,
@@ -53,9 +54,11 @@ const ROLE_NAV_ITEMS: Record<UserRole, NavItem[]> = {
   ],
   admin: [
     { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+    { title: "Calendar", href: "/calendar", icon: Calendar },
     { title: "Projects", href: "/projects", icon: FolderKanban },
-    { title: "Activity", href: "#activity", icon: Activity },
+    { title: "Activity", href: "/activity", icon: Activity },
     { title: "Org Insights", href: "/org-insights", icon: TrendingUp },
+    { title: "Users", href: "/users", icon: Users },
   ],
   super_admin: [
     { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
@@ -79,8 +82,12 @@ export function AppSidebar() {
 
   // Once any routed item matches the current URL, hash-based placeholder
   // items (no page built yet) must never show as active alongside it.
+  // An item is active on its own page and on every page nested under it
+  // (e.g. Projects stays lit on /projects/proj-1).
+  const matchesRoute = (href: string) =>
+    location.pathname === href || location.pathname.startsWith(`${href}/`);
   const isOnKnownRoute = items.some(
-    (i) => i.href.startsWith("/") && location.pathname.startsWith(i.href),
+    (i) => i.href.startsWith("/") && matchesRoute(i.href),
   );
 
   const renderNavList = (collapsed: boolean) => (
@@ -88,7 +95,7 @@ export function AppSidebar() {
       {items.map((item) => {
         const isRoute = item.href.startsWith("/");
         const isActive = isRoute
-          ? location.pathname === item.href
+          ? matchesRoute(item.href)
           : !isOnKnownRoute && activeHash === item.href;
 
         const navLink = (

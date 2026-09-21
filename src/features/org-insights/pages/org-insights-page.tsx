@@ -2,6 +2,7 @@ import * as React from "react";
 import { CalendarDays } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { KpiAlertLink } from "@/components/composed/kpi-alert-link";
 import { Icon } from "@/components/ui/icon";
 import {
   Select,
@@ -240,7 +241,7 @@ export function OrgInsightsPage() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium mb-1"></div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
             Project performance
           </h1>
         </div>
@@ -268,7 +269,7 @@ export function OrgInsightsPage() {
           <p className="text-xs font-medium text-muted-foreground">
             Active projects
           </p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {activeProjects}
           </p>
         </Card>
@@ -278,7 +279,7 @@ export function OrgInsightsPage() {
             Avg. completion
           </p>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {avgCompletion}%
             </span>
           </div>
@@ -288,34 +289,36 @@ export function OrgInsightsPage() {
           <p className="text-xs font-medium text-muted-foreground">
             Total hours logged
           </p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {totalHoursLogged.toFixed(1)}h
           </p>
         </Card>
 
-        <Card
-          className={cn(
-            "p-4 shadow-xs",
-            needsAttention > 0 &&
-              "border-amber-500/40 bg-amber-500/5 dark:bg-amber-500/10",
-          )}
-        >
-          <p
-            className={cn(
-              "text-xs font-medium",
-              needsAttention > 0
-                ? "text-amber-700 dark:text-amber-400"
-                : "text-muted-foreground",
+        <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-muted-foreground">
+              Needs attention
+            </p>
+            {needsAttention > 0 && (
+              <Badge
+                variant="destructive"
+                className="text-3xs px-1.5 py-0 font-bold uppercase tracking-wider"
+              >
+                Alert
+              </Badge>
             )}
-          >
-            Needs attention
-          </p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+          </div>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {needsAttention}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {delayed} delayed, {atRisk} at risk
           </p>
+          {needsAttention > 0 && (
+            <KpiAlertLink to="#project-performance">
+              View at-risk projects
+            </KpiAlertLink>
+          )}
         </Card>
       </div>
 
@@ -361,7 +364,11 @@ export function OrgInsightsPage() {
       </div>
 
       {/* Project performance table */}
-      <Card className="p-5 shadow-xs border-border-subtle bg-canvas-surface overflow-x-auto">
+      <Card
+        id="project-performance"
+        tabIndex={-1}
+        className="p-5 shadow-xs border-border-subtle bg-canvas-surface overflow-x-auto"
+      >
         <h3 className="text-sm font-bold text-foreground mb-3">
           Project performance
         </h3>
@@ -416,7 +423,7 @@ export function OrgInsightsPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+                  <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                     {project.estimated}h / {project.actual.toFixed(1)}h
                   </TableCell>
                   <TableCell

@@ -137,7 +137,7 @@ export function OrganizationsTable({
                   <p className="text-xs font-semibold text-foreground leading-none">
                     {org.name}
                   </p>
-                  <p className="text-2xs text-muted-foreground leading-none font-mono">
+                  <p className="text-2xs text-muted-foreground leading-none tabular-nums">
                     /{org.slug}
                   </p>
                 </div>
@@ -165,10 +165,10 @@ export function OrganizationsTable({
                   </p>
                 </div>
               </TableCell>
-              <TableCell className="text-center text-xs font-mono font-medium">
+              <TableCell className="text-center text-xs tabular-nums font-medium">
                 {org.activeProjects}
               </TableCell>
-              <TableCell className="text-center text-xs font-mono font-medium">
+              <TableCell className="text-center text-xs tabular-nums font-medium">
                 {org.totalMembers}
               </TableCell>
               <TableCell className="text-center text-xs text-muted-foreground whitespace-nowrap">

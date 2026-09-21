@@ -24,7 +24,8 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     categoryLabel: "Sprint Review",
     projectName: "Apex Analytics Platform",
     title: "Client Quarterly Architecture Review",
-    description: "Executive presentation with client stakeholders discussing migration phases.",
+    description:
+      "Executive presentation with client stakeholders discussing migration phases.",
     timestamp: "Today, 2:00 PM – 3:30 PM",
     durationHours: "1 hour 30 minutes",
     statusBadge: { label: "Scheduled", variant: "neutral" },
@@ -36,7 +37,8 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     category: "non-project",
     categoryLabel: "Internal Session",
     title: "Engineering Guild: Frontend State Management",
-    description: "Knowledge sharing and patterns review on modern React performance.",
+    description:
+      "Knowledge sharing and patterns review on modern React performance.",
     timestamp: "Today, 4:00 PM – 5:00 PM",
     durationHours: "1 hour",
     statusBadge: { label: "Scheduled", variant: "neutral" },
@@ -49,7 +51,8 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     categoryLabel: "Client Meeting",
     projectName: "Nova Mobile Dev",
     title: "Biometrics SDK Demo & Security Audit",
-    description: "Walkthrough of authentication token exchanges and mobile fallback flows.",
+    description:
+      "Walkthrough of authentication token exchanges and mobile fallback flows.",
     timestamp: "Tomorrow, 10:30 AM – 11:30 AM",
     durationHours: "1 hour",
     statusBadge: { label: "Scheduled", variant: "neutral" },
@@ -62,7 +65,8 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     categoryLabel: "Release Sprint",
     projectName: "Apex Analytics Platform",
     title: "Staging Pipeline Verification & Sign-off",
-    description: "Regression test suite run and integration testing before main branch merge.",
+    description:
+      "Regression test suite run and integration testing before main branch merge.",
     timestamp: "Day after tomorrow, 3:00 PM – 4:30 PM",
     durationHours: "1 hour 30 minutes",
     statusBadge: { label: "Scheduled", variant: "neutral" },
@@ -72,11 +76,16 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
 ];
 
 export function ActivityPage() {
-  const [activeFilter, setActiveFilter] = React.useState<"all" | ActivityCategory>("all");
+  const [activeFilter, setActiveFilter] = React.useState<
+    "all" | ActivityCategory
+  >("all");
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [viewMode, setViewMode] = React.useState<"compact" | "expanded">("expanded");
+  const [viewMode, setViewMode] = React.useState<"compact" | "expanded">(
+    "expanded",
+  );
   const [addOpen, setAddOpen] = React.useState(false);
-  const [activities, setActivities] = React.useState<ActivityItem[]>(INITIAL_ACTIVITIES);
+  const [activities, setActivities] =
+    React.useState<ActivityItem[]>(INITIAL_ACTIVITIES);
 
   const counts = React.useMemo(
     () => ({
@@ -84,7 +93,7 @@ export function ActivityPage() {
       project: activities.filter((i) => i.category === "project").length,
       nonProject: activities.filter((i) => i.category === "non-project").length,
     }),
-    [activities]
+    [activities],
   );
 
   const filteredActivities = React.useMemo(() => {
@@ -104,27 +113,29 @@ export function ActivityPage() {
 
   const groupedSections = React.useMemo(() => {
     const todayItems = filteredActivities.filter((item) =>
-      item.timestamp.toLowerCase().includes("today")
+      item.timestamp.toLowerCase().includes("today"),
     );
     const tomorrowItems = filteredActivities.filter(
       (item) =>
         item.timestamp.toLowerCase().includes("tomorrow") &&
-        !item.timestamp.toLowerCase().includes("day after")
+        !item.timestamp.toLowerCase().includes("day after"),
     );
     const dayAfterItems = filteredActivities.filter((item) =>
-      item.timestamp.toLowerCase().includes("day after")
+      item.timestamp.toLowerCase().includes("day after"),
     );
     const otherItems = filteredActivities.filter(
       (item) =>
         !item.timestamp.toLowerCase().includes("today") &&
-        !item.timestamp.toLowerCase().includes("tomorrow")
+        !item.timestamp.toLowerCase().includes("tomorrow"),
     );
 
     return [
       { key: "today", title: "Today", items: todayItems },
       { key: "tomorrow", title: "Tomorrow", items: tomorrowItems },
       { key: "dayAfter", title: "Day After Tomorrow", items: dayAfterItems },
-      ...(otherItems.length > 0 ? [{ key: "upcoming", title: "Upcoming", items: otherItems }] : []),
+      ...(otherItems.length > 0
+        ? [{ key: "upcoming", title: "Upcoming", items: otherItems }]
+        : []),
     ];
   }, [filteredActivities]);
 
@@ -141,11 +152,12 @@ export function ActivityPage() {
     <div className="w-full max-w-[1280px] mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
             Activity Schedule
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Overview of scheduled events, client milestones, and team sessions for Today, Tomorrow, and Day After Tomorrow.
+            Overview of scheduled events, client milestones, and team sessions
+            for Today, Tomorrow, and Day After Tomorrow.
           </p>
         </div>
 
@@ -169,11 +181,11 @@ export function ActivityPage() {
               "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all outline-none",
               activeFilter === "all"
                 ? "bg-navy-500 text-white dark:bg-foreground dark:text-background shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface"
+                : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface",
             )}
           >
             <span>All</span>
-            <span className="px-1.5 py-0.2 rounded-full font-mono text-[10px] bg-white/20">
+            <span className="px-1.5 py-0.2 rounded-full tabular-nums text-3xs bg-white/20">
               {counts.all}
             </span>
           </button>
@@ -185,11 +197,11 @@ export function ActivityPage() {
               "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all outline-none",
               activeFilter === "project"
                 ? "bg-navy-500 text-white dark:bg-foreground dark:text-background shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface"
+                : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface",
             )}
           >
             <span>Project Activities</span>
-            <span className="px-1.5 py-0.2 rounded-full font-mono text-[10px] bg-muted">
+            <span className="px-1.5 py-0.2 rounded-full tabular-nums text-3xs bg-muted">
               {counts.project}
             </span>
           </button>
@@ -201,11 +213,11 @@ export function ActivityPage() {
               "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all outline-none",
               activeFilter === "non-project"
                 ? "bg-navy-500 text-white dark:bg-foreground dark:text-background shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface"
+                : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface",
             )}
           >
             <span>Non-Project Activities</span>
-            <span className="px-1.5 py-0.2 rounded-full font-mono text-[10px] bg-muted">
+            <span className="px-1.5 py-0.2 rounded-full tabular-nums text-3xs bg-muted">
               {counts.nonProject}
             </span>
           </button>
@@ -221,7 +233,6 @@ export function ActivityPage() {
               className="h-7 px-2.5 text-xs gap-1.5 font-medium"
             >
               <Icon icon={LayoutList} size={13} />
-              <span>Compact</span>
             </Button>
             <Button
               type="button"
@@ -231,7 +242,6 @@ export function ActivityPage() {
               className="h-7 px-2.5 text-xs gap-1.5 font-medium"
             >
               <Icon icon={LayoutGrid} size={13} />
-              <span>Expanded</span>
             </Button>
           </div>
 
@@ -255,8 +265,14 @@ export function ActivityPage() {
       <div className="space-y-6">
         {filteredActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 border border-dashed border-border-subtle rounded-xl text-center bg-canvas-surface/40">
-            <Icon icon={Timeline} size={24} className="text-muted-foreground mb-2" />
-            <p className="text-sm font-semibold text-foreground">No activities found</p>
+            <Icon
+              icon={Timeline}
+              size={24}
+              className="text-muted-foreground mb-2"
+            />
+            <p className="text-sm font-semibold text-foreground">
+              No activities found
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               Try adjusting your search query or switching category filters.
             </p>
@@ -265,13 +281,18 @@ export function ActivityPage() {
           groupedSections.map((section) => (
             <div key={section.key} className="space-y-3">
               <div className="flex items-center gap-2.5">
-                <Icon icon={CalendarIcon} size={15} className="text-teal-600 dark:text-teal-400" />
+                <Icon
+                  icon={CalendarIcon}
+                  size={15}
+                  className="text-teal-600 dark:text-teal-400"
+                />
                 <h2 className="text-sm font-bold text-foreground">
                   {section.title}
                 </h2>
                 <div className="flex-1 h-px bg-border-subtle" />
-                <span className="text-[11px] text-muted-foreground font-mono">
-                  {section.items.length} {section.items.length === 1 ? "activity" : "activities"}
+                <span className="text-2xs text-muted-foreground tabular-nums">
+                  {section.items.length}{" "}
+                  {section.items.length === 1 ? "activity" : "activities"}
                 </span>
               </div>
 
@@ -285,7 +306,7 @@ export function ActivityPage() {
                     "grid gap-3",
                     viewMode === "compact"
                       ? "grid-cols-1 md:grid-cols-2"
-                      : "grid-cols-1"
+                      : "grid-cols-1",
                   )}
                 >
                   {section.items.map((item) => (

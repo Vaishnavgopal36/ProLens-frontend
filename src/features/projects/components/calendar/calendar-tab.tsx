@@ -8,6 +8,11 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { KpiAlertLink } from "@/components/composed/kpi-alert-link";
+import { FilterBar, useFilters } from "@/components/composed/filters";
+import type { FilterFieldDef } from "@/components/composed/filters";
+import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types/project";
@@ -17,7 +22,15 @@ interface CalendarEvent {
   day: number;
   label: string;
   color: "rose" | "teal" | "amber";
+  /** Indexes into project.members (mock data: real events will carry ids). */
+  who: number[];
 }
+
+const TYPE_LABELS: Record<CalendarEvent["color"], string> = {
+  teal: "Feature workstream",
+  rose: "Deadline",
+  amber: "Sprint / conflict",
+};
 
 // Fixed reference "today" so the mock grid renders deterministically,
 // matching the source mockup (September 2026, Sprint 4).
@@ -29,15 +42,37 @@ const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 // Keyed by "year-month-day" so events only render on their real month.
 const EVENTS: (CalendarEvent & { month: number; year: number })[] = [
-  { year: 2026, month: 8, day: 12, label: "Kickoff Review", color: "amber" },
-  { year: 2026, month: 8, day: 20, label: "UI Design Due", color: "rose" },
-  { year: 2026, month: 8, day: 22, label: "API Auth Due", color: "teal" },
+  {
+    year: 2026,
+    month: 8,
+    day: 12,
+    label: "Kickoff Review",
+    color: "amber",
+    who: [0, 1, 2],
+  },
+  {
+    year: 2026,
+    month: 8,
+    day: 20,
+    label: "UI Design Due",
+    color: "rose",
+    who: [0],
+  },
+  {
+    year: 2026,
+    month: 8,
+    day: 22,
+    label: "API Auth Due",
+    color: "teal",
+    who: [1],
+  },
   {
     year: 2026,
     month: 8,
     day: 24,
     label: "Security Audit (10:00)",
     color: "amber",
+    who: [1],
   },
   {
     year: 2026,
@@ -45,9 +80,24 @@ const EVENTS: (CalendarEvent & { month: number; year: number })[] = [
     day: 24,
     label: "Acme Client Sync (10:30)",
     color: "amber",
+    who: [0, 2],
   },
-  { year: 2026, month: 8, day: 25, label: "Sprint 4 Review", color: "amber" },
-  { year: 2026, month: 8, day: 29, label: "QA Handoff Due", color: "rose" },
+  {
+    year: 2026,
+    month: 8,
+    day: 25,
+    label: "Sprint 4 Review",
+    color: "amber",
+    who: [0, 1, 2],
+  },
+  {
+    year: 2026,
+    month: 8,
+    day: 29,
+    label: "QA Handoff Due",
+    color: "rose",
+    who: [2],
+  },
 ];
 
 const COLOR_CLASSES: Record<
@@ -117,16 +167,42 @@ export function CalendarTab({ project }: CalendarTabProps) {
 
   const weeks = React.useMemo(() => buildMonthGrid(year, month), [year, month]);
 
+  type Ev = (typeof EVENTS)[number];
+  const namesOf = React.useCallback(
+    (e: Ev) =>
+      e.who
+        .map((i) => project.members[i % Math.max(1, project.members.length)])
+        .filter(Boolean)
+        .map((m) => m.name),
+    [project.members],
+  );
+  // Employees only see events they're part of; managers and above can filter.
+  const viewer = useProjectViewer<Ev>(project, namesOf);
+  const scopedEvents = React.useMemo(() => viewer.scope(EVENTS), [viewer]);
+  const fields: FilterFieldDef<Ev>[] = [
+    ...viewer.peopleField,
+    {
+      key: "type",
+      label: "Event type",
+      options: (Object.keys(TYPE_LABELS) as CalendarEvent["color"][]).map(
+        (c) => ({ value: c, label: TYPE_LABELS[c] }),
+      ),
+      accessor: (e) => e.color,
+    },
+  ];
+  const filters = useFilters(scopedEvents, fields, (e) => e.label);
+  const visibleEvents = filters.filtered;
+
   const eventsByDay = React.useMemo(() => {
     const map = new Map<number, CalendarEvent[]>();
-    for (const event of EVENTS) {
+    for (const event of visibleEvents) {
       if (event.year !== year || event.month !== month) continue;
       const existing = map.get(event.day) ?? [];
       existing.push(event);
       map.set(event.day, existing);
     }
     return map;
-  }, [year, month]);
+  }, [visibleEvents, year, month]);
 
   const goToMonth = (delta: number) => {
     const next = new Date(year, month + delta, 1);
@@ -147,13 +223,15 @@ export function CalendarTab({ project }: CalendarTabProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      <FilterBar filters={filters} searchPlaceholder="Search events..." />
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="p-4 shadow-xs">
           <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Active Sprint Cycle
           </p>
-          <p className="mt-1 text-lg font-bold text-foreground">
+          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {project.activeSprint || "—"}
           </p>
           <p className="text-2xs text-muted-foreground mt-0.5">
@@ -164,7 +242,7 @@ export function CalendarTab({ project }: CalendarTabProps) {
           <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
             Scheduled Events
           </p>
-          <p className="mt-1 text-lg font-bold text-foreground">
+          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {monthEvents.length} events
           </p>
           <p className="text-2xs text-muted-foreground mt-0.5">
@@ -176,30 +254,26 @@ export function CalendarTab({ project }: CalendarTabProps) {
             <Icon icon={Flag} size={11} />
             Milestone Deadlines
           </p>
-          <p className="mt-1 text-lg font-bold text-foreground">
+          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {deadlineCount}
           </p>
           <p className="text-2xs text-muted-foreground mt-0.5">This month</p>
         </Card>
-        <Card
-          className={cn(
-            "p-4 shadow-xs",
-            conflictDays.length > 0 &&
-              "border-amber-500/40 bg-amber-500/5 dark:bg-amber-500/10",
-          )}
-        >
-          <p
-            className={cn(
-              "text-3xs font-bold uppercase tracking-wide flex items-center gap-1",
-              conflictDays.length > 0
-                ? "text-amber-700 dark:text-amber-400"
-                : "text-muted-foreground",
+        <Card className="p-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
+              Schedule Conflicts
+            </p>
+            {conflictDays.length > 0 && (
+              <Badge
+                variant="destructive"
+                className="text-3xs px-1.5 py-0 font-bold uppercase tracking-wider"
+              >
+                Alert
+              </Badge>
             )}
-          >
-            {conflictDays.length > 0 && <Icon icon={AlertTriangle} size={11} />}
-            Schedule Conflicts
-          </p>
-          <p className="mt-1 text-lg font-bold text-foreground">
+          </div>
+          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
             {conflictDays.length} overlapping
           </p>
           <p className="text-2xs text-muted-foreground mt-0.5">
@@ -207,10 +281,15 @@ export function CalendarTab({ project }: CalendarTabProps) {
               ? `Sep ${conflictDays[0][0]}: ${conflictDays[0][1].length} events same day`
               : "No conflicts this month"}
           </p>
+          {conflictDays.length > 0 && (
+            <KpiAlertLink to="#project-calendar-grid">
+              View conflicting days
+            </KpiAlertLink>
+          )}
         </Card>
       </div>
 
-      <Card className="p-5 shadow-xs">
+      <Card id="project-calendar-grid" tabIndex={-1} className="p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Icon

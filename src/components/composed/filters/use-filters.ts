@@ -35,7 +35,11 @@ export function useFilters<T>(
         return false;
       return fields.every((field) => {
         const values = selected[field.key];
-        return !values?.length || values.includes(field.accessor(item));
+        if (!values?.length) return true;
+        const own = field.accessor(item);
+        return Array.isArray(own)
+          ? own.some((v) => values.includes(v))
+          : values.includes(own);
       });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

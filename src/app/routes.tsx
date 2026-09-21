@@ -8,6 +8,7 @@ import { OrgInsightsPage, MyInsightsPage } from "@/features/org-insights";
 import { TimesheetPage } from "@/features/timesheets";
 import { CalendarPage } from "@/features/calendar";
 import { ActivityPage } from "@/features/activity";
+import { UserDirectoryPage } from "@/features/users";
 import { OrganizationsDirectoryPage } from "@/features/super-admin";
 
 export const router = createBrowserRouter([
@@ -58,6 +59,10 @@ export const router = createBrowserRouter([
           {
             path: "my-insights",
             element: <MyInsightsPage />,
+          },
+          {
+            element: <RequirePermission permission="manage_org_users" />,
+            children: [{ path: "users", element: <UserDirectoryPage /> }],
           },
           {
             element: <RequirePermission permission="manage_organizations" />,

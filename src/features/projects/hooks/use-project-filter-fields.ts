@@ -16,7 +16,7 @@ import type { Project } from "@/types/project";
  */
 export function useProjectViewer<T>(
   project: Project,
-  assigneeOf: (item: T) => string,
+  assigneeOf: (item: T) => string | string[],
 ) {
   const { user } = useAuth();
   const { isEmployee } = usePermissions();
@@ -47,7 +47,14 @@ export function useProjectViewer<T>(
   /** Employees: only their own items. Everyone else: everything. */
   const scope = React.useCallback(
     (items: T[]) =>
-      isEmployee ? items.filter((i) => assigneeOf(i) === user?.name) : items,
+      isEmployee
+        ? items.filter((i) => {
+            const who = assigneeOf(i);
+            return Array.isArray(who)
+              ? who.includes(user?.name ?? "")
+              : who === user?.name;
+          })
+        : items,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isEmployee, user?.name],
   );

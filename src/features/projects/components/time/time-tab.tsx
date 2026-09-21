@@ -271,7 +271,7 @@ export function TimeTab({ project }: TimeTabProps) {
                           className="grid grid-cols-[1fr_140px_160px] items-center gap-3 border-t border-border-subtle/60 bg-canvas-bg/30 px-4 py-2.5 pl-10"
                         >
                           <div className="flex min-w-0 items-center gap-2">
-                            <span className="font-mono text-3xs text-muted-foreground/70 shrink-0">
+                            <span className="tabular-nums text-3xs text-muted-foreground/70 shrink-0">
                               {task.code}
                             </span>
                             <span className="truncate text-xs font-medium text-foreground">

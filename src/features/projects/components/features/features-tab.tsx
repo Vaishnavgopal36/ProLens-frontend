@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import type { Project } from "@/types/project";
+import { FilterBar, useFilters } from "@/components/composed/filters";
+import { useProjectViewer } from "../../hooks/use-project-filter-fields";
+import { TASKS_BY_FEATURE } from "./task-mock-data";
 import { MOCK_FEATURE_STREAMS, type FeatureStream } from "./mock-data";
 import { FeatureDetailDialog } from "./feature-detail-dialog";
 
@@ -12,18 +15,40 @@ interface FeaturesTabProps {
   project: Project;
 }
 
-export function FeaturesTab({ project: _project }: FeaturesTabProps) {
+/** A feature belongs to everyone who has a task in it. */
+const assigneesOf = (f: FeatureStream) => [
+  ...new Set((TASKS_BY_FEATURE[f.name] ?? []).map((t) => t.assigneeName)),
+];
+
+export function FeaturesTab({ project }: FeaturesTabProps) {
+  // Employees only see the features they're assigned to; managers and above
+  // can filter by one or several people.
+  const viewer = useProjectViewer<FeatureStream>(project, assigneesOf);
+  const scopedStreams = React.useMemo(
+    () => viewer.scope(MOCK_FEATURE_STREAMS),
+    [viewer],
+  );
+  const filters = useFilters(scopedStreams, viewer.peopleField, (f) =>
+    [f.name, f.description].join(" "),
+  );
+  const streams = filters.filtered;
+
   const [selectedFeature, setSelectedFeature] =
     React.useState<FeatureStream | null>(null);
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
 
   return (
     <div className="flex flex-col gap-4">
-      {MOCK_FEATURE_STREAMS.length === 0 ? (
+      {!viewer.isEmployee && (
+        <FilterBar filters={filters} searchPlaceholder="Search features..." />
+      )}
+      {streams.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-subtle bg-canvas-bg/40 py-14 text-center">
           <Icon icon={Layers} size={22} className="text-muted-foreground" />
           <p className="text-sm font-medium text-foreground">
-            No feature streams yet
+            {filters.activeCount > 0 || viewer.isEmployee
+              ? "No matching features"
+              : "No feature streams yet"}
           </p>
           <p className="max-w-xs text-xs text-muted-foreground">
             Feature streams will appear here once tasks are grouped into
@@ -32,7 +57,7 @@ export function FeaturesTab({ project: _project }: FeaturesTabProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {MOCK_FEATURE_STREAMS.map((stream) => {
+          {streams.map((stream) => {
             const isActive = stream.status === "ACTIVE";
 
             return (

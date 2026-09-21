@@ -273,6 +273,7 @@ export function LoginForm({
       <div className={REVEAL_CLASS} style={reveal(3)}>
         <Button
           type="submit"
+          fx="off"
           variant={ready ? "accent" : "outline"}
           size="lg"
           className={cn(

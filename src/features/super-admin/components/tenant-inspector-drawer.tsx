@@ -108,7 +108,7 @@ export function TenantInspectorDrawer({
                       <span className="text-xs text-foreground">
                         {d.designation}
                       </span>
-                      <span className="text-xs font-mono font-semibold text-muted-foreground">
+                      <span className="text-xs tabular-nums font-semibold text-muted-foreground">
                         {d.count}
                       </span>
                     </div>

@@ -83,11 +83,17 @@ export function EmployeeDashboardPage() {
             <Table>
               <TableHeader className="sticky top-0 bg-canvas-surface z-10">
                 <TableRow>
-                  <TableHead className="w-[100px] bg-canvas-surface">Priority</TableHead>
-                  <TableHead className="bg-canvas-surface">Task title</TableHead>
+                  <TableHead className="w-[100px] bg-canvas-surface">
+                    Priority
+                  </TableHead>
+                  <TableHead className="bg-canvas-surface">
+                    Task title
+                  </TableHead>
                   <TableHead className="bg-canvas-surface">Project</TableHead>
                   <TableHead className="bg-canvas-surface">Due date</TableHead>
-                  <TableHead className="text-right bg-canvas-surface">Status</TableHead>
+                  <TableHead className="text-right bg-canvas-surface">
+                    Status
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -167,7 +173,7 @@ export function EmployeeDashboardPage() {
                 className="flex items-center justify-between py-2 text-xs"
               >
                 <span className="text-muted-foreground">{item.day}</span>
-                <span className="font-mono font-medium text-foreground">
+                <span className="tabular-nums font-medium text-foreground">
                   {item.hours.toFixed(1)}h
                 </span>
               </div>

@@ -160,7 +160,10 @@ export const MOCK_ACTIVITY_GROUPS: ActivityDateGroup[] = [
         durationHours: "1.25 hrs",
         statusBadge: { label: "Completed", variant: "success" },
         pinColor: "teal",
-        metaNote: { icon: Presentation, text: "Deck archived in Knowledge Base" },
+        metaNote: {
+          icon: Presentation,
+          text: "Deck archived in Knowledge Base",
+        },
       },
       {
         id: "act-8",

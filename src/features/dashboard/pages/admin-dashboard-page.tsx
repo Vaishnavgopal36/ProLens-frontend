@@ -65,7 +65,9 @@ function projectForRow(row: AdminProjectRow): Project {
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
-  const [editingRow, setEditingRow] = React.useState<AdminProjectRow | null>(null);
+  const [editingRow, setEditingRow] = React.useState<AdminProjectRow | null>(
+    null,
+  );
   const isLoading = useSimulatedLoading();
   const [createOpen, setCreateOpen] = React.useState(false);
   const [projectRows, setProjectRows] = React.useState(ADMIN_PROJECTS_TABLE);
@@ -168,8 +170,12 @@ export function AdminDashboardPage() {
                   <TableHead className="bg-canvas-surface">Client</TableHead>
                   <TableHead className="bg-canvas-surface">Manager</TableHead>
                   <TableHead className="bg-canvas-surface">Status</TableHead>
-                  <TableHead className="text-right bg-canvas-surface">Hours logged</TableHead>
-                  <TableHead className="w-[120px] text-right bg-canvas-surface">Actions</TableHead>
+                  <TableHead className="text-right bg-canvas-surface">
+                    Hours logged
+                  </TableHead>
+                  <TableHead className="w-[120px] text-right bg-canvas-surface">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -205,7 +211,7 @@ export function AdminDashboardPage() {
                         {row.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right text-xs font-mono font-medium">
+                    <TableCell className="text-right text-xs tabular-nums font-medium">
                       {row.hoursLogged.toFixed(1)}h
                     </TableCell>
                     <TableCell className="text-right">
@@ -224,7 +230,7 @@ export function AdminDashboardPage() {
                             navigate(
                               MOCK_PROJECTS.some((p) => p.name === row.name)
                                 ? `/projects/${MOCK_PROJECTS.find((p) => p.name === row.name)!.id}`
-                                : "/projects"
+                                : "/projects",
                             )
                           }
                           className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
@@ -242,9 +248,13 @@ export function AdminDashboardPage() {
           <div className="pt-2 flex items-center justify-between text-2xs text-muted-foreground shrink-0">
             <span>Showing {projectRows.length} of 14 projects</span>
             <div className="flex gap-2">
-              <button type="button" className="hover:text-foreground">Previous</button>
+              <button type="button" className="hover:text-foreground">
+                Previous
+              </button>
               <span>•</span>
-              <button type="button" className="hover:text-foreground">Next</button>
+              <button type="button" className="hover:text-foreground">
+                Next
+              </button>
             </div>
           </div>
         </Card>
@@ -266,13 +276,14 @@ export function AdminDashboardPage() {
           {/* Internal Scrollable Breakdown */}
           <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-border-subtle py-1 pr-1">
             {ADMIN_TEAM_DISTRIBUTION.map((team, idx) => (
-              <div key={idx} className="py-2.5 first:pt-0 last:pb-0 space-y-0.5">
+              <div
+                key={idx}
+                className="py-2.5 first:pt-0 last:pb-0 space-y-0.5"
+              >
                 <p className="text-xs font-semibold text-foreground">
                   {team.department}
                 </p>
-                <p className="text-2xs text-muted-foreground">
-                  {team.details}
-                </p>
+                <p className="text-2xs text-muted-foreground">{team.details}</p>
               </div>
             ))}
           </div>
@@ -280,7 +291,11 @@ export function AdminDashboardPage() {
           {/* Static Bottom Capacity Box & Link */}
           <div className="pt-2 border-t border-border-subtle space-y-2 shrink-0">
             <div className="rounded-lg border border-border-subtle bg-canvas-bg/50 p-2.5 flex items-start gap-2">
-              <Icon icon={CheckCircle2} size={14} className="text-teal-500 mt-0.5" />
+              <Icon
+                icon={CheckCircle2}
+                size={14}
+                className="text-teal-500 mt-0.5"
+              />
               <div className="space-y-0.5 text-xs">
                 <p className="font-semibold text-foreground text-2xs">
                   Target capacity nominal
@@ -321,8 +336,8 @@ export function AdminDashboardPage() {
                       subname: updated.description || r.subname,
                       status: ROW_STATUS[updated.status],
                     }
-                  : r
-              )
+                  : r,
+              ),
             )
           }
         />

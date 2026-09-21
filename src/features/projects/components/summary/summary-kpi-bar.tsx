@@ -4,15 +4,30 @@ import type { UserRole } from "@/app/providers";
 
 interface SummaryKpiBarProps {
   project: Project;
-  selectedMember: ProjectMember | null;
+  selectedMembers: ProjectMember[];
   userRole?: UserRole;
 }
 
 export function SummaryKpiBar({
   project,
-  selectedMember,
+  selectedMembers,
   userRole,
 }: SummaryKpiBarProps) {
+  // Several people selected: show their combined numbers.
+  const selectedMember =
+    selectedMembers.length > 0
+      ? {
+          assignedTasksCount: selectedMembers.reduce(
+            (n, m) => n + m.assignedTasksCount,
+            0,
+          ),
+          assignedFeaturesCount: selectedMembers.reduce(
+            (n, m) => n + m.assignedFeaturesCount,
+            0,
+          ),
+          hoursLogged: selectedMembers.reduce((n, m) => n + m.hoursLogged, 0),
+        }
+      : null;
   const isEmployeeMode = userRole === "employee" || !!selectedMember;
 
   // Aggregate project-wide vs member-specific metrics
@@ -50,7 +65,7 @@ export function SummaryKpiBar({
             {isEmployeeMode ? "My Progress" : "Progress"}
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {project.completionPercentage}%
             </span>
           </div>
@@ -68,7 +83,7 @@ export function SummaryKpiBar({
             Features
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {isEmployeeMode && selectedMember
                 ? selectedMember.assignedFeaturesCount
                 : project.coreFeaturesCount || 5}
@@ -85,7 +100,7 @@ export function SummaryKpiBar({
             Tasks
           </span>
           <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {totalTasks}
             </span>
           </div>
@@ -100,7 +115,7 @@ export function SummaryKpiBar({
             Estimated
           </span>
           <div className="mt-1">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {estimatedHours}h
             </span>
           </div>
@@ -115,7 +130,7 @@ export function SummaryKpiBar({
             Logged Effort
           </span>
           <div className="mt-1">
-            <span className="text-2xl font-bold tracking-tight text-teal-600 dark:text-teal-400 font-mono">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {loggedHours.toFixed(1)}h
             </span>
           </div>
@@ -130,7 +145,7 @@ export function SummaryKpiBar({
             Remaining
           </span>
           <div className="mt-1">
-            <span className="text-2xl font-bold tracking-tight text-amber-500 dark:text-amber-400 font-mono">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {remainingHours.toFixed(1)}h
             </span>
           </div>

@@ -1,8 +1,12 @@
 import * as React from "react";
 import { useAuth } from "@/app/providers";
 import { usePermissions } from "@/hooks/use-permissions";
-import type { Project } from "@/types/project";
-import { PeopleFilter } from "@/components/composed/filters";
+import type { Project, ProjectMember } from "@/types/project";
+import {
+  FilterBar,
+  useFilters,
+  type FilterFieldDef,
+} from "@/components/composed/filters";
 import { SummaryKpiBar } from "./summary-kpi-bar";
 import { FeatureOverviewCard } from "./feature-overview-card";
 import { UpcomingMilestonesCard } from "./upcoming-milestones-card";
@@ -22,51 +26,42 @@ export function SummaryTab({ project, onNavigateTab }: SummaryTabProps) {
   const { isEmployee, hasMinimumRole } = usePermissions();
   const isManager = hasMinimumRole("manager");
 
-  // Employees always see their own numbers. Managers and above can pick a
-  // teammate with the people filter to see theirs instead.
-  const [pickedMemberId, setPickedMemberId] = React.useState<string | null>(
-    null,
+  // Employees always see their own numbers. Managers and above can pick one
+  // or several teammates with the filter; the cards then show their combined
+  // numbers.
+  const fields = React.useMemo<FilterFieldDef<ProjectMember>[]>(
+    () => [
+      {
+        key: "assignee",
+        label: "Assignee",
+        kind: "people",
+        options: project.members.map((m) => ({
+          value: m.id,
+          label: m.name,
+          initials: m.initials,
+          avatarUrl: m.avatarUrl,
+        })),
+        accessor: (m) => m.id,
+      },
+    ],
+    [project.members],
   );
-  const selectedMember = React.useMemo(() => {
+  const filters = useFilters(project.members, fields);
+  const pickedIds = filters.selected.assignee;
+  const selectedMembers = React.useMemo(() => {
     if (isEmployee)
-      return project.members.find((m) => m.email === user?.email) ?? null;
-    return project.members.find((m) => m.id === pickedMemberId) ?? null;
-  }, [project.members, pickedMemberId, isEmployee, user?.email]);
+      return project.members.filter((m) => m.email === user?.email);
+    return project.members.filter((m) => pickedIds?.includes(m.id));
+  }, [project.members, pickedIds, isEmployee, user?.email]);
 
   return (
     <div className="space-y-5">
-      {!isEmployee && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground">
-            Filter by person
-          </span>
-          <PeopleFilter
-            multiple={false}
-            options={project.members.map((m) => ({
-              value: m.id,
-              label: m.name,
-              initials: m.initials,
-              avatarUrl: m.avatarUrl,
-            }))}
-            value={pickedMemberId ? [pickedMemberId] : []}
-            onChange={(v) => setPickedMemberId(v[0] ?? null)}
-          />
-          {pickedMemberId && (
-            <button
-              type="button"
-              onClick={() => setPickedMemberId(null)}
-              className="flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              Clear filter
-            </button>
-          )}
-        </div>
-      )}
+      {!isEmployee && <FilterBar filters={filters} />}
 
       {/* 6-Metric KPI Ribbon dynamically responding to Role & Filter */}
       <SummaryKpiBar
         project={project}
-        selectedMember={selectedMember}
+        selectedMembers={selectedMembers}
         userRole={user?.role}
       />
 
@@ -76,7 +71,7 @@ export function SummaryTab({ project, onNavigateTab }: SummaryTabProps) {
         <div className="lg:col-span-7 space-y-5">
           <FeatureOverviewCard onViewAll={() => onNavigateTab("features")} />
           <UpcomingMilestonesCard
-            selectedMember={selectedMember}
+            selectedMembers={selectedMembers}
             activeSprintName={project.activeSprint}
             onNavigateTab={onNavigateTab}
           />

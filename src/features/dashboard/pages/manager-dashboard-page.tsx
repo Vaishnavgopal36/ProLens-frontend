@@ -74,7 +74,11 @@ export function ManagerDashboardPage() {
       {/* Middle 2-Column Section: Locked to 390px */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* Left Card: Active tasks table */}
-        <Card className="lg:col-span-2 p-5 border-border-subtle bg-canvas-surface flex flex-col h-[390px] min-h-[390px] max-h-[390px] overflow-hidden">
+        <Card
+          id="manager-tasks"
+          tabIndex={-1}
+          className="lg:col-span-2 p-5 border-border-subtle bg-canvas-surface flex flex-col h-[390px] min-h-[390px] max-h-[390px] overflow-hidden"
+        >
           <div className="flex items-center justify-between pb-3 shrink-0">
             <h2 className="text-sm font-semibold text-foreground">
               Active &amp; assigned tasks
@@ -93,7 +97,9 @@ export function ManagerDashboardPage() {
                   <TableHead className="bg-canvas-surface">Project</TableHead>
                   <TableHead className="bg-canvas-surface">Assignee</TableHead>
                   <TableHead className="bg-canvas-surface">Due date</TableHead>
-                  <TableHead className="w-[60px] text-right bg-canvas-surface">Actions</TableHead>
+                  <TableHead className="w-[60px] text-right bg-canvas-surface">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -185,7 +191,7 @@ export function ManagerDashboardPage() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-2xs font-medium">
                     <span>Progress: {proj.progress}%</span>
-                    <span className="text-muted-foreground font-mono">
+                    <span className="text-muted-foreground tabular-nums">
                       {proj.loggedHours}h logged
                     </span>
                   </div>
@@ -200,19 +206,21 @@ export function ManagerDashboardPage() {
                 <div className="flex items-center justify-between pt-1">
                   <div className="flex items-center -space-x-1.5 overflow-hidden">
                     {proj.members.map((m: any, i: number) => {
-                      const initial = typeof m === "string" ? m : (m?.initials ?? "");
-                      const name = typeof m === "string" ? m : (m?.name ?? initial);
+                      const initial =
+                        typeof m === "string" ? m : (m?.initials ?? "");
+                      const name =
+                        typeof m === "string" ? m : (m?.name ?? initial);
                       return (
                         <div
                           key={i}
                           title={name}
-                          className="flex h-6 w-6 items-center justify-center rounded-full bg-navy-500 text-[9px] font-bold text-white ring-1 ring-canvas-surface"
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-navy-500 text-4xs font-bold text-white ring-1 ring-canvas-surface"
                         >
                           {initial}
                         </div>
                       );
                     })}
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground ring-1 ring-canvas-surface">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-4xs font-bold text-muted-foreground ring-1 ring-canvas-surface">
                       +{proj.moreMembers}
                     </div>
                   </div>

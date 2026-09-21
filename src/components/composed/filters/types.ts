@@ -13,6 +13,7 @@ export interface FilterFieldDef<T> {
   /** "multi" renders a checkbox dropdown; "people" renders avatar toggles. */
   kind?: "multi" | "people";
   options: FilterOption[];
-  /** Reads the value this field filters on from an item. */
-  accessor: (item: T) => string;
+  /** Reads the value(s) this field filters on; an item with several values
+   *  (e.g. a feature with many assignees) matches if any is selected. */
+  accessor: (item: T) => string | string[];
 }

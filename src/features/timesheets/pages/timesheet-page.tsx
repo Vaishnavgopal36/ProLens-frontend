@@ -39,7 +39,8 @@ import {
 import type { TimeEntry, WorkLocation } from "@/types/timesheet";
 
 export function TimesheetPage() {
-  const [entries, setEntries] = React.useState<TimeEntry[]>(INITIAL_TIME_ENTRIES);
+  const [entries, setEntries] =
+    React.useState<TimeEntry[]>(INITIAL_TIME_ENTRIES);
   const [weekOffset, setWeekOffset] = React.useState(0);
   const baseWeekStart = new Date(2026, 8, 14); // Sep 14, 2026 (Mon)
 
@@ -49,12 +50,14 @@ export function TimesheetPage() {
 
   // Dialog State
   const [addModalOpen, setAddModalOpen] = React.useState(false);
-  const [selectedDateForAdd, setSelectedDateForAdd] = React.useState("2026-09-14");
+  const [selectedDateForAdd, setSelectedDateForAdd] =
+    React.useState("2026-09-14");
   const [presetProjectForAdd, setPresetProjectForAdd] = React.useState("");
   const [presetTaskForAdd, setPresetTaskForAdd] = React.useState("");
 
   const [editModalOpen, setEditModalOpen] = React.useState(false);
-  const [activeEditEntry, setActiveEditEntry] = React.useState<TimeEntry | null>(null);
+  const [activeEditEntry, setActiveEditEntry] =
+    React.useState<TimeEntry | null>(null);
 
   // Helper date generators
   const weekDays = React.useMemo(() => {
@@ -165,11 +168,12 @@ export function TimesheetPage() {
       {/* Top Controls: Title, Filter, Export & Week Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
             Time Reporting
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Log, track, and monitor daily effort allocations across active projects and client initiatives.
+            Log, track, and monitor daily effort allocations across active
+            projects and client initiatives.
           </p>
         </div>
 
@@ -178,7 +182,11 @@ export function TimesheetPage() {
           {/* Filter Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 text-xs"
+              >
                 <Icon
                   icon={Filter}
                   size={15}
@@ -255,7 +263,11 @@ export function TimesheetPage() {
           {/* Export Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 text-xs"
+              >
                 <Icon
                   icon={Download}
                   size={15}
@@ -348,7 +360,7 @@ export function TimesheetPage() {
             <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
               Total Logged
             </span>
-            <span className="text-xl font-bold text-foreground tabular-nums">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {formatMins(totalWeeklyMins)}
             </span>
           </div>
@@ -363,7 +375,7 @@ export function TimesheetPage() {
             <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider block">
               Weekly Target
             </span>
-            <span className="text-xl font-bold text-foreground tabular-nums">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               40h 00m
             </span>
           </div>
@@ -447,7 +459,9 @@ export function TimesheetPage() {
           if (projectFilter !== "ALL")
             dayEntries = dayEntries.filter((e) => e.project === projectFilter);
           if (locationFilter !== "ALL")
-            dayEntries = dayEntries.filter((e) => e.location === locationFilter);
+            dayEntries = dayEntries.filter(
+              (e) => e.location === locationFilter,
+            );
 
           const dayMinutes = dayEntries.reduce(
             (acc, curr) => acc + curr.hours * 60 + curr.mins,
