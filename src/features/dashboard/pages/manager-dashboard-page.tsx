@@ -128,17 +128,11 @@ export function ManagerDashboardPage() {
                     {task.dueDate}
                   </TableCell>
                   <TableCell className="text-right">
-<<<<<<< HEAD
-                    <button
-                      type="button"
-                      className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-=======
                     <Button
                       variant="outline"
                       size="sm"
                       asChild
                       className="h-7 px-2.5 text-[11px] font-semibold border-border-subtle hover:border-teal-600 hover:text-teal-600 transition-colors"
->>>>>>> feat/time-reporting
                     >
                       <Link
                         to={`/projects/${
