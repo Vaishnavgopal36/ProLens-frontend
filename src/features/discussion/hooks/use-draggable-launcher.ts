@@ -13,8 +13,10 @@ export interface LauncherPosition {
   bottom: number;
 }
 
+const getSideMargin = (): number => (window.innerWidth >= 768 ? 32 : 20);
+
 const defaultPosition = (): LauncherPosition => ({
-  right: window.innerWidth >= 768 ? 32 : 20,
+  right: getSideMargin(),
   bottom: window.innerWidth >= 768 ? 48 : 40,
 });
 
@@ -28,6 +30,28 @@ const clamp = (p: LauncherPosition): LauncherPosition => ({
     Math.max(MARGIN, window.innerHeight - LAUNCHER_SIZE - MARGIN),
   ),
 });
+
+/**
+ * Snaps horizontal position to the nearest side (left or right)
+ * while preserving the exact height (bottom position) where it was dragged.
+ */
+export const snapToSide = (p: LauncherPosition): LauncherPosition => {
+  const sideMargin = getSideMargin();
+  const minRight = sideMargin;
+  const maxRight = Math.max(
+    sideMargin,
+    window.innerWidth - LAUNCHER_SIZE - sideMargin,
+  );
+  const midpoint = (minRight + maxRight) / 2;
+
+  return {
+    right: p.right < midpoint ? minRight : maxRight,
+    bottom: Math.min(
+      Math.max(p.bottom, MARGIN),
+      Math.max(MARGIN, window.innerHeight - LAUNCHER_SIZE - MARGIN),
+    ),
+  };
+};
 
 function readStored(): LauncherPosition | null {
   try {
@@ -50,7 +74,7 @@ function readStored(): LauncherPosition | null {
  */
 export function useDraggableLauncher() {
   const [pos, setPos] = React.useState<LauncherPosition>(() =>
-    clamp(readStored() ?? defaultPosition()),
+    snapToSide(readStored() ?? defaultPosition()),
   );
   const [dragging, setDragging] = React.useState(false);
   const [viewport, setViewport] = React.useState(() => ({
@@ -73,11 +97,11 @@ export function useDraggableLauncher() {
     }
   }, []);
 
-  // Keep it on-screen when the window is resized or rotated.
+  // Keep it on-screen and docked to the side when the window is resized or rotated.
   React.useEffect(() => {
     const onResize = () => {
       setViewport({ width: window.innerWidth, height: window.innerHeight });
-      setPos((p) => clamp(p));
+      setPos((p) => snapToSide(p));
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -120,8 +144,9 @@ export function useDraggableLauncher() {
       window.setTimeout(() => (suppressClick.current = false), 0);
       setDragging(false);
       setPos((p) => {
-        persist(p);
-        return p;
+        const snapped = snapToSide(p);
+        persist(snapped);
+        return snapped;
       });
     }
   };
@@ -135,23 +160,45 @@ export function useDraggableLauncher() {
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (!e.shiftKey) return;
-    const delta: Record<string, [number, number]> = {
-      ArrowLeft: [KEY_STEP, 0],
-      ArrowRight: [-KEY_STEP, 0],
-      ArrowUp: [0, KEY_STEP],
-      ArrowDown: [0, -KEY_STEP],
-    };
-    const move = delta[e.key];
-    if (!move) return;
-    e.preventDefault();
-    setPos((p) => {
-      const next = clamp({
-        right: p.right + move[0],
-        bottom: p.bottom + move[1],
+    const sideMargin = getSideMargin();
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setPos((p) => {
+        const next = {
+          right: Math.max(
+            sideMargin,
+            window.innerWidth - LAUNCHER_SIZE - sideMargin,
+          ),
+          bottom: p.bottom,
+        };
+        persist(next);
+        return next;
       });
-      persist(next);
-      return next;
-    });
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      setPos((p) => {
+        const next = {
+          right: sideMargin,
+          bottom: p.bottom,
+        };
+        persist(next);
+        return next;
+      });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setPos((p) => {
+        const next = clamp({ right: p.right, bottom: p.bottom + KEY_STEP });
+        persist(next);
+        return next;
+      });
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setPos((p) => {
+        const next = clamp({ right: p.right, bottom: p.bottom - KEY_STEP });
+        persist(next);
+        return next;
+      });
+    }
   };
 
   // Which side of the launcher has room for its tooltip and the chat window.
