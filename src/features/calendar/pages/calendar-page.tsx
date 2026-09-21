@@ -479,6 +479,11 @@ export function CalendarPage() {
   return (
     <section className="mx-auto mb-8 max-w-[1340px] space-y-4 rounded-lg border border-border-subtle bg-canvas-surface p-5 text-foreground shadow-sm md:p-6">
       {/* Header: title + navigation, primary action right-aligned */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
+          Calendar
+        </h1>
+      </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="min-w-[13rem] text-xl font-bold tracking-tight">

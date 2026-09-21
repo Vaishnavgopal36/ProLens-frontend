@@ -58,10 +58,6 @@ export function ManagerDashboardPage() {
             Supervising 2 assigned projects and 12 team members
           </p>
         </div>
-
-        <div className="rounded-lg border border-border-subtle bg-canvas-surface px-3 py-1.5 text-xs text-muted-foreground self-start sm:self-auto font-medium">
-          Current month
-        </div>
       </div>
 
       {/* 4 Metric Cards */}
