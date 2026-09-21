@@ -4,10 +4,11 @@ import { Plus } from "lucide-react";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import type { Project } from "@/types/project";
+import type { Project, ProjectMember, ProjectInvite } from "@/types/project";
 import { TeamMembersTable } from "./teams/team-members-table";
 import { InviteMemberDialog } from "./teams/invite-member-dialog";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 
 interface TeamsTabProps {
   project: Project;
@@ -28,16 +29,72 @@ export function TeamsTab({ project }: TeamsTabProps) {
   });
   const [members, setMembers] = React.useState(project.members);
 
-  // Reset the local roster if the user navigates to a different project
-  // without unmounting this tab (same route, different :projectId).
-  React.useEffect(() => {
-    setMembers(project.members);
-  }, [project.id, project.members]);
+  const loadMembers = React.useCallback(async () => {
+    try {
+      const res = await api.projects.listMembers(project.id);
+      if (res && res.length > 0) {
+        const mapped: ProjectMember[] = res.map((m) => {
+          const email = m.user_email || "";
+          const name = m.user_name || (email ? email.split("@")[0] : "Member");
+          const initials = m.user_name
+            ? m.user_name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()
+            : email
+              ? email.slice(0, 2).toUpperCase()
+              : "U";
+          return {
+            id: m.id,
+            name,
+            email,
+            initials,
+            role: m.user_role || "employee",
+            designation: m.designation || "Team Member",
+            assignedTasksCount: 0,
+            assignedFeaturesCount: 0,
+            hoursLogged: 0,
+            status: "active",
+          };
+        });
+        setMembers(mapped);
+      }
+    } catch {
+      // fallback to project.members
+    }
+  }, [project.id]);
 
-  const handleRemoveMember = (memberId: string) => {
-    const member = members.find((m) => m.id === memberId);
-    setMembers((prev) => prev.filter((m) => m.id !== memberId));
-    if (member) toast.success(`${member.name} removed from the project.`);
+  React.useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
+
+  const handleRemoveMember = async (memberId: string) => {
+    try {
+      await api.projects.removeMember(memberId);
+      setMembers((prev) => prev.filter((m) => m.id !== memberId));
+      toast.success("Member removed from the project.");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to remove member",
+      );
+    }
+  };
+
+  const handleSendInvite = async (newInvite: ProjectInvite) => {
+    try {
+      await api.projects.addMember({
+        project_id: project.id,
+        email: newInvite.email,
+      });
+      toast.success(`Invitation email sent to ${newInvite.email}`);
+      await loadMembers();
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to invite member",
+      );
+    }
   };
 
   const filteredMembers = React.useMemo(() => {
@@ -92,7 +149,7 @@ export function TeamsTab({ project }: TeamsTabProps) {
       <InviteMemberDialog
         open={isInviteDialogOpen}
         onOpenChange={setIsInviteDialogOpen}
-        onSendInvite={() => {}}
+        onSendInvite={handleSendInvite}
       />
     </div>
   );

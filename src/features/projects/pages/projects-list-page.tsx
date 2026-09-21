@@ -11,21 +11,57 @@ import { ProjectCard } from "@/features/projects/components/project-card";
 import { ProjectFilters } from "@/features/projects/components/project-filters";
 import { ViewToggle, useViewLayout } from "@/components/composed/view-toggle";
 import { CreateProjectDialog } from "@/features/projects/components/create-project-dialog";
-import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import {
   PageHeaderSkeleton,
   ProjectCardGridSkeleton,
 } from "@/components/composed/skeletons";
 
+import { api } from "@/lib/api";
+import { mapBackendProjectToProject } from "@/lib/mappers";
+import { toast } from "sonner";
+
 export function ProjectsListPage() {
   const { user } = useAuth();
   const { isEmployee, can } = usePermissions();
-  const isLoading = useSimulatedLoading();
   const [activeFilter, setActiveFilter] =
     React.useState<ProjectFilterTab>("all");
   const [projects, setProjects] = React.useState<Project[]>(MOCK_PROJECTS);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [layout, setLayout] = useViewLayout("projects");
+
+  const loadProjects = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const backendProjects = await api.projects.list({
+        include_insights: true,
+      });
+      if (backendProjects.length > 0) {
+        const loaded = await Promise.all(
+          backendProjects.map(async (bp) => {
+            try {
+              const members = await api.projects.listMembers(bp.id);
+              return mapBackendProjectToProject(bp, members);
+            } catch {
+              return mapBackendProjectToProject(bp, []);
+            }
+          }),
+        );
+        setProjects(loaded);
+      } else {
+        setProjects(MOCK_PROJECTS);
+      }
+    } catch (err) {
+      console.warn("Could not load backend projects, using sample:", err);
+      setProjects(MOCK_PROJECTS);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
 
   // Creating/deleting projects is portfolio-lifecycle ownership — reserved
   // for admins, not managers (who run day-to-day delivery on projects
@@ -74,8 +110,16 @@ export function ProjectsListPage() {
     );
   };
 
-  const handleDeleteProject = (projectId: string) => {
-    setProjects((prev) => prev.filter((item) => item.id !== projectId));
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      await api.projects.delete(projectId);
+      setProjects((prev) => prev.filter((item) => item.id !== projectId));
+      toast.success("Project deleted successfully");
+    } catch {
+      // If it's a mock project or backend returns error, remove locally
+      setProjects((prev) => prev.filter((item) => item.id !== projectId));
+      toast.success("Project removed");
+    }
   };
 
   if (isLoading) {

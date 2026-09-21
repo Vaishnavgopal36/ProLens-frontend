@@ -13,12 +13,15 @@ import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { FilterBar, useFilters } from "@/components/composed/filters";
 import type { FilterFieldDef } from "@/components/composed/filters";
-import { useSimulatedLoading } from "@/lib/use-simulated-loading";
+import { FilterBar, useFilters, type FilterFieldDef } from "@/components/composed/filters";
 import { cn } from "@/lib/utils";
 import { PRIORITY_BADGE_CLASSES } from "@/features/projects/lib/badge-styles";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import { MOCK_PROJECTS } from "../../api/mock-data";
-import { MOCK_FEATURE_STREAMS } from "./mock-data";
+import { MOCK_FEATURE_STREAMS, type FeatureStream } from "./mock-data";
+import { api } from "@/lib/api";
+import { mapBackendProjectToProject, mapFeatureToStream } from "@/lib/mappers";
+import type { Project } from "@/types/project";
 import {
   SUBTASKS_BY_TASK,
   TASKS_BY_FEATURE,
@@ -50,11 +53,44 @@ export function FeatureDetailPage() {
     projectId: string;
     featureId: string;
   }>();
-  const isLoading = useSimulatedLoading();
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
+  const [project, setProject] = React.useState<Project | null>(null);
+  const [feature, setFeature] = React.useState<FeatureStream | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  const project = MOCK_PROJECTS.find((p) => p.id === projectId);
-  const feature = MOCK_FEATURE_STREAMS.find((f) => f.id === featureId);
+  React.useEffect(() => {
+    if (!projectId || !featureId) return;
+    let isMounted = true;
+    setIsLoading(true);
+
+    Promise.all([
+      api.projects.getById(projectId).catch(() => null),
+      api.features.getById(featureId).catch(() => null),
+    ])
+      .then(([bp, bf]) => {
+        if (!isMounted) return;
+        if (bp) {
+          setProject(mapBackendProjectToProject(bp));
+        } else {
+          setProject(MOCK_PROJECTS.find((p) => p.id === projectId) || null);
+        }
+
+        if (bf) {
+          setFeature(mapFeatureToStream(bf));
+        } else {
+          setFeature(
+            MOCK_FEATURE_STREAMS.find((f) => f.id === featureId) || null,
+          );
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [projectId, featureId]);
 
   // Hooks below need a project, so fall back to the first one until the guard
   // redirects; they never run their results in that case.

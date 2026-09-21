@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import { TASKS_BY_FEATURE } from "./task-mock-data";
 import { MOCK_FEATURE_STREAMS, type FeatureStream } from "./mock-data";
+import { api } from "@/lib/api";
+import { mapFeatureToStream } from "@/lib/mappers";
 
 interface FeaturesTabProps {
   project: Project;
@@ -23,12 +25,35 @@ const assigneesOf = (f: FeatureStream) => [
 ];
 
 export function FeaturesTab({ project }: FeaturesTabProps) {
+  const [featureStreams, setFeatureStreams] =
+    React.useState<FeatureStream[]>(MOCK_FEATURE_STREAMS);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    api.features
+      .list({ project_id: project.id })
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.length > 0) {
+          setFeatureStreams(res.map(mapFeatureToStream));
+        } else {
+          setFeatureStreams(MOCK_FEATURE_STREAMS);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setFeatureStreams(MOCK_FEATURE_STREAMS);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [project.id]);
+
   // Employees only see the features they're assigned to; managers and above
   // can filter by one or several people.
   const viewer = useProjectViewer<FeatureStream>(project, assigneesOf);
   const scopedStreams = React.useMemo(
-    () => viewer.scope(MOCK_FEATURE_STREAMS),
-    [viewer],
+    () => viewer.scope(featureStreams),
+    [viewer, featureStreams],
   );
   const filters = useFilters(scopedStreams, viewer.peopleField, (f) =>
     [f.name, f.description].join(" "),

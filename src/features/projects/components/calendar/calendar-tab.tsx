@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { KpiAlertLink } from "@/components/composed/kpi-alert-link";
 import { FilterBar, useFilters } from "@/components/composed/filters";
 import type { FilterFieldDef } from "@/components/composed/filters";
+import { FilterBar, useFilters, type FilterFieldDef } from "@/components/composed/filters";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";

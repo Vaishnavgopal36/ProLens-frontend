@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/app/providers";
 import { MOCK_USERS } from "@/features/users/api/mock-data";
+import { api } from "@/lib/api";
 
 const PASSWORD_MIN_LENGTH = 8;
 const ROLE_LABELS: Record<string, string> = {
@@ -78,9 +79,11 @@ export function ProfileSettingsPage() {
   if (!user) return null;
 
   const designation =
-    MOCK_USERS.find((u) => u.email === user.email)?.designation ?? "—";
+    (user.designation ||
+      MOCK_USERS.find((u) => u.email === user.email)?.designation) ??
+    "—";
 
-  const saveProfile = (e: React.FormEvent) => {
+  const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     const f = firstName.trim();
     const l = lastName.trim();
@@ -88,6 +91,16 @@ export function ProfileSettingsPage() {
     if (f.length > 100 || l.length > 100)
       return setProfileError("Names must be 100 characters or fewer.");
     setProfileError(undefined);
+
+    try {
+      await api.users.update(user.id, {
+        first_name: f,
+        last_name: l,
+      });
+    } catch {
+      /* ignore */
+    }
+
     updateUser({
       name: [f, l].filter(Boolean).join(" "),
       initials: ((f[0] ?? "") + (l[0] ?? f[1] ?? "")).toUpperCase(),

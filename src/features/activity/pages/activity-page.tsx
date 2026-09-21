@@ -18,6 +18,7 @@ import { ActivityCard } from "../components/activity-card";
 import { ActivityDetailsDialog } from "../components/activity-details-dialog";
 import { AddActivityDialog } from "../components/add-activity-dialog";
 import type { ActivityCategory, ActivityItem } from "@/types/activity";
+import { api } from "@/lib/api";
 
 function toISODate(d: Date): string {
   const year = d.getFullYear();
@@ -136,16 +137,59 @@ export function ActivityPage() {
   const [activities, setActivities] =
     React.useState<ActivityItem[]>(INITIAL_ACTIVITIES);
 
+  React.useEffect(() => {
+    let isMounted = true;
+    api.activities
+      .list()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.length > 0) {
+          const mapped: ActivityItem[] = res.map((a) => {
+            const isProj = Boolean(a.project_id);
+            return {
+              id: a.id,
+              category: isProj ? "project" : "non-project",
+              categoryLabel: isProj ? "Project Activity" : "General Activity",
+              title: a.name,
+              description: a.description || "",
+              date: todayISO,
+              timeWindow: "Flexible",
+              durationHours: "1 hour",
+              statusBadge: {
+                label: a.status === "done" ? "Archived" : "Active",
+                variant: a.status === "done" ? "neutral" : "success",
+              },
+              pinColor: "teal",
+              loggedBy: "Team Member",
+            };
+          });
+          setActivities(mapped);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Selected Activity State for Details/Edit Modal
   const [selectedActivity, setSelectedActivity] =
     React.useState<ActivityItem | null>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
 
-  const handleUpdateActivity = (updated: ActivityItem) => {
+  const handleUpdateActivity = async (updated: ActivityItem) => {
     setActivities((prev) =>
       prev.map((item) => (item.id === updated.id ? updated : item)),
     );
     setSelectedActivity(updated);
+    try {
+      await api.activities.update(updated.id, {
+        name: updated.title,
+        description: updated.description || undefined,
+      });
+    } catch {
+      /* ignore */
+    }
   };
 
   const handleOpenDetails = (item: ActivityItem) => {
@@ -158,13 +202,28 @@ export function ActivityPage() {
     setDetailsOpen(true);
   };
 
-  const handleDeleteActivity = (id: string) => {
+  const handleDeleteActivity = async (id: string) => {
+    try {
+      await api.activities.delete(id);
+      toast.success("Activity deleted successfully.");
+    } catch {
+      /* ignore */
+    }
     setActivities((prev) => prev.filter((item) => item.id !== id));
-    toast.success("Activity deleted successfully.");
   };
 
-  const handleAddNewActivity = (newItem: ActivityItem) => {
+  const handleAddNewActivity = async (newItem: ActivityItem) => {
     setActivities((prev) => [newItem, ...prev]);
+    try {
+      await api.activities.create({
+        name: newItem.title,
+        description: newItem.description || undefined,
+        status: "to_do",
+      });
+      toast.success("Activity created successfully.");
+    } catch {
+      /* ignore */
+    }
   };
 
   const counts = React.useMemo(

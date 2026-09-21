@@ -18,6 +18,8 @@ import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Icon } from "@/components/ui/icon";
 import type { Project } from "@/types/project";
 import { MOCK_PROJECTS } from "@/features/projects/api/mock-data";
+import { api } from "@/lib/api";
+import { mapBackendProjectToProject } from "@/lib/mappers";
 import { WorkspaceHeader } from "@/features/projects/components/workspace-header";
 import { TeamsTab } from "@/features/projects/components/teams-tab";
 import { SummaryTab } from "@/features/projects/components/summary/summary-tab";
@@ -112,16 +114,53 @@ export function ProjectDetailPage() {
   // Edits from the settings dialogs are kept on top of the stored project
   // until the API is wired up.
   const [projectPatch, setProjectPatch] = React.useState<Partial<Project>>({});
+  const [dbProject, setDbProject] = React.useState<Project | null>(null);
+  const [isProjectLoading, setIsProjectLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!projectId) return;
+    let isMounted = true;
+    setIsProjectLoading(true);
+
+    api.projects
+      .getById(projectId)
+      .then(async (bp) => {
+        if (!isMounted) return;
+        if (!bp) {
+          const mock = MOCK_PROJECTS.find((p) => p.id === projectId);
+          setDbProject(mock || null);
+          return;
+        }
+        let members: any[] = [];
+        try {
+          members = await api.projects.listMembers(projectId);
+        } catch {
+          /* ignore */
+        }
+        if (isMounted) {
+          setDbProject(mapBackendProjectToProject(bp, members));
+        }
+      })
+      .catch(() => {
+        const mock = MOCK_PROJECTS.find((p) => p.id === projectId);
+        if (isMounted) setDbProject(mock || null);
+      })
+      .finally(() => {
+        if (isMounted) setIsProjectLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [projectId]);
+
   const project = React.useMemo(() => {
-    const base = MOCK_PROJECTS.find((p) => p.id === projectId);
-    return base ? { ...base, ...projectPatch } : undefined;
-  }, [projectId, projectPatch]);
+    if (!dbProject) return undefined;
+    return { ...dbProject, ...projectPatch };
+  }, [dbProject, projectPatch]);
 
-  if (!project) {
-    return <Navigate to="/projects" replace />;
-  }
-
-  if (isLoading) {
+  if (isProjectLoading || isLoading) {
+  if (isProjectLoading) {
     return (
       <div className="space-y-6">
         <WorkspaceHeaderSkeleton />
@@ -140,6 +179,10 @@ export function ProjectDetailPage() {
         </div>
       </div>
     );
+  }
+
+  if (!project) {
+    return <Navigate to="/projects" replace />;
   }
 
   return (

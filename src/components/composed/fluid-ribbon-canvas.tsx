@@ -45,15 +45,15 @@ float vnoise(vec3 x) {
 }
 
 // The displaced 3D surface. xy = where the vertex lands on screen (world
-// units), z = height of the fold (only used for lighting and parallax).
+// units), z = depth / height of the fold (used for lighting, 3D normal, and parallax).
 vec3 surface(float a, float c) {
   float t = uTime * 0.05;
 
-  // Centre line: a quadratic curve from bottom-right to top centre whose
-  // control point sways, so the whole ribbon appears to rotate sideways.
+  // Centre line: a quadratic curve from bottom-right to top centre defining
+  // the ribbon's central axis across the screen.
   vec2 S = vec2(1.05, -1.7);
   vec2 E = vec2(-0.22, 1.7);
-  vec2 C = vec2(0.62 + 0.12 * sin(t * 2.1 + uPhase), 0.05 + 0.14 * sin(t * 1.6));
+  vec2 C = vec2(0.62 + 0.08 * sin(t * 1.8 + uPhase), 0.05 + 0.08 * sin(t * 1.4));
   float b = 1.0 - a;
   vec2 B = b * b * S + 2.0 * b * a * C + a * a * E;
   vec2 T = 2.0 * b * (C - S) + 2.0 * a * (E - C);
@@ -65,17 +65,36 @@ vec3 surface(float a, float c) {
   // Wide at the bottom-right, tapering toward the top centre.
   float W = uWidth * mix(1.0, 0.55, a) * min(uExtent.x, uExtent.y) * 1.55;
 
-  // Folds: big slow swells, tighter ripples, and a little noise.
-  float z = 0.30 * sin(a * 5.0 + c * 2.6 - t * 3.0 + uPhase)
-          + 0.10 * sin(a * 10.0 - c * 4.0 + t * 4.0)
-          + 0.10 * (vnoise(vec3(a * 3.0, c * 1.5, t * 1.5 + uPhase)) - 0.5);
+  // Transverse coordinate across the ribbon from its central axis
+  float d = (c - 0.5 + uOffset) * W;
 
-  vec2 pos = Bw + N * ((c - 0.5 + uOffset) * W + z * 0.10 * W);
+  // Arc camber across the ribbon cross-section so it has volumetric 3D body
+  float arc = (1.0 - 4.0 * (c - 0.5) * (c - 0.5)) * 0.16 * W;
 
-  // Slow overall rotation.
-  float r = 0.10 * sin(t * 1.2);
+  // Fluid undulating ripples along the length
+  float ripple = (0.06 * sin(a * 6.0 - uTime * 0.5 + uPhase)
+                + 0.03 * sin(a * 12.0 - c * 4.0 + uTime * 0.7)) * W;
+  float h = arc + ripple;
+
+  // Continuous axial rotation around the ribbon's own longitudinal axis:
+  // uTime * 0.45 produces smooth, elegant rotation; a * 1.8 produces a gentle spiral twist
+  float rotAngle = uTime * 0.45 + a * 1.8 + uPhase * 0.6;
+
+  float cosRot = cos(rotAngle);
+  float sinRot = sin(rotAngle);
+
+  // Rotate the cross-section (d, h) in the plane perpendicular to the axis (N, Z)
+  float dispN = d * cosRot - h * sinRot;
+  float dispZ = d * sinRot + h * cosRot;
+
+  // Subtle perspective scaling according to depth
+  float perspective = 1.0 + (dispZ / (min(uExtent.x, uExtent.y) * 4.0)) * 0.12;
+  vec2 pos = Bw + N * (dispN * perspective);
+
+  // Gentle subtle sway
+  float r = 0.03 * sin(t * 0.9);
   pos = mat2(cos(r), sin(r), -sin(r), cos(r)) * pos;
-  return vec3(pos, z * 0.35);
+  return vec3(pos, dispZ);
 }
 
 void main() {

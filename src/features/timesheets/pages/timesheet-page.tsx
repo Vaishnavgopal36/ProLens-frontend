@@ -38,6 +38,8 @@ import {
 } from "../components/time-entry-dialogs";
 import type { TimeEntry, WorkLocation } from "@/types/timesheet";
 
+import { api } from "@/lib/api";
+
 export function TimesheetPage() {
   const [entries, setEntries] =
     React.useState<TimeEntry[]>(INITIAL_TIME_ENTRIES);
@@ -73,6 +75,38 @@ export function TimesheetPage() {
   }, [weekOffset]);
 
   const formatDateISO = toLocalISODate;
+
+  // Load time logs for current week from backend API
+  const loadTimesheets = React.useCallback(async () => {
+    try {
+      const fromDate = formatDateISO(weekDays[0]);
+      const toDate = formatDateISO(weekDays[6]);
+      const res = await api.timesheets.list({
+        from_date: fromDate,
+        to_date: toDate,
+      });
+
+      if (res.length > 0) {
+        const mapped: TimeEntry[] = res.map((item) => ({
+          id: item.id,
+          dateStr: item.log_date,
+          project: item.task_id ? "Project Delivery" : "General Activity",
+          task: item.description || "Logged Work",
+          activity: item.description ?? undefined,
+          hours: Math.floor(item.duration_minutes / 60),
+          mins: item.duration_minutes % 60,
+          location: "Tarento Office",
+        }));
+        setEntries(mapped);
+      }
+    } catch {
+      /* ignore and keep mock */
+    }
+  }, [weekDays, formatDateISO]);
+
+  React.useEffect(() => {
+    loadTimesheets();
+  }, [loadTimesheets]);
 
   // Ctrl/⌘ + K toggles the add-time modal, defaulting to today.
   useModalHotkey({
@@ -571,7 +605,9 @@ export function TimesheetPage() {
         defaultDateStr={selectedDateForAdd}
         defaultProject={presetProjectForAdd}
         defaultTask={presetTaskForAdd}
-        onSave={(newEntry) => setEntries((prev) => [newEntry, ...prev])}
+        onSave={async (newEntry) => {
+          setEntries((prev) => [newEntry, ...prev]);
+        }}
       />
 
       {/* MODAL 2: EDIT & DELETE TIME */}
@@ -584,7 +620,15 @@ export function TimesheetPage() {
             prev.map((e) => (e.id === updated.id ? updated : e)),
           )
         }
-        onDelete={(id) => setEntries((prev) => prev.filter((e) => e.id !== id))}
+        onDelete={async (id) => {
+          try {
+            await api.timesheets.delete(id);
+            toast.success("Time entry deleted");
+          } catch {
+            /* ignore */
+          }
+          setEntries((prev) => prev.filter((e) => e.id !== id));
+        }}
       />
     </div>
   );

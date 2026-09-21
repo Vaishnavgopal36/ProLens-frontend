@@ -3,13 +3,12 @@ import { useAuth } from "@/app/providers";
 import { useForcedLightTheme } from "@/hooks/use-forced-light-theme";
 import { BrandMark } from "@/components/composed/brand-mark";
 import { BRAND_LIGHT_PALETTE, Ribbon } from "@/components/composed/ribbon";
-import { authenticate, ssoAccount } from "../api/demo-accounts";
-import { seedProvisionedSsoConnection } from "@/features/users/api/sso-store";
+import { authApi } from "@/lib/api/auth";
 import { LoginForm, type LoginCredentials } from "../components/login-form";
 
 export function LoginPage() {
   useForcedLightTheme();
-  const { isAuthenticated, setUser } = useAuth();
+  const { isAuthenticated, signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const redirectTo =
@@ -17,23 +16,26 @@ export function LoginPage() {
 
   if (isAuthenticated) return <Navigate to={redirectTo} replace />;
 
-  // Placeholder sign-in: swap the bodies for the real API / OAuth calls.
-  // Throw an Error to surface its message on the form.
   const handleSignIn = async ({
     email,
     password,
     remember,
   }: LoginCredentials) => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setUser(authenticate(email, password), remember);
+    await signIn(email, password, remember);
     navigate(redirectTo, { replace: true });
   };
 
   const handleSsoSignIn = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    seedProvisionedSsoConnection();
-    setUser(ssoAccount());
-    navigate(redirectTo, { replace: true });
+    try {
+      const { authorize_url } = await authApi.ssoAuthorize();
+      if (authorize_url) {
+        window.location.href = authorize_url;
+      }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "SSO authorization failed";
+      alert(message);
+    }
   };
 
   return (

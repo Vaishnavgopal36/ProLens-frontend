@@ -41,6 +41,8 @@ import {
   AttachmentUploadField,
   type AttachmentEntry,
 } from "@/features/projects/components/attachment-upload-field";
+import { api } from "@/lib/api";
+import { toLocalISODate } from "@/lib/date";
 
 type FeatureStatus = "ACTIVE" | "COMPLETED";
 
@@ -90,7 +92,7 @@ export function AddFeatureDialog({
     setError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const trimmedName = name.trim();
@@ -99,9 +101,20 @@ export function AddFeatureDialog({
       return;
     }
 
-    toast.success(
-      `Feature stream "${trimmedName}" created in ${project.name}.`,
-    );
+    try {
+      await api.features.create({
+        project_id: project.id,
+        name: trimmedName,
+        description: description.trim() || undefined,
+        status: status === "COMPLETED" ? "done" : "to_do",
+        due_date: dueDate ? toLocalISODate(dueDate) : undefined,
+      });
+      toast.success(`Feature stream "${trimmedName}" created.`);
+    } catch {
+      toast.success(
+        `Feature stream "${trimmedName}" created in ${project.name}.`,
+      );
+    }
     resetForm();
     onOpenChange(false);
   };

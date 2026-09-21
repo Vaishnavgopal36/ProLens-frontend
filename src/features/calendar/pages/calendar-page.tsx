@@ -18,7 +18,7 @@ import {
   FilterDropdown,
   type FilterFieldDef,
 } from "@/components/composed/filters";
-import { INITIAL_EVENTS } from "../api/mock-data";
+import { INITIAL_EVENTS, CATEGORY_COLOR_MAP } from "../api/mock-data";
 import { ApplyLeaveDialog } from "../components/apply-leave-dialog";
 import { ScheduleEventDialog } from "../components/schedule-event-dialog";
 import { EventDetailsDialog } from "../components/event-details-dialog";
@@ -112,11 +112,54 @@ function DateBadge({ date, today }: { date: Date; today: Date }) {
 
 /* ---------- page ---------- */
 
+import { api } from "@/lib/api";
+
 export function CalendarPage() {
   const today = React.useMemo(() => new Date(), []);
   const [events, setEvents] = React.useState<CalendarEvent[]>(INITIAL_EVENTS);
   const [cursor, setCursor] = React.useState<Date>(today);
   const [view, setView] = React.useState<CalendarViewMode>("month");
+
+  React.useEffect(() => {
+    let isMounted = true;
+    api.calendar
+      .listEvents()
+      .then((fetched) => {
+        if (!isMounted) return;
+        if (fetched.length > 0) {
+          const mapped: CalendarEvent[] = fetched.map((item) => {
+            const startDate = new Date(item.start_time);
+            const endDate = new Date(item.end_time);
+            const cat =
+              item.event_type.charAt(0).toUpperCase() +
+              item.event_type.slice(1);
+            const styling =
+              CATEGORY_COLOR_MAP[cat as keyof typeof CATEGORY_COLOR_MAP] ||
+              CATEGORY_COLOR_MAP.Meeting;
+            return {
+              id: item.id,
+              title: item.title,
+              desc: item.description ?? undefined,
+              year: startDate.getFullYear(),
+              month: startDate.getMonth(),
+              day: startDate.getDate(),
+              startTime: startDate.toTimeString().slice(0, 5),
+              endTime: endDate.toTimeString().slice(0, 5),
+              category: cat as any,
+              colorBg: styling.bg,
+              colorText: styling.text,
+              colorBorder: styling.border,
+            };
+          });
+          setEvents(mapped);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filters = useFilters(
     events,
@@ -484,7 +527,8 @@ export function CalendarPage() {
           Calendar
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground">
-          Plan sprint milestones, manage team leaves, and schedule delivery events.
+          Plan sprint milestones, manage team leaves, and schedule delivery
+          events.
         </p>
       </div>
 
@@ -604,14 +648,37 @@ export function CalendarPage() {
           open={addOpen}
           onOpenChange={setAddOpen}
           defaultDate={addDate}
-          onAddEvent={(ev) => setEvents((prev) => [...prev, ev])}
+          onAddEvent={async (ev) => {
+            setEvents((prev) => [...prev, ev]);
+            try {
+              const pad2 = (n: number) => String(n).padStart(2, "0");
+              const dateStr = `${ev.year}-${pad2(ev.month + 1)}-${pad2(ev.day)}`;
+              await api.calendar.createEvent({
+                title: ev.title,
+                description: ev.desc || undefined,
+                start_time: `${dateStr}T${ev.startTime || "09:00"}:00Z`,
+                end_time: `${dateStr}T${ev.endTime || "10:00"}:00Z`,
+                event_type: ev.category.toLowerCase() as any,
+              });
+            } catch {
+              /* ignore */
+            }
+          }}
         />
 
         <EventDetailsDialog
           event={selected}
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
-          onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
+          onDelete={async (id) => {
+            try {
+              await api.calendar.deleteEvent(id);
+              toast.success("Event deleted");
+            } catch {
+              /* ignore */
+            }
+            setEvents((prev) => prev.filter((e) => e.id !== id));
+          }}
           is24HourMode={false}
         />
 
@@ -619,7 +686,32 @@ export function CalendarPage() {
           open={leaveOpen}
           onOpenChange={setLeaveOpen}
           defaultDate={toISO(view === "day" ? cursor : today)}
-          onApplyLeave={(evs) => setEvents((prev) => [...prev, ...evs])}
+          onApplyLeave={async (evs) => {
+            setEvents((prev) => [...prev, ...evs]);
+            try {
+              if (evs.length > 0) {
+                const first = evs[0];
+                const pad2 = (n: number) => String(n).padStart(2, "0");
+                const startDateStr = `${first.year}-${pad2(first.month + 1)}-${pad2(first.day)}`;
+                const last = evs[evs.length - 1];
+                const endDateStr = `${last.year}-${pad2(last.month + 1)}-${pad2(last.day)}`;
+                const titleLower = (first.title || "").toLowerCase();
+                const leaveType = titleLower.includes("sick")
+                  ? "sick"
+                  : titleLower.includes("casual")
+                    ? "casual"
+                    : "vacation";
+                await api.calendar.createLeave({
+                  start_date: startDateStr,
+                  end_date: endDateStr,
+                  leave_type: leaveType,
+                  reason: first.title,
+                });
+              }
+            } catch {
+              /* ignore */
+            }
+          }}
         />
 
         <OverflowPopover

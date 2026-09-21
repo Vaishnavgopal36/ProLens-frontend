@@ -38,11 +38,14 @@ import type { Project, ProjectStatus } from "@/types/project";
 import { useAuth } from "@/app/providers";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { generateForwardQuarterOptions } from "@/lib/quarters";
 import {
   AttachmentUploadField,
   type AttachmentEntry,
 } from "@/features/projects/components/attachment-upload-field";
+import { generateForwardQuarterOptions } from "@/lib/quarters";
+import { api } from "@/lib/api";
+import { mapBackendProjectToProject } from "@/lib/mappers";
+import { toLocalISODate } from "@/lib/date";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -100,7 +103,7 @@ export function CreateProjectDialog({
     });
   }, [dateMode, selectedDate, quarterValue]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const newErrors: FormErrors = {};
@@ -113,46 +116,67 @@ export function CreateProjectDialog({
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-
       return;
     }
 
-    const newProject: Project = {
-      id: `proj-${Date.now()}`,
-      name: name.trim(),
-      client: client.trim(),
-      description:
-        description.trim() ||
-        "Next-generation enterprise workspace initiative.",
-      status,
-      lead: user?.name ?? "Lead Architect",
-      activeSprint: "Sprint 1: Planning",
-      dateRange: `Sep 2026 – ${formattedDueDate}`,
-      dueDate: formattedDueDate,
-      completionPercentage: 0,
-      estimatedHours: Number(estimatedHours) || 160,
-      loggedHours: 0,
-      tasksCount: 0,
-      coreFeaturesCount: 0,
-      pendingInvites: [],
-      members: [
-        {
-          id: user?.id ?? "usr-lead",
-          name: user?.name ?? "Vaishnav Gopal",
-          email: user?.email ?? "vaishnav@tarento.com",
-          initials: user?.initials ?? "VG",
-          role: user?.role ?? "manager",
-          designation: "Project Lead",
-          assignedTasksCount: 0,
-          assignedFeaturesCount: 0,
-          hoursLogged: 0,
-          status: "active",
-        },
-      ],
-    };
+    const backendStatus: "active" | "on_hold" | "completed" =
+      status === "ongoing"
+        ? "active"
+        : status === "pending"
+          ? "on_hold"
+          : "completed";
 
-    onCreateProject(newProject);
-    toast.success(`Project "${newProject.name}" created successfully.`);
+    try {
+      const created = await api.projects.create({
+        name: name.trim(),
+        client_name: client.trim() || undefined,
+        description: description.trim() || undefined,
+        end_date: selectedDate ? toLocalISODate(selectedDate) : undefined,
+      });
+      if (backendStatus !== "active") {
+        await api.projects.update(created.id, { status: backendStatus });
+      }
+      const newProject = mapBackendProjectToProject(created);
+      onCreateProject(newProject);
+      toast.success(`Project "${newProject.name}" created successfully.`);
+    } catch {
+      // Local fallback
+      const newProject: Project = {
+        id: `proj-${Date.now()}`,
+        name: name.trim(),
+        client: client.trim(),
+        description:
+          description.trim() ||
+          "Next-generation enterprise workspace initiative.",
+        status,
+        lead: user?.name ?? "Lead Architect",
+        activeSprint: "Sprint 1: Planning",
+        dateRange: `Sep 2026 – ${formattedDueDate}`,
+        dueDate: formattedDueDate,
+        completionPercentage: 0,
+        estimatedHours: Number(estimatedHours) || 160,
+        loggedHours: 0,
+        tasksCount: 0,
+        coreFeaturesCount: 0,
+        pendingInvites: [],
+        members: [
+          {
+            id: user?.id ?? "usr-lead",
+            name: user?.name ?? "Vaishnav Gopal",
+            email: user?.email ?? "vaishnav@tarento.com",
+            initials: user?.initials ?? "VG",
+            role: user?.role ?? "manager",
+            designation: "Project Lead",
+            assignedTasksCount: 0,
+            assignedFeaturesCount: 0,
+            hoursLogged: 0,
+            status: "active",
+          },
+        ],
+      };
+      onCreateProject(newProject);
+      toast.success(`Project "${newProject.name}" created successfully.`);
+    }
 
     // Reset form
     setName("");

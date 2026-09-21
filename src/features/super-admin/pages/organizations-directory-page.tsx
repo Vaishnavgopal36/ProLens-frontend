@@ -4,7 +4,6 @@ import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import {
   PageHeaderSkeleton,
   TableSkeleton,
@@ -19,11 +18,54 @@ import type {
   ProvisionOrganizationInput,
 } from "../api/types";
 
+import { api } from "@/lib/api";
+import { toast } from "sonner";
+
 export function OrganizationsDirectoryPage() {
-  const isLoading = useSimulatedLoading();
   const [organizations, setOrganizations] =
     React.useState<Organization[]>(MOCK_ORGANIZATIONS);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [provisionOpen, setProvisionOpen] = React.useState(false);
+
+  const loadOrganizations = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await api.organizations.list({
+        include_metrics: true,
+        include_audit_logs: true,
+      });
+
+      if (res.length > 0) {
+        const mapped: Organization[] = res.map((org) => {
+          const slug = org.domain
+            ? org.domain.split(".")[0]
+            : org.name.toLowerCase().replace(/\s+/g, "-");
+          return {
+            id: org.id,
+            name: org.name,
+            slug,
+            status: org.status === "active" ? "active" : "suspended",
+            primaryContact: {
+              name: "Organization Admin",
+              email: `admin@${org.domain || `${slug}.com`}`,
+            },
+            activeProjects: org.active_projects ?? 0,
+            totalMembers: org.total_members ?? 1,
+            createdAt: org.created_at.slice(0, 10),
+          };
+        });
+        setOrganizations(mapped);
+      }
+    } catch {
+      /* fallback to mock */
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadOrganizations();
+  }, [loadOrganizations]);
 
   // Ctrl/⌘ + K toggles "new organization".
   useModalHotkey({
@@ -46,21 +88,35 @@ export function OrganizationsDirectoryPage() {
     );
   };
 
-  const handleProvision = (input: ProvisionOrganizationInput) => {
-    const newOrg: Organization = {
-      id: `org-${Date.now()}`,
-      name: input.name,
-      slug: input.slug,
-      status: "active",
-      primaryContact: {
-        name: input.primaryAdminName,
-        email: input.primaryAdminEmail,
-      },
-      activeProjects: 0,
-      totalMembers: 1,
-      createdAt: toLocalISODate(),
-    };
-    setOrganizations((prev) => [newOrg, ...prev]);
+  const handleProvision = async (input: ProvisionOrganizationInput) => {
+    try {
+      const created = await api.organizations.create({
+        name: input.name,
+        domain: `${input.slug}.com`,
+        admin_email: input.primaryAdminEmail,
+        admin_first_name: input.primaryAdminName,
+      });
+
+      const newOrg: Organization = {
+        id: created.id,
+        name: created.name,
+        slug: input.slug,
+        status: "active",
+        primaryContact: {
+          name: input.primaryAdminName,
+          email: input.primaryAdminEmail,
+        },
+        activeProjects: 0,
+        totalMembers: 1,
+        createdAt: toLocalISODate(),
+      };
+      setOrganizations((prev) => [newOrg, ...prev]);
+      toast.success(`Organization "${created.name}" provisioned successfully`);
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to provision organization",
+      );
+    }
   };
 
   const inspectedTenant = inspectedOrgId

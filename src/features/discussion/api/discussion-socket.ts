@@ -26,10 +26,13 @@ export function connectDiscussionSocket(
   projectId: string,
   handlers: DiscussionSocketHandlers,
 ): DiscussionSocketConnection {
-  const base = import.meta.env.VITE_API_WS_BASE;
-  return base
-    ? connectReal(base, projectId, handlers)
-    : connectMock(projectId, handlers);
+  if (import.meta.env.VITE_USE_MOCK_WS === "true") {
+    return connectMock(projectId, handlers);
+  }
+  const base =
+    import.meta.env.VITE_API_WS_BASE ||
+    `${typeof window !== "undefined" && window.location.protocol === "https:" ? "wss:" : "ws:"}//${typeof window !== "undefined" ? window.location.host : "localhost:8000"}`;
+  return connectReal(base, projectId, handlers);
 }
 
 // ---------------------------------------------------------------------------

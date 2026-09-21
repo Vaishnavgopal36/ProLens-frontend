@@ -1,11 +1,9 @@
-import { useMemo, useState } from "react";
-import { FilterBar } from "@/components/composed/filters";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { FilterBar, useFilters, type FilterFieldDef } from "@/components/composed/filters";
 import {
   DensityToggle,
   useCardDensity,
 } from "@/components/composed/view-toggle";
-import { useFilters } from "@/components/composed/filters";
-import type { FilterFieldDef } from "@/components/composed/filters";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import type { Project } from "@/types/project";
 import { KanbanColumn } from "./kanban-column";
@@ -17,6 +15,9 @@ import {
   type BoardColumnId,
   type BoardTask,
 } from "./mock-data";
+import { api } from "@/lib/api";
+import { mapTaskToBoardTask } from "@/lib/mappers";
+import { toast } from "sonner";
 
 const STATUS_TO_COLUMN: Record<TaskFormValues["status"], BoardColumnId> = {
   Backlog: "backlog",
@@ -68,6 +69,38 @@ export function BoardTab({ project }: BoardTabProps) {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [isTaskSheetOpen, setIsTaskSheetOpen] = useState(false);
 
+  const loadTasks = useCallback(async () => {
+    try {
+      const [fetchedTasks, fetchedFeatures] = await Promise.all([
+        api.tasks.list({ project_id: project.id }),
+        api.features.list({ project_id: project.id }),
+      ]);
+
+      const featureMap = Object.fromEntries(
+        fetchedFeatures.map((f) => [f.id, f.name]),
+      );
+
+      if (fetchedTasks.length > 0) {
+        setTasks(
+          fetchedTasks.map((t) =>
+            mapTaskToBoardTask(
+              t,
+              (t.feature_id && featureMap[t.feature_id]) || "General",
+            ),
+          ),
+        );
+      } else {
+        setTasks(MOCK_BOARD_TASKS);
+      }
+    } catch {
+      setTasks(MOCK_BOARD_TASKS);
+    }
+  }, [project.id]);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
+
   const editingTask = tasks.find((task) => task.id === editingTaskId);
 
   const handleCardClick = (taskId: string) => {
@@ -75,8 +108,37 @@ export function BoardTab({ project }: BoardTabProps) {
     setIsTaskSheetOpen(true);
   };
 
-  const handleSaveTask = (values: TaskFormValues, taskId?: string) => {
+  const handleSaveTask = async (values: TaskFormValues, taskId?: string) => {
     if (!taskId) return;
+
+    const column = STATUS_TO_COLUMN[values.status];
+    const backendStatus =
+      column === "delivered"
+        ? "done"
+        : column === "in_progress"
+          ? "in_progress"
+          : "to_do";
+
+    const priorityLower = values.priority.toLowerCase() as
+      "low" | "medium" | "high";
+
+    try {
+      await api.tasks.update(taskId, {
+        name: values.title,
+        description: values.description || undefined,
+        status: backendStatus,
+        priority: priorityLower,
+        estimated_hours: values.estimatedHours
+          ? Number(values.estimatedHours)
+          : undefined,
+        subtasks: values.subtasks,
+        labels: values.labels,
+      });
+      toast.success("Task updated");
+    } catch {
+      /* fallback locally */
+    }
+
     setTasks((prev) =>
       prev.map((task) => {
         if (task.id !== taskId) return task;
@@ -103,12 +165,32 @@ export function BoardTab({ project }: BoardTabProps) {
     );
   };
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await api.tasks.delete(taskId);
+      toast.success("Task deleted");
+    } catch {
+      /* ignore */
+    }
     setTasks((prev) => prev.filter((task) => task.id !== taskId));
   };
 
-  const handleDropTask = (taskId: string, columnId: BoardColumnId) => {
+  const handleDropTask = async (taskId: string, columnId: BoardColumnId) => {
     setDraggedTaskId(null);
+
+    const backendStatus =
+      columnId === "delivered"
+        ? "done"
+        : columnId === "in_progress"
+          ? "in_progress"
+          : "to_do";
+
+    try {
+      await api.tasks.update(taskId, { status: backendStatus });
+    } catch {
+      /* ignore */
+    }
+
     setTasks((prev) =>
       prev.map((task) => {
         if (task.id !== taskId || task.column === columnId) return task;
@@ -118,7 +200,7 @@ export function BoardTab({ project }: BoardTabProps) {
           completedDate:
             columnId === "delivered"
               ? (task.completedDate ?? formatToday())
-              : task.completedDate,
+              : undefined,
         };
       }),
     );

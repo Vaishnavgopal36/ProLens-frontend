@@ -1,9 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FilterBar } from "@/components/composed/filters";
-import { useFilters } from "@/components/composed/filters";
-import type { FilterFieldDef } from "@/components/composed/filters";
+import { FilterBar, useFilters, type FilterFieldDef } from "@/components/composed/filters";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import {
   Table,
@@ -21,6 +19,9 @@ import {
   type TaskPriority,
   type TaskStatus,
 } from "./mock-data";
+import { api } from "@/lib/api";
+import { mapTaskToListTask } from "@/lib/mappers";
+import { toast } from "sonner";
 
 interface ListTabProps {
   project: Project;
@@ -65,6 +66,38 @@ export function ListTab({ project }: ListTabProps) {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [isTaskSheetOpen, setIsTaskSheetOpen] = useState(false);
 
+  const loadTasks = useCallback(async () => {
+    try {
+      const [fetchedTasks, fetchedFeatures] = await Promise.all([
+        api.tasks.list({ project_id: project.id }),
+        api.features.list({ project_id: project.id }),
+      ]);
+
+      const featureMap = Object.fromEntries(
+        fetchedFeatures.map((f) => [f.id, f.name]),
+      );
+
+      if (fetchedTasks.length > 0) {
+        setTasks(
+          fetchedTasks.map((t) =>
+            mapTaskToListTask(
+              t,
+              (t.feature_id && featureMap[t.feature_id]) || "General",
+            ),
+          ),
+        );
+      } else {
+        setTasks(MOCK_LIST_TASKS);
+      }
+    } catch {
+      setTasks(MOCK_LIST_TASKS);
+    }
+  }, [project.id]);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
+
   const editingTask = tasks.find((task) => task.id === editingTaskId);
 
   const viewer = useProjectViewer<ListTask>(project, (t) => t.assignee);
@@ -103,8 +136,36 @@ export function ListTab({ project }: ListTabProps) {
     setIsTaskSheetOpen(true);
   };
 
-  const handleSaveTask = (values: TaskFormValues, taskId?: string) => {
+  const handleSaveTask = async (values: TaskFormValues, taskId?: string) => {
     if (!taskId) return;
+
+    const backendStatus =
+      values.status === "Delivered"
+        ? "done"
+        : values.status === "In Progress"
+          ? "in_progress"
+          : "to_do";
+
+    const priorityLower = values.priority.toLowerCase() as
+      "low" | "medium" | "high";
+
+    try {
+      await api.tasks.update(taskId, {
+        name: values.title,
+        description: values.description || undefined,
+        status: backendStatus,
+        priority: priorityLower,
+        estimated_hours: values.estimatedHours
+          ? Number(values.estimatedHours)
+          : undefined,
+        subtasks: values.subtasks,
+        labels: values.labels,
+      });
+      toast.success("Task updated");
+    } catch {
+      /* fallback locally */
+    }
+
     setTasks((prev) =>
       prev.map((task) => {
         if (task.id !== taskId) return task;
@@ -124,8 +185,14 @@ export function ListTab({ project }: ListTabProps) {
     );
   };
 
-  const handleDeleteTask = (taskId: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await api.tasks.delete(taskId);
+      toast.success("Task deleted");
+    } catch {
+      /* ignore */
+    }
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
   };
 
   return (

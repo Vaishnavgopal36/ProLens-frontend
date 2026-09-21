@@ -13,11 +13,10 @@ import {
   LogOut,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useUI, useAuth } from "@/app/providers";
+import { useUI, useAuth, type UserRole } from "@/app/providers";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useSidebarHotkey } from "@/hooks/use-hotkey";
 import { useIsMobile } from "@/hooks/use-media-query";
-import type { UserRole } from "@/app/providers";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";

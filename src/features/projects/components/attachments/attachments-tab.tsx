@@ -13,6 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { Project } from "@/types/project";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
+import type { AttachmentRead } from "@/lib/api/types";
 
 type AttachmentScope =
   | { type: "project" }
@@ -162,25 +165,92 @@ interface AttachmentsTabProps {
   project: Project;
 }
 
-export function AttachmentsTab({ project: _project }: AttachmentsTabProps) {
+export function AttachmentsTab({ project }: AttachmentsTabProps) {
   const [path, setPath] = React.useState<FolderPath>({ level: "root" });
+  const [attachments, setAttachments] =
+    React.useState<AttachmentFile[]>(MOCK_ATTACHMENTS);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const loadAttachments = React.useCallback(async () => {
+    try {
+      const res = await api.attachments.list({ project_id: project.id });
+      if (res.length > 0) {
+        const mapped: AttachmentFile[] = res.map((a: AttachmentRead) => {
+          const kind = a.mime_type.includes("image")
+            ? "image"
+            : a.mime_type.includes("pdf")
+              ? "pdf"
+              : a.mime_type.includes("zip") || a.mime_type.includes("tar")
+                ? "zip"
+                : a.mime_type.includes("json") ||
+                    a.mime_type.includes("javascript")
+                  ? "code"
+                  : "doc";
+
+          const sizeKb = Math.round(a.size_bytes / 1024);
+          const sizeStr =
+            sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+
+          return {
+            id: a.id,
+            name: a.file_name,
+            size: sizeStr,
+            kind,
+            scope: { type: "project" },
+          };
+        });
+        setAttachments([...mapped, ...MOCK_ATTACHMENTS]);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [project.id]);
+
+  React.useEffect(() => {
+    loadAttachments();
+  }, [loadAttachments]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      toast.info(`Uploading ${file.name}...`);
+      await api.attachments.uploadFile(file, { project_id: project.id });
+      toast.success("File uploaded successfully");
+      await loadAttachments();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileClick = async (file: AttachmentFile) => {
+    try {
+      const { download_url } = await api.attachments.getDownloadUrl(file.id);
+      window.open(download_url, "_blank");
+    } catch {
+      toast.info(`Previewing ${file.name}`);
+    }
+  };
 
   // Distinct features that have at least one attachment (feature-level or
   // nested under one of their tasks), so empty features don't show a folder.
   const featureFolders = React.useMemo(() => {
     const features = new Set<string>();
-    for (const file of MOCK_ATTACHMENTS) {
+    for (const file of attachments) {
       if (file.scope.type === "feature" || file.scope.type === "task") {
         features.add(file.scope.feature);
       }
     }
     return Array.from(features);
-  }, []);
+  }, [attachments]);
 
   const taskFolders = React.useMemo(() => {
     if (path.level !== "feature") return [];
     const tasks = new Map<string, string>();
-    for (const file of MOCK_ATTACHMENTS) {
+    for (const file of attachments) {
       if (file.scope.type === "task" && file.scope.feature === path.feature) {
         tasks.set(file.scope.taskCode, file.scope.taskTitle);
       }
@@ -189,22 +259,22 @@ export function AttachmentsTab({ project: _project }: AttachmentsTabProps) {
       taskCode,
       taskTitle,
     }));
-  }, [path]);
+  }, [path, attachments]);
 
   const filesHere = React.useMemo(
-    () => MOCK_ATTACHMENTS.filter((f) => scopeMatchesFolder(f.scope, path)),
-    [path],
+    () => attachments.filter((f) => scopeMatchesFolder(f.scope, path)),
+    [path, attachments],
   );
 
   const countInFeature = (feature: string) =>
-    MOCK_ATTACHMENTS.filter(
+    attachments.filter(
       (f) =>
         (f.scope.type === "feature" || f.scope.type === "task") &&
         f.scope.feature === feature,
     ).length;
 
   const countInTask = (feature: string, taskCode: string) =>
-    MOCK_ATTACHMENTS.filter(
+    attachments.filter(
       (f) =>
         f.scope.type === "task" &&
         f.scope.feature === feature &&
@@ -213,6 +283,12 @@ export function AttachmentsTab({ project: _project }: AttachmentsTabProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+        className="hidden"
+      />
       <div className="rounded-xl border border-border-subtle bg-canvas-surface shadow-xs">
         <div className="flex items-center justify-between gap-3 p-4 pb-3">
           {/* Breadcrumb */}
@@ -226,7 +302,7 @@ export function AttachmentsTab({ project: _project }: AttachmentsTabProps) {
                   : "text-muted-foreground hover:text-foreground transition-colors"
               }
             >
-              Attachments
+              All Files
             </button>
 
             {path.level !== "root" && (
@@ -269,6 +345,7 @@ export function AttachmentsTab({ project: _project }: AttachmentsTabProps) {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => fileInputRef.current?.click()}
             className="h-8 gap-1.5 text-xs font-semibold bg-canvas-surface hover:bg-canvas-overlay shrink-0"
           >
             <Icon icon={Upload} size={15} />
@@ -320,6 +397,7 @@ export function AttachmentsTab({ project: _project }: AttachmentsTabProps) {
                   iconClassName={meta.className}
                   label={file.name}
                   meta={file.size}
+                  onClick={() => handleFileClick(file)}
                 />
               );
             })}

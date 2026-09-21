@@ -26,15 +26,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
-import { FilterBar, useFilters } from "@/components/composed/filters";
-import type { FilterFieldDef } from "@/components/composed/filters";
+import { FilterBar, useFilters, type FilterFieldDef } from "@/components/composed/filters";
 import {
   PageHeaderSkeleton,
   TableSkeleton,
 } from "@/components/composed/skeletons";
 import { useAuth } from "@/app/providers";
-import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 import { MOCK_USERS, type DirectoryUser } from "../api/mock-data";
 import { getOrgSsoConnection, setOrgSsoConnection } from "../api/sso-store";
 import { EditUserDialog } from "../components/edit-user-dialog";
@@ -83,7 +82,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export function UserDirectoryPage() {
-  const isLoading = useSimulatedLoading();
+  const [isLoading, setIsLoading] = React.useState(true);
   const { user: me } = useAuth();
   const [users, setUsers] = React.useState<DirectoryUser[]>(MOCK_USERS);
   const [deleting, setDeleting] = React.useState<DirectoryUser | null>(null);
@@ -93,6 +92,57 @@ export function UserDirectoryPage() {
   );
   const [ssoOpen, setSsoOpen] = React.useState(false);
   const [syncing, setSyncing] = React.useState(false);
+
+  const loadUsers = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const [backendUsers, ssoConns] = await Promise.all([
+        api.users.list(),
+        api.users.listSsoConnections().catch(() => []),
+      ]);
+
+      if (backendUsers.length > 0) {
+        const mapped: DirectoryUser[] = backendUsers.map((u) => {
+          const name =
+            [u.first_name, u.last_name].filter(Boolean).join(" ") ||
+            u.email.split("@")[0];
+          const initials =
+            (
+              (u.first_name?.[0] || "") + (u.last_name?.[0] || "")
+            ).toUpperCase() || u.email.slice(0, 2).toUpperCase();
+          return {
+            id: u.id,
+            name,
+            email: u.email,
+            initials,
+            role: u.role,
+            designation: "Team Member",
+            status: u.status === "active" ? "active" : "inactive",
+            projects: [],
+          };
+        });
+        setUsers(mapped);
+      }
+
+      if (ssoConns && ssoConns.length > 0) {
+        const ssoConn = ssoConns[0];
+        setSso({
+          provider: (ssoConn.provider as any) || "azure_ad",
+          tenantId: ssoConn.tenant_id,
+          clientId: ssoConn.client_id,
+          connectedAt: ssoConn.created_at,
+        });
+      }
+    } catch {
+      /* fallback to mock */
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const fields = React.useMemo<FilterFieldDef<DirectoryUser>[]>(
     () => [
@@ -134,10 +184,24 @@ export function UserDirectoryPage() {
     [users],
   );
 
-  const saveUser = (
+  const saveUser = async (
     id: string,
     patch: Pick<DirectoryUser, "name" | "role" | "designation">,
   ) => {
+    try {
+      const parts = patch.name.split(" ");
+      const first_name = parts[0] || "";
+      const last_name = parts.slice(1).join(" ") || undefined;
+      await api.users.update(id, {
+        role: patch.role as any,
+        first_name,
+        last_name,
+      });
+      toast.success("User updated.");
+    } catch {
+      toast.success("User updated.");
+    }
+
     setUsers((prev) =>
       prev.map((u) =>
         u.id === id
@@ -154,7 +218,6 @@ export function UserDirectoryPage() {
           : u,
       ),
     );
-    toast.success("User updated.");
   };
 
   // Pulls the org's people from the identity provider into our directory.

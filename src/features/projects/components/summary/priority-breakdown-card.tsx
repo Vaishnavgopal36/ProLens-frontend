@@ -1,8 +1,7 @@
 import { BarChart3, ChevronUp, Equal, ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
-import { MOCK_LIST_TASKS } from "@/features/projects/components/list/mock-data";
-import type { TaskPriority } from "@/features/projects/components/list/mock-data";
+import { MOCK_LIST_TASKS, type TaskPriority } from "@/features/projects/components/list/mock-data";
 import { cn } from "@/lib/utils";
 
 interface PriorityBreakdownCardProps {

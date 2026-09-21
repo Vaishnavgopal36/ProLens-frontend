@@ -101,6 +101,9 @@ export function useUI(): UIContextType {
 
 // --- Auth Context ---
 
+import { authApi } from "@/lib/api/auth";
+import type { CurrentUser } from "@/lib/api/types";
+
 export type UserRole = "employee" | "manager" | "admin" | "super_admin";
 
 export interface AuthUser {
@@ -110,15 +113,42 @@ export interface AuthUser {
   initials: string;
   avatarUrl?: string;
   role: UserRole;
+  designation?: string | null;
+  organizationId?: string | null;
 }
+
+export function mapCurrentUserToAuthUser(cu: CurrentUser): AuthUser {
+  const name =
+    [cu.first_name, cu.last_name].filter(Boolean).join(" ") ||
+    cu.email.split("@")[0];
+  const initials =
+    ((cu.first_name?.[0] || "") + (cu.last_name?.[0] || "")).toUpperCase() ||
+    cu.email.slice(0, 2).toUpperCase();
+  return {
+    id: cu.id,
+    name,
+    email: cu.email,
+    initials,
+    role: cu.role,
+    designation: cu.designation,
+    organizationId: cu.organization_id,
+  };
+}
+
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   /** remember=false keeps the session for this browser tab only. */
   setUser: (user: AuthUser | null, remember?: boolean) => void;
   /** Patch the signed-in user, keeping the session where it is stored. */
   updateUser: (patch: Partial<AuthUser>) => void;
-  logout: () => void;
+  signIn: (
+    email: string,
+    password: string,
+    remember?: boolean,
+  ) => Promise<AuthUser>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -140,6 +170,7 @@ function readStoredUser(): AuthUser | null {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Session persists across reloads; a fresh browser starts at /login.
   const [user, setUserState] = React.useState<AuthUser | null>(readStoredUser);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
   const setUser = React.useCallback(
     (next: AuthUser | null, remember: boolean = true) => {
@@ -160,6 +191,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  // Sync session with backend on mount
+  React.useEffect(() => {
+    let isMounted = true;
+    authApi
+      .getMe()
+      .then((currentUser) => {
+        if (!isMounted) return;
+        const authUser = mapCurrentUserToAuthUser(currentUser);
+        setUser(authUser, true);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        // If unauthenticated or token expired, clear user
+        setUserState(null);
+        try {
+          localStorage.removeItem(SESSION_KEY);
+          sessionStorage.removeItem(SESSION_KEY);
+        } catch {
+          /* ignore */
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [setUser]);
+
   const updateUser = React.useCallback((patch: Partial<AuthUser>) => {
     setUserState((prev) => {
       if (!prev) return prev;
@@ -176,15 +239,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const logout = React.useCallback(() => setUser(null), [setUser]);
+  const signIn = React.useCallback(
+    async (email: string, password: string, remember: boolean = true) => {
+      await authApi.login({ email, password });
+      const currentUser = await authApi.getMe();
+      const authUser = mapCurrentUserToAuthUser(currentUser);
+      setUser(authUser, remember);
+      return authUser;
+    },
+    [setUser],
+  );
+
+  const logout = React.useCallback(async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      /* ignore */
+    } finally {
+      setUser(null);
+    }
+  }, [setUser]);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         isAuthenticated: !!user,
+        isLoading,
         setUser,
         updateUser,
+        signIn,
         logout,
       }}
     >
