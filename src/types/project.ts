@@ -35,6 +35,8 @@ export interface Project {
   status: ProjectStatus;
   lead: string;
   activeSprint: string;
+  sprintCadenceWeeks?: number;
+  sprintGoal?: string;
   dateRange: string;
   dueDate: string;
   completionPercentage: number;

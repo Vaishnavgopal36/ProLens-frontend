@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { Folder, MoreVertical, Settings, Trash2 } from "lucide-react";
+import { Folder, MoreVertical, Settings, Timer, Trash2 } from "lucide-react";
 import type { Project } from "@/types/project";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Card } from "@/components/ui/card";
@@ -15,18 +15,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ProjectSettingsDialog } from "./project-settings-dialog";
+import { SprintSettingsDialog } from "./sprint-settings-dialog";
 import { DeleteProjectDialog } from "./delete-project-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface ProjectCardProps {
   project: Project;
+  /** "row" is the compact list layout; default is the full card. */
+  layout?: "card" | "row";
   onUpdateProject?: (updated: Project) => void;
   onDeleteProject?: (projectId: string) => void;
 }
 
 export function ProjectCard({
   project,
+  layout = "card",
   onUpdateProject,
   onDeleteProject,
 }: ProjectCardProps) {
@@ -34,6 +38,7 @@ export function ProjectCard({
   const { hasMinimumRole } = usePermissions();
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [sprintOpen, setSprintOpen] = React.useState(false);
 
   // Deleting a project is portfolio-lifecycle ownership — admin+ only.
   const canDeleteProject = hasMinimumRole("admin");
@@ -45,6 +50,92 @@ export function ProjectCard({
     onDeleteProject?.(project.id);
     toast.success(`Project "${project.name}" has been deleted.`);
   };
+
+  const actionsMenu = (
+    <div onClick={(e) => e.stopPropagation()}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="text-muted-foreground/60 hover:text-foreground p-1 rounded-md transition-colors outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            aria-label="Project actions"
+          >
+            <Icon icon={MoreVertical} size={16} />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuItem
+            onClick={() => setSettingsOpen(true)}
+            className="gap-2 cursor-pointer text-xs"
+          >
+            <Icon icon={Settings} size={14} />
+            <span>Project Settings</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setSprintOpen(true)}
+            className="gap-2 cursor-pointer text-xs"
+          >
+            <Icon icon={Timer} size={14} />
+            <span>Sprint Settings</span>
+          </DropdownMenuItem>
+
+          {canDeleteProject && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setDeleteDialogOpen(true)}
+                className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+              >
+                <Icon icon={Trash2} size={14} />
+                <span>Delete Project</span>
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+
+  const dialogs = (
+    <>
+      {/* Project & Sprint Settings Modal */}
+      <ProjectSettingsDialog
+        project={project}
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onUpdateProject={onUpdateProject}
+      />
+
+      <div className="contents" onClick={(e) => e.stopPropagation()}>
+        <SprintSettingsDialog
+          project={project}
+          open={sprintOpen}
+          onOpenChange={setSprintOpen}
+          onUpdateProject={onUpdateProject}
+        />
+        <DeleteProjectDialog
+          project={project}
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={handleDelete}
+        />
+      </div>
+    </>
+  );
+
+  if (layout === "row") {
+    return (
+      <>
+        <ProjectRow
+          project={project}
+          isOngoing={isOngoing}
+          actionsMenu={actionsMenu}
+          onOpen={() => navigate(`/projects/${project.id}`)}
+        />
+        {dialogs}
+      </>
+    );
+  }
 
   return (
     <>
@@ -67,41 +158,7 @@ export function ProjectCard({
               {project.status}
             </Badge>
 
-            <div onClick={(e) => e.stopPropagation()}>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="text-muted-foreground/60 hover:text-foreground p-1 rounded-md transition-colors outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    aria-label="Project actions"
-                  >
-                    <Icon icon={MoreVertical} size={16} />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44">
-                  <DropdownMenuItem
-                    onClick={() => setSettingsOpen(true)}
-                    className="gap-2 cursor-pointer text-xs"
-                  >
-                    <Icon icon={Settings} size={14} />
-                    <span>Project Settings</span>
-                  </DropdownMenuItem>
-
-                  {canDeleteProject && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => setDeleteDialogOpen(true)}
-                        className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
-                      >
-                        <Icon icon={Trash2} size={14} />
-                        <span>Delete Project</span>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            {actionsMenu}
           </div>
 
           {/* Project Title: Clamped to 2 lines max with break-words */}
@@ -203,25 +260,131 @@ export function ProjectCard({
         </div>
       </Card>
 
-      {/* Project & Sprint Settings Modal */}
-      <ProjectSettingsDialog
-        project={project}
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        onUpdateProject={onUpdateProject}
-      />
-
-      {/* The dialog is portaled, but React events still bubble to the card, so
-          stop clicks here from triggering the card's own navigation.
-          `contents` keeps this wrapper out of the parent grid's layout. */}
-      <div className="contents" onClick={(e) => e.stopPropagation()}>
-        <DeleteProjectDialog
-          project={project}
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          onConfirm={handleDelete}
-        />
-      </div>
+      {dialogs}
     </>
+  );
+}
+
+interface ProjectRowProps {
+  project: Project;
+  isOngoing: boolean;
+  actionsMenu: React.ReactNode;
+  onOpen: () => void;
+}
+
+/** One project as a compact row for the list layout. */
+function ProjectRow({
+  project,
+  isOngoing,
+  actionsMenu,
+  onOpen,
+}: ProjectRowProps) {
+  return (
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && e.target === e.currentTarget) onOpen();
+      }}
+      className="group grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 rounded-lg border border-border-subtle bg-canvas-surface px-4 py-3 transition-all duration-150 hover:border-border-strong hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:grid-cols-[minmax(0,2.2fr)_88px_minmax(120px,1.2fr)_minmax(0,1.6fr)_96px_auto]"
+    >
+      <div className="min-w-0">
+        <h3
+          title={project.name}
+          className="truncate text-sm font-semibold text-foreground transition-colors group-hover:text-teal-600 dark:group-hover:text-teal-400"
+        >
+          {project.name}
+        </h3>
+        <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+          <Icon
+            icon={Folder}
+            size={12}
+            className="shrink-0 text-muted-foreground/70"
+          />
+          <span className="truncate">{project.client}</span>
+          <span className="shrink-0">•</span>
+          <span className="shrink-0">Due {project.dueDate}</span>
+        </div>
+      </div>
+
+      <div className="order-last col-span-2 flex items-center justify-between gap-3 lg:order-none lg:contents">
+        <Badge
+          variant="outline"
+          className={cn(
+            "w-fit shrink-0 rounded-full border px-2 py-0.5 text-3xs font-bold uppercase tracking-wider",
+            isOngoing
+              ? "border-teal-500/40 bg-teal-500/10 text-teal-600 dark:text-teal-400"
+              : "border-gold-500/40 bg-gold-500/10 text-gold-600 dark:text-gold-400",
+          )}
+        >
+          {project.status}
+        </Badge>
+
+        <div className="hidden min-w-0 space-y-1 lg:block">
+          <div className="flex justify-between text-2xs">
+            <span className="font-medium text-muted-foreground">
+              Completion
+            </span>
+            <span className="font-semibold tabular-nums text-foreground">
+              {project.completionPercentage}%
+            </span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className={cn(
+                "h-full rounded-full",
+                isOngoing ? "bg-teal-500" : "bg-gold-500",
+              )}
+              style={{ width: `${project.completionPercentage}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="flex min-w-0 items-center gap-4 text-xs tabular-nums text-muted-foreground">
+          <span>
+            <span className="font-semibold text-foreground">
+              {project.estimatedHours}h
+            </span>{" "}
+            est
+          </span>
+          <span>
+            <span className="font-semibold text-teal-600 dark:text-teal-400">
+              {project.loggedHours}h
+            </span>{" "}
+            logged
+          </span>
+          <span>
+            <span className="font-semibold text-foreground">
+              {project.tasksCount}
+            </span>{" "}
+            tasks
+          </span>
+        </div>
+
+        <div className="flex -space-x-1.5 overflow-hidden">
+          {project.members.slice(0, 3).map((member) => (
+            <Avatar
+              key={member.id}
+              className="h-6 w-6 border-2 border-canvas-surface ring-1 ring-border-subtle"
+            >
+              <AvatarImage src={member.avatarUrl} alt={member.name} />
+              <AvatarFallback className="bg-navy-500 text-4xs font-bold text-white dark:bg-foreground dark:text-background">
+                {member.initials}
+              </AvatarFallback>
+            </Avatar>
+          ))}
+          {project.members.length > 3 && (
+            <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-canvas-surface bg-muted text-4xs font-bold text-muted-foreground">
+              +{project.members.length - 3}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="row-start-1 col-start-2 lg:row-auto lg:col-auto">
+        {actionsMenu}
+      </div>
+    </div>
   );
 }

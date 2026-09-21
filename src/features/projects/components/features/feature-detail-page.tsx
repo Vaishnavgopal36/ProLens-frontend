@@ -1,6 +1,13 @@
 import * as React from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { Check, ChevronDown, ChevronRight, Layers } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Layers,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
@@ -9,14 +16,14 @@ import type { FilterFieldDef } from "@/components/composed/filters";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import { cn } from "@/lib/utils";
 import { PRIORITY_BADGE_CLASSES } from "@/features/projects/lib/badge-styles";
-import { useProjectViewer } from "../hooks/use-project-filter-fields";
-import { MOCK_PROJECTS } from "../api/mock-data";
-import { MOCK_FEATURE_STREAMS } from "../components/features/mock-data";
+import { useProjectViewer } from "../../hooks/use-project-filter-fields";
+import { MOCK_PROJECTS } from "../../api/mock-data";
+import { MOCK_FEATURE_STREAMS } from "./mock-data";
 import {
   SUBTASKS_BY_TASK,
   TASKS_BY_FEATURE,
   type FeatureTask,
-} from "../components/features/task-mock-data";
+} from "./task-mock-data";
 import {
   PageHeaderSkeleton,
   TableSkeleton,
@@ -107,6 +114,9 @@ export function FeatureDetailPage() {
   );
   const subTotal = scopedTasks.reduce((n, t) => n + subtasksOf(t).length, 0);
   const tasksDone = scopedTasks.filter((t) => t.status === "Done").length;
+
+  const allCollapsed =
+    tasks.length > 0 && tasks.every((t) => collapsed.has(t.id));
 
   const toggle = (id: string) =>
     setCollapsed((prev) => {
@@ -216,7 +226,25 @@ export function FeatureDetailPage() {
         </div>
       </Card>
 
-      <FilterBar filters={filters} searchPlaceholder="Search tasks..." />
+      <FilterBar filters={filters} searchPlaceholder="Search tasks...">
+        {tasks.some((t) => subtasksOf(t).length > 0) && (
+          <button
+            type="button"
+            onClick={() =>
+              setCollapsed(
+                allCollapsed ? new Set() : new Set(tasks.map((t) => t.id)),
+              )
+            }
+            className="flex h-8 items-center gap-1.5 rounded-md border border-border-subtle bg-canvas-surface px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Icon
+              icon={allCollapsed ? ChevronsUpDown : ChevronsDownUp}
+              size={14}
+            />
+            {allCollapsed ? "Expand all" : "Collapse all"}
+          </button>
+        )}
+      </FilterBar>
 
       {tasks.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border-subtle p-6 text-center text-xs text-muted-foreground">

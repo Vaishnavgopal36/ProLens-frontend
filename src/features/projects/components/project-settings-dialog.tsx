@@ -2,8 +2,6 @@ import * as React from "react";
 import {
   Calendar as CalendarIcon,
   Sliders,
-  Target,
-  Timer,
   ChevronDown,
   Building2,
   FileText,
@@ -100,11 +98,6 @@ export function ProjectSettingsDialog({
   );
 
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
-  const [sprintGoal, setSprintGoal] = React.useState(
-    "Complete sprint deliverables and pass regression QA",
-  );
-  const [cadence, setCadence] = React.useState("2");
-  const [activeSprint, setActiveSprint] = React.useState(project.activeSprint);
   const [estimatedHours, setEstimatedHours] = React.useState(
     project.estimatedHours.toString(),
   );
@@ -123,7 +116,6 @@ export function ProjectSettingsDialog({
     setDescription(project.description);
     setStatus(project.status);
     setEstimatedHours(project.estimatedHours.toString());
-    setActiveSprint(project.activeSprint);
     setErrors({});
   }, [project]);
 
@@ -157,7 +149,6 @@ export function ProjectSettingsDialog({
       client: client.trim(),
       description: description.trim(),
       status,
-      activeSprint,
       dueDate: formattedDueDate,
       estimatedHours: Number(estimatedHours),
     };
@@ -178,11 +169,10 @@ export function ProjectSettingsDialog({
             </div>
             <div>
               <ModalTitle className="text-base font-semibold">
-                Project &amp; Sprint Settings
+                Project Settings
               </ModalTitle>
               <ModalDescription className="text-xs">
-                Update core project identity, sprint cadence, and delivery
-                commitments.
+                Update core project identity and delivery commitments.
               </ModalDescription>
             </div>
           </div>
@@ -264,74 +254,6 @@ export function ProjectSettingsDialog({
                   disabled={!isManager}
                   className="w-full rounded-md border border-input bg-canvas-surface px-2.5 py-1.5 pl-8 text-xs text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                 />
-              </div>
-            </div>
-
-            {/* Sprint Settings Section */}
-            <div className="space-y-2.5 rounded-lg border border-border-subtle bg-canvas-bg/50 p-3">
-              <div className="flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <Icon icon={Timer} size={13} />
-                <span>Sprint Configuration</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="space-y-1">
-                  <Label htmlFor="cadence" className="text-xs">
-                    Sprint Cadence
-                  </Label>
-                  <Select
-                    value={cadence}
-                    onValueChange={setCadence}
-                    disabled={!isManager}
-                  >
-                    <SelectTrigger
-                      id="cadence"
-                      className="h-8 text-xs bg-canvas-surface"
-                    >
-                      <SelectValue placeholder="Select cycle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 Week Sprints</SelectItem>
-                      <SelectItem value="2">2 Weeks (Standard)</SelectItem>
-                      <SelectItem value="3">3 Weeks</SelectItem>
-                      <SelectItem value="4">4 Weeks (Monthly)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="sprint-status" className="text-xs">
-                    Active Sprint
-                  </Label>
-                  <Input
-                    id="sprint-status"
-                    value={activeSprint}
-                    onChange={(e) => setActiveSprint(e.target.value)}
-                    disabled={!isManager}
-                    className="h-8 text-xs bg-canvas-surface"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="goal" className="text-xs">
-                  Current Sprint Target
-                </Label>
-                <div className="relative">
-                  <Icon
-                    icon={Target}
-                    size={13}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    id="goal"
-                    value={sprintGoal}
-                    onChange={(e) => setSprintGoal(e.target.value)}
-                    disabled={!isManager}
-                    className="h-8 pl-8 text-xs bg-canvas-surface"
-                    placeholder="State primary deliverable target..."
-                  />
-                </div>
               </div>
             </div>
 

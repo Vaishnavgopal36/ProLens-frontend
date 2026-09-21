@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
 import { FilterBar } from "@/components/composed/filters";
+import {
+  DensityToggle,
+  useCardDensity,
+} from "@/components/composed/view-toggle";
 import { useFilters } from "@/components/composed/filters";
 import type { FilterFieldDef } from "@/components/composed/filters";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
@@ -141,6 +145,7 @@ export function BoardTab({ project }: BoardTabProps) {
     [t.title, t.code, t.description ?? ""].join(" "),
   );
   const filteredTasks = filters.filtered;
+  const [density, setDensity] = useCardDensity("board");
 
   return (
     <div className="flex flex-col gap-4">
@@ -148,9 +153,10 @@ export function BoardTab({ project }: BoardTabProps) {
         filters={filters}
         searchPlaceholder={`Search cards, tasks in ${project.name}...`}
       >
-        <span className="text-xs text-muted-foreground">
+        <span className="hidden text-xs text-muted-foreground lg:inline">
           Drag cards across columns (long-press on touch)
         </span>
+        <DensityToggle value={density} onChange={setDensity} />
       </FilterBar>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
@@ -158,6 +164,7 @@ export function BoardTab({ project }: BoardTabProps) {
           <KanbanColumn
             key={column.id}
             column={column}
+            density={density}
             tasks={filteredTasks.filter((task) => task.column === column.id)}
             draggedTaskId={draggedTaskId}
             onDragStart={setDraggedTaskId}

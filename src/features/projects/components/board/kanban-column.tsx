@@ -6,6 +6,7 @@ import type { BoardColumnId, BoardColumnMeta, BoardTask } from "./mock-data";
 interface KanbanColumnProps {
   column: BoardColumnMeta;
   tasks: BoardTask[];
+  density?: "compact" | "expanded";
   draggedTaskId: string | null;
   onDragStart: (taskId: string) => void;
   onDragEnd: () => void;
@@ -19,6 +20,7 @@ interface KanbanColumnProps {
 export function KanbanColumn({
   column,
   tasks,
+  density,
   draggedTaskId,
   onDragStart,
   onDragEnd,
@@ -73,6 +75,7 @@ export function KanbanColumn({
               key={task.id}
               task={task}
               isDelivered={column.id === "delivered"}
+              density={density}
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
               onClick={onCardClick}

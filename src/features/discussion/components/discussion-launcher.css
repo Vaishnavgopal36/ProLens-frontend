@@ -1,0 +1,250 @@
+/*
+ * Floating discussion launcher: five stacked circles that, on hover/focus,
+ * tilt, fan out diagonally and morph into accent-filled rounded squares while
+ * the label slides in and a status card floats up. Adapted from a Uiverse
+ * "tooltip-container" design, recoloured with the app's tokens.
+ */
+.pl-discuss {
+  --pl-accent: var(--teal-500);
+  --pl-surface: var(--canvas-surface);
+  --pl-line: var(--border-subtle);
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+/* Draggable: no scroll-jacking on touch, no text selection while dragging. */
+.pl-discuss {
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+.pl-discuss[data-dragging="true"] {
+  cursor: grabbing;
+}
+.pl-discuss[data-dragging="true"] .pl-discuss__tooltip,
+.pl-discuss[data-dragging="true"] .pl-discuss__label {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Tooltip flips when the launcher is near the top / left edge. */
+.pl-discuss[data-below="true"] .pl-discuss__tooltip {
+  bottom: auto;
+  top: calc(100% + 1rem);
+  transform: translateY(-0.5rem);
+}
+.pl-discuss[data-left="true"] .pl-discuss__tooltip {
+  right: auto;
+  left: 0;
+}
+
+.pl-discuss__btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  cursor: pointer;
+  outline: none;
+}
+
+.pl-discuss__btn:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 6px;
+}
+
+.pl-discuss__layer {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.3s;
+}
+
+.pl-discuss__layer > span {
+  position: absolute;
+  inset: 0;
+  padding: 0.5rem;
+  border: 2px solid var(--pl-accent);
+  border-radius: 9999px;
+  background: var(--pl-surface);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+  transition:
+    transform 0.3s,
+    opacity 0.3s,
+    border-radius 0.3s,
+    background-color 0.3s;
+}
+
+/* Only the top layer carries the mark; the rest are the "stack". */
+.pl-discuss__layer > span:not(:last-child) {
+  box-shadow: none;
+}
+
+.pl-discuss__mark {
+  width: 100%;
+  height: 100%;
+}
+
+.pl-discuss__label {
+  position: absolute;
+  left: 50%;
+  top: calc(100% - 0.25rem);
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--pl-accent);
+  transition:
+    top 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.pl-discuss__tooltip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 1rem);
+  width: 13.5rem;
+  padding: 0.625rem;
+  border: 1px solid var(--pl-line);
+  border-radius: 0.75rem;
+  background: var(--pl-surface);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(0.5rem);
+  transition:
+    opacity 0.3s,
+    transform 0.3s,
+    visibility 0.3s;
+}
+
+/* Active state: pointer hover on hover-capable devices, or keyboard focus. */
+@media (hover: hover) {
+  .pl-discuss:not([data-open="true"]):hover .pl-discuss__layer > span {
+    border-radius: 0.625rem;
+    background: var(--pl-accent);
+  }
+  .pl-discuss:not([data-open="true"]):hover .pl-discuss__mark path,
+  .pl-discuss:not([data-open="true"]):hover .pl-discuss__mark polygon {
+    fill: #fff;
+  }
+  .pl-discuss:not([data-open="true"]):hover .pl-discuss__label {
+    top: calc(100% + 0.375rem);
+    opacity: 1;
+  }
+  .pl-discuss:not([data-open="true"]):hover .pl-discuss__tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.pl-discuss:not([data-open="true"]):has(:focus-visible)
+  .pl-discuss__layer
+  > span {
+  border-radius: 0.625rem;
+  background: var(--pl-accent);
+}
+.pl-discuss:not([data-open="true"]):has(:focus-visible) .pl-discuss__mark path,
+.pl-discuss:not([data-open="true"]):has(:focus-visible)
+  .pl-discuss__mark
+  polygon {
+  fill: #fff;
+}
+.pl-discuss:not([data-open="true"]):has(:focus-visible) .pl-discuss__label {
+  top: calc(100% + 0.375rem);
+  opacity: 1;
+}
+.pl-discuss:not([data-open="true"]):has(:focus-visible) .pl-discuss__tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Fan-out motion: skipped entirely for reduced-motion users. */
+@media (prefers-reduced-motion: no-preference) {
+  @media (hover: hover) {
+    .pl-discuss:not([data-open="true"]):hover .pl-discuss__layer {
+      transform: rotate(-35deg) skew(20deg);
+    }
+    .pl-discuss:not([data-open="true"]):hover
+      .pl-discuss__layer
+      > span:nth-child(1) {
+      opacity: 0.2;
+    }
+    .pl-discuss:not([data-open="true"]):hover
+      .pl-discuss__layer
+      > span:nth-child(2) {
+      opacity: 0.4;
+      transform: translate(4px, -4px);
+    }
+    .pl-discuss:not([data-open="true"]):hover
+      .pl-discuss__layer
+      > span:nth-child(3) {
+      opacity: 0.6;
+      transform: translate(8px, -8px);
+    }
+    .pl-discuss:not([data-open="true"]):hover
+      .pl-discuss__layer
+      > span:nth-child(4) {
+      opacity: 0.8;
+      transform: translate(12px, -12px);
+    }
+    .pl-discuss:not([data-open="true"]):hover
+      .pl-discuss__layer
+      > span:nth-child(5) {
+      opacity: 1;
+      transform: translate(16px, -16px);
+    }
+  }
+  .pl-discuss:not([data-open="true"]):has(:focus-visible) .pl-discuss__layer {
+    transform: rotate(-35deg) skew(20deg);
+  }
+  .pl-discuss:not([data-open="true"]):has(:focus-visible)
+    .pl-discuss__layer
+    > span:nth-child(1) {
+    opacity: 0.2;
+  }
+  .pl-discuss:not([data-open="true"]):has(:focus-visible)
+    .pl-discuss__layer
+    > span:nth-child(2) {
+    opacity: 0.4;
+    transform: translate(4px, -4px);
+  }
+  .pl-discuss:not([data-open="true"]):has(:focus-visible)
+    .pl-discuss__layer
+    > span:nth-child(3) {
+    opacity: 0.6;
+    transform: translate(8px, -8px);
+  }
+  .pl-discuss:not([data-open="true"]):has(:focus-visible)
+    .pl-discuss__layer
+    > span:nth-child(4) {
+    opacity: 0.8;
+    transform: translate(12px, -12px);
+  }
+  .pl-discuss:not([data-open="true"]):has(:focus-visible)
+    .pl-discuss__layer
+    > span:nth-child(5) {
+    opacity: 1;
+    transform: translate(16px, -16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-discuss__layer,
+  .pl-discuss__layer > span,
+  .pl-discuss__label,
+  .pl-discuss__tooltip {
+    transition: none;
+  }
+}
+
+/* Touch devices have no hover: never show the floating card there. */
+@media (hover: none) {
+  .pl-discuss__tooltip {
+    display: none;
+  }
+}

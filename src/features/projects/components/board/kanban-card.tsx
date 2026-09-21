@@ -20,6 +20,8 @@ import { PRIORITY_BADGE_CLASSES } from "@/features/projects/lib/badge-styles";
 interface KanbanCardProps {
   task: BoardTask;
   isDelivered: boolean;
+  /** Compact hides the description, due date and subtask progress. */
+  density?: "compact" | "expanded";
   onDragStart: (taskId: string) => void;
   onDragEnd: () => void;
   onClick: (taskId: string) => void;
@@ -31,6 +33,7 @@ interface KanbanCardProps {
 export function KanbanCard({
   task,
   isDelivered,
+  density = "expanded",
   onDragStart,
   onDragEnd,
   onClick,
@@ -52,6 +55,7 @@ export function KanbanCard({
     },
   });
 
+  const compact = density === "compact";
   const hasSubtasks =
     typeof task.subtasksDone === "number" &&
     typeof task.subtasksTotal === "number" &&
@@ -165,13 +169,13 @@ export function KanbanCard({
         {task.title}
       </h4>
 
-      {task.description && (
+      {!compact && task.description && (
         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
           {task.description}
         </p>
       )}
 
-      {isDelivered ? (
+      {compact ? null : isDelivered ? (
         task.completedDate && (
           <div className="flex items-center gap-1.5 mt-3 text-xs text-teal-600 dark:text-teal-400">
             <Icon icon={CheckCircle2} size={13} />
@@ -212,7 +216,12 @@ export function KanbanCard({
         </>
       )}
 
-      <div className="flex items-center justify-between pt-3 mt-3 border-t border-border-subtle text-xs">
+      <div
+        className={cn(
+          "flex items-center justify-between border-t border-border-subtle text-xs",
+          compact ? "pt-2 mt-2" : "pt-3 mt-3",
+        )}
+      >
         <span className="tabular-nums text-2xs font-semibold text-muted-foreground/70">
           {task.code}
         </span>

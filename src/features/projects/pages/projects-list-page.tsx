@@ -9,6 +9,7 @@ import type { Project, ProjectFilterTab } from "@/types/project";
 import { MOCK_PROJECTS } from "@/features/projects/api/mock-data";
 import { ProjectCard } from "@/features/projects/components/project-card";
 import { ProjectFilters } from "@/features/projects/components/project-filters";
+import { ViewToggle, useViewLayout } from "@/components/composed/view-toggle";
 import { CreateProjectDialog } from "@/features/projects/components/create-project-dialog";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import {
@@ -24,6 +25,7 @@ export function ProjectsListPage() {
     React.useState<ProjectFilterTab>("all");
   const [projects, setProjects] = React.useState<Project[]>(MOCK_PROJECTS);
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
+  const [layout, setLayout] = useViewLayout("projects");
 
   // Creating/deleting projects is portfolio-lifecycle ownership — reserved
   // for admins, not managers (who run day-to-day delivery on projects
@@ -113,6 +115,8 @@ export function ProjectsListPage() {
             />
           </div>
 
+          <ViewToggle value={layout} onChange={setLayout} />
+
           {canManageProjects && (
             <Button
               variant="default"
@@ -127,11 +131,18 @@ export function ProjectsListPage() {
         </div>
       </div>
 
-      {/* 3-Column Portfolio Card Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* Portfolio: card grid or compact list */}
+      <div
+        className={
+          layout === "cards"
+            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+            : "flex flex-col gap-2"
+        }
+      >
         {filteredProjects.map((project) => (
           <ProjectCard
             key={project.id}
+            layout={layout === "cards" ? "card" : "row"}
             project={project}
             onUpdateProject={handleUpdateProject}
             onDeleteProject={handleDeleteProject}

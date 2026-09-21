@@ -5,10 +5,14 @@ import {
   Briefcase,
   ChevronRight,
   MoreHorizontal,
+  Settings,
+  Timer,
   Trash2,
 } from "lucide-react";
 import { usePermissions } from "@/hooks/use-permissions";
 import { DeleteProjectDialog } from "./delete-project-dialog";
+import { ProjectSettingsDialog } from "./project-settings-dialog";
+import { SprintSettingsDialog } from "./sprint-settings-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
@@ -26,16 +30,20 @@ interface WorkspaceHeaderProps {
   project: Project;
   onAddFeature?: () => void;
   onAddTask?: () => void;
+  onUpdateProject?: (updated: Project) => void;
 }
 
 export function WorkspaceHeader({
   project,
   onAddFeature,
   onAddTask,
+  onUpdateProject,
 }: WorkspaceHeaderProps) {
   const { hasMinimumRole } = usePermissions();
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [sprintOpen, setSprintOpen] = React.useState(false);
 
   // Day-to-day work (features/tasks) is a manager-level capability; deleting
   // the project itself is portfolio-lifecycle ownership, reserved for admins.
@@ -135,6 +143,16 @@ export function WorkspaceHeader({
               {canManageWork && (
                 <>
                   <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSprintOpen(true)}
+                    className="h-8 gap-1.5 text-xs font-semibold"
+                  >
+                    <Icon icon={Timer} size={14} />
+                    <span>Sprint Settings</span>
+                  </Button>
+
+                  <Button
                     variant="sweep"
                     size="sm"
                     onClick={onAddFeature}
@@ -156,7 +174,7 @@ export function WorkspaceHeader({
                 </>
               )}
 
-              {canDeleteProject && (
+              {canManageWork && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -170,12 +188,21 @@ export function WorkspaceHeader({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-44">
                     <DropdownMenuItem
-                      onClick={() => setDeleteDialogOpen(true)}
-                      className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+                      onClick={() => setSettingsOpen(true)}
+                      className="gap-2 cursor-pointer text-xs"
                     >
-                      <Icon icon={Trash2} size={14} />
-                      <span>Delete Project</span>
+                      <Icon icon={Settings} size={14} />
+                      <span>Project Settings</span>
                     </DropdownMenuItem>
+                    {canDeleteProject && (
+                      <DropdownMenuItem
+                        onClick={() => setDeleteDialogOpen(true)}
+                        className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive"
+                      >
+                        <Icon icon={Trash2} size={14} />
+                        <span>Delete Project</span>
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -183,6 +210,20 @@ export function WorkspaceHeader({
           )}
         </div>
       </div>
+
+      <ProjectSettingsDialog
+        project={project}
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onUpdateProject={onUpdateProject}
+      />
+
+      <SprintSettingsDialog
+        project={project}
+        open={sprintOpen}
+        onOpenChange={setSprintOpen}
+        onUpdateProject={onUpdateProject}
+      />
 
       <DeleteProjectDialog
         project={project}

@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTabKeyCycle } from "@/hooks/use-tab-key-cycle";
 import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Icon } from "@/components/ui/icon";
+import type { Project } from "@/types/project";
 import { MOCK_PROJECTS } from "@/features/projects/api/mock-data";
 import { WorkspaceHeader } from "@/features/projects/components/workspace-header";
 import { TeamsTab } from "@/features/projects/components/teams-tab";
@@ -30,6 +31,7 @@ import { ReportsTab } from "@/features/projects/components/reports/reports-tab";
 import { TimeTab } from "@/features/projects/components/time/time-tab";
 import { AddTaskDialog } from "@/features/projects/components/add-task-dialog";
 import { AddFeatureDialog } from "@/features/projects/components/add-feature-dialog";
+import { ProjectDiscussion } from "@/features/discussion";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import { usePermissions } from "@/hooks/use-permissions";
 import {
@@ -53,7 +55,7 @@ const WORKSPACE_TABS = [
   { value: "board", label: "Board", icon: Kanban, managerOnly: false },
   { value: "teams", label: "Teams", icon: Users, managerOnly: false },
   { value: "features", label: "Features", icon: Layers, managerOnly: false },
-  { value: "list", label: "List", icon: ListFilter, managerOnly: false },
+  { value: "list", label: "Tasks", icon: ListFilter, managerOnly: false },
   { value: "calendar", label: "Calendar", icon: Calendar, managerOnly: false },
   { value: "timeline", label: "Timeline", icon: Clock, managerOnly: false },
   {
@@ -107,9 +109,13 @@ export function ProjectDetailPage() {
     disabled: !hasMinimumRole("manager") || ownsHotkey,
   });
 
+  // Edits from the settings dialogs are kept on top of the stored project
+  // until the API is wired up.
+  const [projectPatch, setProjectPatch] = React.useState<Partial<Project>>({});
   const project = React.useMemo(() => {
-    return MOCK_PROJECTS.find((p) => p.id === projectId);
-  }, [projectId]);
+    const base = MOCK_PROJECTS.find((p) => p.id === projectId);
+    return base ? { ...base, ...projectPatch } : undefined;
+  }, [projectId, projectPatch]);
 
   if (!project) {
     return <Navigate to="/projects" replace />;
@@ -141,6 +147,7 @@ export function ProjectDetailPage() {
       {/* Workspace Meta Header */}
       <WorkspaceHeader
         project={project}
+        onUpdateProject={setProjectPatch}
         onAddFeature={() => setAddFeatureOpen(true)}
         onAddTask={() => setAddTaskOpen(true)}
       />
@@ -244,6 +251,9 @@ export function ProjectDetailPage() {
         open={addFeatureOpen}
         onOpenChange={setAddFeatureOpen}
       />
+
+      {/* Floating project discussion, available on every tab */}
+      <ProjectDiscussion project={project} />
     </div>
   );
 }
