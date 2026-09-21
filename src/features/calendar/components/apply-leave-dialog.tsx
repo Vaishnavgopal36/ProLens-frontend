@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/app/providers";
-import { cn } from "@/lib/utils";
 import { CATEGORY_COLOR_MAP } from "../api/mock-data";
 import type { CalendarEvent } from "@/types/calendar";
 
