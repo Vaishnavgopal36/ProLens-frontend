@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, useSearchParams, Navigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Kanban,
@@ -71,7 +71,13 @@ export function ProjectDetailPage() {
   const { hasMinimumRole } = usePermissions();
   const isLoading = useSimulatedLoading();
   // 1. Declare activeTab and setActiveTab state
-  const [activeTab, setActiveTab] = React.useState("summary");
+  const [searchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = React.useState(
+    WORKSPACE_TABS.some((t) => t.value === requestedTab)
+      ? (requestedTab as string)
+      : "summary",
+  );
 
   const visibleTabs = WORKSPACE_TABS.filter(
     (tab) => !tab.managerOnly || hasMinimumRole("manager"),

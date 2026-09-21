@@ -2,7 +2,11 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/app/app-shell";
 import { RequireAuth, RequirePermission } from "@/app/require-auth";
 import { LoginPage } from "@/features/auth";
-import { ProjectsListPage, ProjectDetailPage } from "@/features/projects";
+import {
+  ProjectsListPage,
+  ProjectDetailPage,
+  FeatureDetailPage,
+} from "@/features/projects";
 import { DashboardPage } from "@/features/dashboard";
 import { OrgInsightsPage, MyInsightsPage } from "@/features/org-insights";
 import { TimesheetPage } from "@/features/timesheets";
@@ -50,6 +54,10 @@ export const router = createBrowserRouter([
               {
                 path: ":projectId",
                 element: <ProjectDetailPage />,
+              },
+              {
+                path: ":projectId/features/:featureId",
+                element: <FeatureDetailPage />,
               },
             ],
           },

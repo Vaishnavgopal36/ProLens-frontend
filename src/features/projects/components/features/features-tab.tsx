@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { Layers } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,6 @@ import { FilterBar, useFilters } from "@/components/composed/filters";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import { TASKS_BY_FEATURE } from "./task-mock-data";
 import { MOCK_FEATURE_STREAMS, type FeatureStream } from "./mock-data";
-import { FeatureDetailDialog } from "./feature-detail-dialog";
 
 interface FeaturesTabProps {
   project: Project;
@@ -32,10 +32,9 @@ export function FeaturesTab({ project }: FeaturesTabProps) {
     [f.name, f.description].join(" "),
   );
   const streams = filters.filtered;
-
-  const [selectedFeature, setSelectedFeature] =
-    React.useState<FeatureStream | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const openFeature = (stream: FeatureStream) =>
+    navigate(`/projects/${project.id}/features/${stream.id}`);
 
   return (
     <div className="flex flex-col gap-4">
@@ -65,15 +64,11 @@ export function FeaturesTab({ project }: FeaturesTabProps) {
                 key={stream.id}
                 role="button"
                 tabIndex={0}
-                onClick={() => {
-                  setSelectedFeature(stream);
-                  setIsDetailOpen(true);
-                }}
+                onClick={() => openFeature(stream)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    setSelectedFeature(stream);
-                    setIsDetailOpen(true);
+                    openFeature(stream);
                   }
                 }}
                 className={`group flex cursor-pointer flex-col justify-between p-5 shadow-xs transition hover:shadow-md ${
@@ -151,12 +146,6 @@ export function FeaturesTab({ project }: FeaturesTabProps) {
           })}
         </div>
       )}
-
-      <FeatureDetailDialog
-        feature={selectedFeature}
-        open={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-      />
     </div>
   );
 }
