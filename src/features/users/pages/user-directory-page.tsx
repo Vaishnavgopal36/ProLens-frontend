@@ -1,8 +1,15 @@
 import * as React from "react";
-import { MoreHorizontal, UserCheck, UserX } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  RefreshCw,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import {
   Table,
@@ -29,6 +36,44 @@ import { useAuth } from "@/app/providers";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import { cn } from "@/lib/utils";
 import { MOCK_USERS, type DirectoryUser } from "../api/mock-data";
+import { getOrgSsoConnection, setOrgSsoConnection } from "../api/sso-store";
+import { EditUserDialog } from "../components/edit-user-dialog";
+import { SSODialog, type SSOConnection } from "../components/sso-dialog";
+
+// Stand-in for the identity provider's directory until the sync API is
+// wired up: the first sync brings these people in, later syncs only update.
+const MOCK_DIRECTORY: DirectoryUser[] = [
+  {
+    id: "aad-1",
+    name: "Nisha Verma",
+    email: "nisha.verma@tarento.com",
+    initials: "NV",
+    role: "employee",
+    designation: "Backend Engineer",
+    status: "active",
+    projects: [],
+  },
+  {
+    id: "aad-2",
+    name: "Rahul Iyer",
+    email: "rahul.iyer@tarento.com",
+    initials: "RI",
+    role: "employee",
+    designation: "DevOps Engineer",
+    status: "active",
+    projects: [],
+  },
+  {
+    id: "aad-3",
+    name: "Meera Nambiar",
+    email: "meera.nambiar@tarento.com",
+    initials: "MN",
+    role: "employee",
+    designation: "Product Analyst",
+    status: "active",
+    projects: [],
+  },
+];
 
 const ROLE_LABELS: Record<string, string> = {
   employee: "Employee",
@@ -41,7 +86,13 @@ export function UserDirectoryPage() {
   const isLoading = useSimulatedLoading();
   const { user: me } = useAuth();
   const [users, setUsers] = React.useState<DirectoryUser[]>(MOCK_USERS);
-  const [pending, setPending] = React.useState<DirectoryUser | null>(null);
+  const [deleting, setDeleting] = React.useState<DirectoryUser | null>(null);
+  const [editing, setEditing] = React.useState<DirectoryUser | null>(null);
+  const [sso, setSso] = React.useState<SSOConnection | null>(
+    getOrgSsoConnection,
+  );
+  const [ssoOpen, setSsoOpen] = React.useState(false);
+  const [syncing, setSyncing] = React.useState(false);
 
   const fields = React.useMemo<FilterFieldDef<DirectoryUser>[]>(
     () => [
@@ -78,8 +129,47 @@ export function UserDirectoryPage() {
     [u.name, u.email, u.designation].join(" "),
   );
 
-  const setStatus = (id: string, status: DirectoryUser["status"]) =>
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status } : u)));
+  const designations = React.useMemo(
+    () => [...new Set(users.map((u) => u.designation).filter(Boolean))],
+    [users],
+  );
+
+  const saveUser = (
+    id: string,
+    patch: Pick<DirectoryUser, "name" | "role" | "designation">,
+  ) => {
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === id
+          ? {
+              ...u,
+              ...patch,
+              initials: patch.name
+                .split(" ")
+                .map((w) => w[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase(),
+            }
+          : u,
+      ),
+    );
+    toast.success("User updated.");
+  };
+
+  // Pulls the org's people from the identity provider into our directory.
+  const syncUsers = () => {
+    setSyncing(true);
+    window.setTimeout(() => {
+      const known = new Set(users.map((u) => u.email));
+      const incoming = MOCK_DIRECTORY.filter((d) => !known.has(d.email));
+      setUsers((prev) => [...prev, ...incoming]);
+      setSyncing(false);
+      toast.success(
+        `Sync complete: ${MOCK_DIRECTORY.length} fetched, ${incoming.length} created, ${MOCK_DIRECTORY.length - incoming.length} updated.`,
+      );
+    }, 1200);
+  };
 
   if (isLoading) {
     return (
@@ -91,19 +181,60 @@ export function UserDirectoryPage() {
   }
 
   const shown = filters.filtered;
-  const deactivating = pending?.status === "active";
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-xs text-muted-foreground">Workspace / Users</span>
-        <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-foreground">
-          User directory
-        </h1>
-        <p className="text-xs text-muted-foreground sm:text-sm">
-          Everyone in your organization, their role and the projects they work
-          on
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <span className="text-xs text-muted-foreground">
+            Workspace / Users
+          </span>
+          <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-foreground">
+            User directory
+          </h1>
+          <p className="text-xs text-muted-foreground sm:text-sm">
+            Everyone in your organization, their role and the projects they work
+            on
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs font-semibold"
+            onClick={() => setSsoOpen(true)}
+          >
+            <Icon icon={ShieldCheck} size={15} />
+            {sso ? (
+              <>
+                <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                SSO connected
+              </>
+            ) : (
+              "Set up SSO"
+            )}
+          </Button>
+          <Button
+            variant="accent"
+            size="sm"
+            className="gap-1.5 text-xs font-semibold"
+            onClick={syncUsers}
+            disabled={!sso || syncing}
+            title={
+              sso
+                ? "Import people from your identity provider"
+                : "Set up SSO first"
+            }
+          >
+            <Icon
+              icon={RefreshCw}
+              size={15}
+              className={cn(syncing && "animate-spin")}
+            />
+            {syncing ? "Syncing…" : "Sync users"}
+          </Button>
+        </div>
       </div>
 
       <FilterBar filters={filters} searchPlaceholder="Search people..." />
@@ -193,14 +324,18 @@ export function UserDirectoryPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => setPending(u)}
-                          className={cn(
-                            "cursor-pointer gap-2 text-xs",
-                            active && "text-destructive focus:text-destructive",
-                          )}
+                          onClick={() => setEditing(u)}
+                          className="cursor-pointer gap-2 text-xs"
                         >
-                          <Icon icon={active ? UserX : UserCheck} size={13} />
-                          <span>{active ? "Deactivate" : "Reactivate"}</span>
+                          <Icon icon={Pencil} size={13} />
+                          <span>Edit</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setDeleting(u)}
+                          className="cursor-pointer gap-2 text-xs text-destructive focus:text-destructive"
+                        >
+                          <Icon icon={Trash2} size={13} />
+                          <span>Delete</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -216,30 +351,45 @@ export function UserDirectoryPage() {
         Showing {shown.length} of {users.length} users
       </p>
 
+      <EditUserDialog
+        user={editing}
+        designations={designations}
+        onOpenChange={(open) => !open && setEditing(null)}
+        onSave={saveUser}
+      />
+
+      <SSODialog
+        open={ssoOpen}
+        onOpenChange={setSsoOpen}
+        connection={sso}
+        onSave={(c) => {
+          setOrgSsoConnection(c);
+          setSso(c);
+        }}
+        onDisconnect={() => {
+          setOrgSsoConnection(null);
+          setSso(null);
+        }}
+      />
+
       <ConfirmDialog
-        open={pending !== null}
-        onOpenChange={(open) => !open && setPending(null)}
-        title={deactivating ? "Deactivate user" : "Reactivate user"}
-        variant={deactivating ? "destructive" : "default"}
+        open={deleting !== null}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        title="Delete user"
+        variant="destructive"
+        autoFocusConfirm={false}
         description={
-          deactivating ? (
-            <>
-              Deactivate <strong>{pending?.name}</strong>? They'll be signed out
-              and lose access until you reactivate them.
-            </>
-          ) : (
-            <>
-              Restore access for <strong>{pending?.name}</strong>?
-            </>
-          )
+          <>
+            Delete <strong>{deleting?.name}</strong>? They'll lose access
+            immediately and their assigned work will need to be reassigned. This
+            cannot be undone.
+          </>
         }
-        confirmLabel={deactivating ? "Deactivate" : "Reactivate"}
+        confirmLabel="Delete"
         onConfirm={() => {
-          if (!pending) return;
-          setStatus(pending.id, deactivating ? "inactive" : "active");
-          toast.success(
-            `${pending.name} ${deactivating ? "deactivated" : "reactivated"}.`,
-          );
+          if (!deleting) return;
+          setUsers((prev) => prev.filter((u) => u.id !== deleting.id));
+          toast.success(`${deleting.name} deleted.`);
         }}
       />
     </div>

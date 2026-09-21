@@ -213,6 +213,7 @@ export function LoginForm({
           <Input
             ref={passwordRef}
             id="password"
+            placeholder="**********a"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             value={password}

@@ -12,12 +12,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ProfileSettingsDialog } from "@/features/settings";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
 
 export function AppHeader() {
   const { toggleSidebar, theme, cycleTheme } = useUI();
   const { user, logout } = useAuth();
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false);
+  const [profileOpen, setProfileOpen] = React.useState(false);
 
   const getThemeIcon = (mode: ThemeMode) => {
     if (mode === "light") return Sun;
@@ -104,7 +106,10 @@ export function AppHeader() {
             </DropdownMenuItem>
 
             {/* Profile Settings */}
-            <DropdownMenuItem className="gap-2.5 cursor-pointer">
+            <DropdownMenuItem
+              onClick={() => setProfileOpen(true)}
+              className="gap-2.5 cursor-pointer"
+            >
               <Icon icon={User} size={16} />
               <span>Profile Settings</span>
             </DropdownMenuItem>
@@ -122,6 +127,8 @@ export function AppHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <ProfileSettingsDialog open={profileOpen} onOpenChange={setProfileOpen} />
 
       <ConfirmDialog
         open={logoutConfirmOpen}

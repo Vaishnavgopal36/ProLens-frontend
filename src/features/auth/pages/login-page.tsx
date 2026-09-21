@@ -4,6 +4,7 @@ import { useForcedLightTheme } from "@/hooks/use-forced-light-theme";
 import { BrandMark } from "@/components/composed/brand-mark";
 import { BRAND_LIGHT_PALETTE, Ribbon } from "@/components/composed/ribbon";
 import { authenticate, ssoAccount } from "../api/demo-accounts";
+import { seedProvisionedSsoConnection } from "@/features/users/api/sso-store";
 import { LoginForm, type LoginCredentials } from "../components/login-form";
 
 export function LoginPage() {
@@ -30,6 +31,7 @@ export function LoginPage() {
 
   const handleSsoSignIn = async () => {
     await new Promise((resolve) => setTimeout(resolve, 800));
+    seedProvisionedSsoConnection();
     setUser(ssoAccount());
     navigate(redirectTo, { replace: true });
   };

@@ -44,27 +44,24 @@ export const ADMIN_METRICS: MetricCardData[] = [
     id: "adm-1",
     label: "Active projects",
     value: 14,
-    subtext: "Across 4 departments",
   },
   {
     id: "adm-2",
     label: "Org delivery rate",
     value: "74.2%",
     badge: { text: "+2.4%", variant: "success" },
-    subtext: "vs previous quarter",
   },
   {
     id: "adm-3",
     label: "Total effort logged",
     value: "2,140.0h",
-    subtext: "This month",
   },
   {
     id: "adm-4",
     label: "Projects at risk",
     value: "2 projects",
     badge: { text: "Alert", variant: "destructive" },
-    subtext: "1 delayed, 1 budget alert",
+
     alertLink: {
       to: "/org-insights#project-performance",
       label: "View at-risk projects",

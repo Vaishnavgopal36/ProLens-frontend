@@ -116,6 +116,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   /** remember=false keeps the session for this browser tab only. */
   setUser: (user: AuthUser | null, remember?: boolean) => void;
+  /** Patch the signed-in user, keeping the session where it is stored. */
+  updateUser: (patch: Partial<AuthUser>) => void;
   logout: () => void;
 }
 
@@ -158,6 +160,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const updateUser = React.useCallback((patch: Partial<AuthUser>) => {
+    setUserState((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      try {
+        const store = localStorage.getItem(SESSION_KEY)
+          ? localStorage
+          : sessionStorage;
+        store.setItem(SESSION_KEY, JSON.stringify(next));
+      } catch {
+        /* storage unavailable */
+      }
+      return next;
+    });
+  }, []);
+
   const logout = React.useCallback(() => setUser(null), [setUser]);
 
   return (
@@ -166,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isAuthenticated: !!user,
         setUser,
+        updateUser,
         logout,
       }}
     >
