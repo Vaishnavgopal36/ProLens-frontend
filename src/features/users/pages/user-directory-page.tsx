@@ -5,6 +5,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Trash2,
+  UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,6 +37,7 @@ import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { MOCK_USERS, type DirectoryUser } from "../api/mock-data";
 import { getOrgSsoConnection, setOrgSsoConnection } from "../api/sso-store";
+import { AddUserDialog } from "../components/add-user-dialog";
 import { EditUserDialog } from "../components/edit-user-dialog";
 import { SSODialog, type SSOConnection } from "../components/sso-dialog";
 
@@ -91,6 +93,7 @@ export function UserDirectoryPage() {
     getOrgSsoConnection,
   );
   const [ssoOpen, setSsoOpen] = React.useState(false);
+  const [addUserOpen, setAddUserOpen] = React.useState(false);
   const [syncing, setSyncing] = React.useState(false);
 
   const loadUsers = React.useCallback(async () => {
@@ -260,6 +263,14 @@ export function UserDirectoryPage() {
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <Button
+            size="sm"
+            className="gap-1.5 text-xs font-semibold"
+            onClick={() => setAddUserOpen(true)}
+          >
+            <Icon icon={UserPlus} size={15} />
+            Add user
+          </Button>
+          <Button
             variant="outline"
             size="sm"
             className="gap-1.5 text-xs font-semibold"
@@ -410,6 +421,13 @@ export function UserDirectoryPage() {
       <p className="px-1 text-2xs text-muted-foreground">
         Showing {shown.length} of {users.length} users
       </p>
+
+      <AddUserDialog
+        open={addUserOpen}
+        designations={designations}
+        onOpenChange={setAddUserOpen}
+        onUserAdded={loadUsers}
+      />
 
       <EditUserDialog
         user={editing}

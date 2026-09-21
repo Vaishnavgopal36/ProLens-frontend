@@ -20,10 +20,12 @@ export interface ListUsersParams {
 export interface CreateUserPayload {
   email: string;
   password: string;
+  password?: string;
   first_name?: string | null;
   last_name?: string | null;
   role: UserRole;
   designation_id?: string | null;
+  designation_name?: string | null;
   organization_id?: string | null;
 }
 
