@@ -3,10 +3,6 @@ import {
   Layers,
   GraduationCap,
   ClockAlert,
-  CheckCircle2,
-  Code2,
-  Presentation,
-  Award,
 } from "lucide-react";
 import type { ActivityItem, ActivityMetric } from "@/types/activity";
 
