@@ -3,7 +3,6 @@ import {
   Layers,
   GraduationCap,
   ClockAlert,
-  FolderOpen,
   CheckCircle2,
   Code2,
   Presentation,

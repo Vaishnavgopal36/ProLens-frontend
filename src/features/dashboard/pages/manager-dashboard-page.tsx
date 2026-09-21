@@ -1,11 +1,9 @@
-import * as React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -128,17 +126,9 @@ export function ManagerDashboardPage() {
                     {task.dueDate}
                   </TableCell>
                   <TableCell className="text-right">
-<<<<<<< HEAD
                     <button
                       type="button"
                       className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-=======
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
-                      className="h-7 px-2.5 text-[11px] font-semibold border-border-subtle hover:border-teal-600 hover:text-teal-600 transition-colors"
->>>>>>> feat/time-reporting
                     >
                       <Link
                         to={`/projects/${
@@ -149,7 +139,7 @@ export function ManagerDashboardPage() {
                       >
                         View
                       </Link>
-                    </Button>
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -209,8 +199,10 @@ export function ManagerDashboardPage() {
                   <div className="flex items-center justify-between pt-1">
                     <div className="flex items-center -space-x-1.5 overflow-hidden">
                       {proj.members.map((m: any, i: number) => {
-                        const initial = typeof m === "string" ? m : m?.initials ?? "";
-                        const name = typeof m === "string" ? m : m?.name ?? initial;
+                        const initial =
+                          typeof m === "string" ? m : (m?.initials ?? "");
+                        const name =
+                          typeof m === "string" ? m : (m?.name ?? initial);
                         return (
                           <div
                             key={i}

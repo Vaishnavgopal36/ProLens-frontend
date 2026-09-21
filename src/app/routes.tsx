@@ -8,8 +8,7 @@ import { OrgInsightsPage, MyInsightsPage } from "@/features/org-insights";
 import { TimesheetPage } from "@/features/timesheets";
 import { CalendarPage } from "@/features/calendar";
 import { ActivityPage } from "@/features/activity";
-
-
+import { OrganizationsDirectoryPage } from "@/features/super-admin";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
@@ -17,58 +16,28 @@ export const router = createBrowserRouter([
     element: <RequireAuth />,
     children: [
       {
-        index: true,
-        element: <DashboardPage />,
-      },
-      // 2. Explicit Dashboard URL
-      {
-        path: "dashboard",
-        element: <DashboardPage />,
-      },
-
-      // 3. Calendar Domain
-      {
-        path: "calendar",
-        element: <CalendarPage />,
-      },
-      // 4. Time Reporting Domain 
-      {
-      path: "timesheets",
-      element: <TimesheetPage />,
-      },
-
-      {
-      path: "activity",
-      element: <ActivityPage />,
-      },
-
-      // 5. Projects Domain
-      {
-        path: "projects",
+        element: <AppShell />,
         children: [
-          // 1. Root route: Defaults to Dashboard
           {
             index: true,
             element: <DashboardPage />,
           },
-          // 2. Explicit Dashboard URL
           {
             path: "dashboard",
             element: <DashboardPage />,
           },
-
-          // 3. Calendar Domain
           {
             path: "calendar",
             element: <CalendarPage />,
           },
-          // 4. Time Reporting Domain
           {
             path: "timesheets",
             element: <TimesheetPage />,
           },
-
-          // 5. Projects Domain
+          {
+            path: "activity",
+            element: <ActivityPage />,
+          },
           {
             path: "projects",
             children: [
@@ -90,7 +59,6 @@ export const router = createBrowserRouter([
             path: "my-insights",
             element: <MyInsightsPage />,
           },
-          // 6. Super Admin Domain
           {
             element: <RequirePermission permission="manage_organizations" />,
             children: [

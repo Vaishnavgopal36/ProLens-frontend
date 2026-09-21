@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Link } from "react-router-dom";
 import { Calendar, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -29,30 +28,34 @@ export function UpcomingActivities() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {MOCK_ACTIVITIES.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex flex-col justify-between rounded-lg border border-border-subtle bg-canvas-bg/50 p-3.5 space-y-3"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <span className="text-xs font-semibold text-foreground">
-                {activity.title}
-              </span>
-              <Badge
-                variant={
-                  activity.type === "Project Activity" ? "secondary" : "neutral"
-                }
-                className="text-[9px] px-1.5 py-0 uppercase"
-              >
-                {activity.type}
-              </Badge>
-            </div>
+      {MOCK_ACTIVITIES.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {MOCK_ACTIVITIES.map((activity) => (
+            <div
+              key={activity.id}
+              className="flex flex-col justify-between rounded-lg border border-border-subtle bg-canvas-bg/50 p-3.5 space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-xs font-semibold text-foreground">
+                  {activity.title}
+                </span>
+                <Badge
+                  variant={
+                    activity.type === "Project Activity"
+                      ? "secondary"
+                      : "neutral"
+                  }
+                  className="text-[9px] px-1.5 py-0 uppercase"
+                >
+                  {activity.type}
+                </Badge>
+              </div>
 
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Icon icon={Calendar} size={12} className="opacity-70" />
-                <span>{activity.time}</span>
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <Icon icon={Calendar} size={12} className="opacity-70" />
+                  <span>{activity.time}</span>
+                </div>
               </div>
             </div>
           ))}
