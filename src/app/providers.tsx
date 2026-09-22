@@ -257,6 +257,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       /* ignore */
     } finally {
       setUser(null);
+      window.location.href = "/login";
     }
   }, [setUser]);
 

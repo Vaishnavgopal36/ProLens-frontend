@@ -2,7 +2,7 @@
 export interface MetricTrend {
   value: number | string; // e.g., 2.4, "+2.4%", 3, "+3"
   direction?: "up" | "down" | "neutral";
-  timeframe?: string; // e.g., "vs last 24h", "vs last cycle"
+  timeframe?: string; // e.g., "vs last Month", "vs last cycle"
   /**
    * If true, an upward trend is positive (e.g. delivery rate, revenue).
    * If false, an upward trend is negative (e.g. 5xx errors, latency, defects).

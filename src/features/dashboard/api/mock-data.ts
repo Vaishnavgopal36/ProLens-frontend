@@ -60,7 +60,7 @@ export const ADMIN_METRICS: MetricCardData[] = [
     trend: {
       value: "+2.4%",
       direction: "up",
-      timeframe: "vs last 24h",
+      timeframe: "vs last Month",
       isPositive: true,
     },
     sparkline: [68.5, 70.1, 69.4, 71.8, 73.0, 74.2],

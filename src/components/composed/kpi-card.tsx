@@ -242,7 +242,7 @@ export function KpiCard({
         text: formatted,
         direction,
         isPositive,
-        timeframe: trend.timeframe ?? "vs last 24h",
+        timeframe: trend.timeframe ?? "vs last Month",
       };
     }
 
@@ -256,7 +256,7 @@ export function KpiCard({
           text: "0.0%",
           direction: "neutral" as const,
           isPositive: null,
-          timeframe: "vs last 24h",
+          timeframe: "vs last Month",
         };
       }
 
@@ -265,7 +265,7 @@ export function KpiCard({
           text: `+${last}`,
           direction: "up" as const,
           isPositive: isPositiveGood,
-          timeframe: "vs last 24h",
+          timeframe: "vs last Month",
         };
       }
 
@@ -274,7 +274,7 @@ export function KpiCard({
           text: `${last}`,
           direction: "down" as const,
           isPositive: !isPositiveGood,
-          timeframe: "vs last 24h",
+          timeframe: "vs last Month",
         };
       }
 
@@ -291,7 +291,7 @@ export function KpiCard({
         text: `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`,
         direction,
         isPositive,
-        timeframe: "vs last 24h",
+        timeframe: "vs last Month",
       };
     }
 
