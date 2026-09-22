@@ -10,7 +10,6 @@ import {
   Users,
   PanelLeftClose,
   PanelLeftOpen,
-  LogOut,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUI, useAuth, type UserRole } from "@/app/providers";
@@ -29,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { BrandMark } from "@/components/composed/brand-mark";
 import { SWEEP_BASE } from "@/components/ui/sweep";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
+import { LogoutButton } from "@/components/composed/logout-button";
 
 interface NavItem {
   title: string;
@@ -74,7 +74,7 @@ export function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const isMobile = useIsMobile();
 
-  // Ctrl/⌘ + E: collapse/expand the sidebar (open/close the drawer on mobile).
+  // Ctrl/⌘ + E: collapse/expand sidebar (open/close drawer on mobile)
   useSidebarHotkey(() =>
     isMobile ? setSidebarOpen(!isSidebarOpen) : setIsCollapsed((c) => !c),
   );
@@ -87,10 +87,6 @@ export function AppSidebar() {
 
   const items = ROLE_NAV_ITEMS[role] ?? ROLE_NAV_ITEMS.employee;
 
-  // Once any routed item matches the current URL, hash-based placeholder
-  // items (no page built yet) must never show as active alongside it.
-  // An item is active on its own page and on every page nested under it
-  // (e.g. Projects stays lit on /projects/proj-1).
   const matchesRoute = (href: string) =>
     location.pathname === href || location.pathname.startsWith(`${href}/`);
   const isOnKnownRoute = items.some(
@@ -120,25 +116,27 @@ export function AppSidebar() {
             }}
             className={cn(
               SWEEP_BASE,
-              "group flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium outline-none transition-colors",
+              "group relative flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium outline-none transition-colors",
               isActive
-                ? "bg-navy-700/60 dark:bg-canvas-overlay text-white font-semibold"
-                : "text-slate-400 before:bg-white/10 hover:text-white",
+                ? "bg-sidebar-active-bg text-sidebar-active-text font-semibold shadow-xs backdrop-blur-xs"
+                : "text-sidebar-foreground before:bg-white/10 hover:text-sidebar-foreground-hover",
               collapsed && "justify-center px-0",
             )}
             aria-current={isActive ? "page" : undefined}
           >
+            {/* Active Left Indicator Bar */}
             {isActive && (
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-gold-500" />
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-sidebar-active-accent shadow-xs" />
             )}
 
             <Icon
               icon={item.icon}
               size={18}
               className={cn(
+                "transition-colors",
                 isActive
-                  ? "text-white"
-                  : "text-slate-400 group-hover:text-white",
+                  ? "text-sidebar-active-text"
+                  : "text-sidebar-foreground group-hover:text-sidebar-foreground-hover",
               )}
             />
 
@@ -160,55 +158,44 @@ export function AppSidebar() {
     </nav>
   );
 
-  const logoutButton = (
-    <button
-      type="button"
-      onClick={() => setLogoutConfirmOpen(true)}
-      className={cn(
-        "group flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-destructive/80 hover:text-destructive hover:bg-destructive/10 transition-colors outline-none",
-        isCollapsed && "justify-center px-0",
-      )}
-      aria-label="Log out"
-    >
-      <Icon
-        icon={LogOut}
-        size={18}
-        className="text-destructive/80 group-hover:text-destructive transition-colors"
-      />
-      {!isCollapsed && <span className="truncate font-semibold">Logout</span>}
-    </button>
-  );
-
   return (
     <>
+      {/* Mobile Drawer */}
       <Sheet open={isSidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent
           side="left"
-          className="flex flex-col justify-between w-64 p-0 bg-navy-500 dark:bg-canvas-bg border-r border-border-subtle text-white"
+          className="flex flex-col justify-between w-64 p-0 bg-sidebar bg-sidebar-gradient border-r border-sidebar-border text-sidebar-foreground"
         >
           <div>
-            <div className="flex h-14 shrink-0 items-center gap-2.5 px-4">
+            <div className="relative flex h-14 shrink-0 items-center gap-2.5 px-4 border-b border-sidebar-border">
               <BrandMark size={22} />
               <span className="text-base font-semibold tracking-tight text-white truncate">
                 ProLens
               </span>
+              <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-sidebar-glow to-transparent pointer-events-none" />
             </div>
             {renderNavList(false)}
           </div>
 
-          <div className="p-3 border-t border-border-subtle">
-            {logoutButton}
+          <div className="p-3 border-t border-sidebar-border">
+            <LogoutButton
+              isCollapsed={false}
+              onLogout={() => setLogoutConfirmOpen(true)}
+            />
           </div>
         </SheetContent>
       </Sheet>
 
+      {/* Desktop Persistent Sidebar */}
       <aside
         className={cn(
-          "hidden md:flex flex-col bg-navy-500 dark:bg-canvas-bg border-r border-border-subtle text-slate-300 transition-[width] duration-200 ease-in-out shrink-0 select-none",
+          "hidden md:flex flex-col bg-sidebar bg-sidebar-gradient border-r border-sidebar-border text-sidebar-foreground transition-[width] duration-200 ease-in-out shrink-0 select-none relative",
           isCollapsed ? "w-16" : "w-56",
         )}
       >
-        <div className="flex h-14 shrink-0 items-center justify-between px-3.5">
+        {/* Header / Logo section */}
+        <div className="relative flex h-14 shrink-0 items-center justify-between px-3.5 border-b border-sidebar-border">
+          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-sidebar-glow to-transparent pointer-events-none" />
           {!isCollapsed ? (
             <>
               <div className="flex items-center gap-2.5">
@@ -223,7 +210,7 @@ export function AppSidebar() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsCollapsed(true)}
-                    className="h-8 w-8 text-slate-400 hover:text-white hover:bg-white/10 dark:hover:bg-canvas-surface"
+                    className="h-8 w-8 text-sidebar-foreground hover:text-white hover:bg-white/10"
                     aria-label="Collapse sidebar"
                   >
                     <Icon icon={PanelLeftClose} size={18} />
@@ -246,7 +233,7 @@ export function AppSidebar() {
                       setIsCollapsed(false);
                       setIsLogoHovered(false);
                     }}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-white/10 dark:hover:bg-canvas-surface transition-colors"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
                     aria-label="Open sidebar"
                   >
                     {isLogoHovered ? (
@@ -266,24 +253,17 @@ export function AppSidebar() {
           )}
         </div>
 
+        {/* Navigation items list */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {renderNavList(isCollapsed)}
         </div>
 
-        <div className="p-2.5 shrink-0">
-          {isCollapsed ? (
-            <Tooltip delayDuration={150}>
-              <TooltipTrigger asChild>{logoutButton}</TooltipTrigger>
-              <TooltipContent
-                side="right"
-                className="text-destructive font-semibold"
-              >
-                Logout
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            logoutButton
-          )}
+        {/* Bottom logout area */}
+        <div className="p-2.5 shrink-0 border-t border-sidebar-border">
+          <LogoutButton
+            isCollapsed={isCollapsed}
+            onLogout={() => setLogoutConfirmOpen(true)}
+          />
         </div>
       </aside>
 

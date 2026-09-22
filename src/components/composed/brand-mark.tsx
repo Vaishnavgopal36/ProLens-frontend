@@ -17,7 +17,8 @@ export function BrandMark({
   className,
   ...props
 }: BrandMarkProps) {
-  const planeFill = tone === "on-light" ? "#17283c" : "#ffffff";
+  const planeFill =
+    tone === "on-light" ? "var(--brand-900, #032b22)" : "#ffffff";
   return (
     <svg
       viewBox="85 88 145 150"
@@ -28,11 +29,10 @@ export function BrandMark({
       className={cn("shrink-0 select-none", className)}
       {...props}
     >
-      {/* Outer Teal Isometric Box Structure — fixed brand color, not tied
-          to the theme's --teal-500 token (which shifts per light/dark). */}
+      {/* Outer Brand Isometric Box Structure */}
       <path
         d="M225.99 116.35l-68.89 47.01-69.11-46.66v84.64l69.34 46.66 68.66-47.01v-84.64zm-123.98 26.72l55.13 37.22 54.82-37.42v16.97s-55.28 37.7-55.28 37.7l-54.68-36.85v-17.62zm55.25 88l-55.25-37.17v-16.19l54.68 36.76 55.27-37.79v16.93s-54.7 37.46-54.7 37.46z"
-        fill="#1e8f8e"
+        fill="var(--brand-500, #1fad8c)"
       />
       {/* Top Floating Diamond Planes */}
       <polygon

@@ -136,10 +136,10 @@ export function WorkspaceHeader({
                   </Button>
 
                   <Button
-                    variant="accent"
+                    variant="default"
                     size="sm"
                     onClick={onAddTask}
-                    className="h-8 gap-1.5 text-xs font-semibold bg-gold-500 hover:bg-gold-600 text-navy-900 dark:text-navy-950"
+                    className="h-8 gap-1.5 text-xs font-semibold"
                   >
                     <Icon icon={Plus} size={14} />
                     <span>Add Task</span>

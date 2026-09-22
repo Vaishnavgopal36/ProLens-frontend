@@ -29,6 +29,7 @@ export interface RibbonPalette {
  * The ribbon in our own brand colours, taken straight from the light-theme
  * scales in src/styles/tokens.css so the login page matches the app. Light
  * and mid steps only (no dark navy), with gold as a single warm band.
+ * and mid steps only, with gold as a single warm band.
  *
  *   pale    --teal-100   #d2eceb   feathered leading edge
  *   blue    --teal-300   #71bfc0
@@ -36,16 +37,22 @@ export interface RibbonPalette {
  *   orange  --navy-300   #8e9fb2   navy tint (the cool "violet" stop)
  *   coral   --gold-300   #f7ce6f   dimmed gold band
  *   purple  --teal-200   #a8dada   closes the ribbon on a cool edge
- *
- * If the tokens change, update these hexes to match.
+/**
+ * Ribbon palette matching the Brevo theme single source of truth in tokens.css:
+ *   pale    --brand-100   #d3f6e9   feathered mint leading edge
+ *   blue    --brand-300   #74dcba   vibrant seafoam
+ *   amber   --brand-500   #008264   Brevo Green primary anchor
+ *   orange  --brand-800   #024637   deep forest band
+ *   coral   --lime-300    #b7f59d   Brevo Lime electric accent
+ *   purple  --brand-200   #abebd5   soft mint closing edge
  */
 export const BRAND_LIGHT_PALETTE: RibbonPalette = {
-  pale: "#d2eceb",
-  blue: "#71bfc0",
-  amber: "#1e8f8e",
-  orange: "#8e9fb2",
-  coral: "#f7ce6f",
-  purple: "#a8dada",
+  pale: "#d3f6e9",
+  blue: "#74dcba",
+  amber: "#1fad8c",
+  orange: "#005944",
+  coral: "#2eb897",
+  purple: "#abebd5",
 };
 
 interface RibbonProps {
@@ -88,7 +95,7 @@ export function Ribbon({
         style={{ backgroundColor: background }}
       >
         {glFailed ? (
-          <div className="h-full w-full bg-[linear-gradient(115deg,transparent_45%,#a8dada_62%,#3ea3a4_80%,#8e9fb2_100%)]" />
+          <div className="h-full w-full bg-[linear-gradient(115deg,transparent_45%,#abebd5_62%,#008264_80%,#032b22_100%)]" />
         ) : (
           <FluidRibbonCanvas
             background={background}

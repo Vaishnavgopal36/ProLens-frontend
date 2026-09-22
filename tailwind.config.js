@@ -53,16 +53,11 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          50: "#eff6ff",
-          100: "#dbeafe",
-          200: "#bfdbfe",
-          300: "#93c5fd",
-          400: "#60a5fa",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e40af",
-          900: "#1e3a8a",
+          // Was a hardcoded Tailwind-default blue scale (50–900), completely
+          // disconnected from --brand-*. Any `primary-500`-style class (chart
+          // strokes, stat-card accents) was rendering stock blue instead of
+          // brand plum, even though bare `primary`/`bg-primary` was correct.
+          ...scale("brand"),
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -89,14 +84,39 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        brand: scale("brand"),
+        lime: scale("lime"),
         navy: scale("navy"),
         teal: scale("teal"),
         gold: scale("gold"),
+        ribbon: {
+          periwinkle: withAlpha("--ribbon-periwinkle"),
+          amber: withAlpha("--ribbon-amber"),
+          coral: withAlpha("--ribbon-coral"),
+          rose: withAlpha("--ribbon-rose"),
+          magenta: withAlpha("--ribbon-magenta"),
+        },
+        sidebar: {
+          DEFAULT: withAlpha("--sidebar-bg"),
+          bg: withAlpha("--sidebar-bg"),
+          surface: withAlpha("--sidebar-surface"),
+          border: withAlpha("--sidebar-border"),
+          foreground: withAlpha("--sidebar-foreground"),
+          "foreground-hover": withAlpha("--sidebar-foreground-hover"),
+          "active-bg": withAlpha("--sidebar-active-bg"),
+          "active-text": withAlpha("--sidebar-active-text"),
+          "active-accent": "var(--sidebar-active-accent)",
+          glow: "var(--sidebar-glow)",
+        },
         canvas: {
           bg: withAlpha("--canvas-bg"),
           surface: withAlpha("--canvas-surface"),
           overlay: withAlpha("--canvas-overlay"),
         },
+      },
+      backgroundImage: {
+        "sidebar-gradient": "var(--sidebar-bg-gradient)",
+        "ribbon-spectrum": "var(--sidebar-active-accent)",
       },
       animation: {
         "checkbox-wave": "checkboxWave 0.4s ease",

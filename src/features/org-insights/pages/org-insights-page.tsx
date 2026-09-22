@@ -289,17 +289,13 @@ export function OrgInsightsPage() {
 
         <KpiCard
           label="Needs attention"
-          value={`${needsAttention} projects`}
+          value={`${needsAttention} `}
           badge={
             needsAttention > 0
               ? { text: "Alert", variant: "destructive" }
               : undefined
           }
-          trend={{
-            value: `${delayed} delayed, ${atRisk} at risk`,
-            direction: "up",
-            timeframe: "require triage",
-          }}
+
           isPositiveGood={false}
           sparklineData={[0, 1, 0, 1, 1, needsAttention]}
           strokeColor="stroke-rose-500"

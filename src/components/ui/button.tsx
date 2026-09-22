@@ -10,27 +10,22 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "bg-navy-500 text-white dark:bg-foreground dark:text-background",
+        default: "bg-primary text-primary-foreground font-semibold shadow-xs",
         secondary:
-          "border border-teal-500 text-teal-600 bg-transparent dark:border-teal-400 dark:text-teal-300",
-        accent:
-          "bg-gold-500 text-navy-900 font-semibold dark:bg-teal-500 dark:text-white",
+          "border border-primary text-foreground bg-transparent font-semibold shadow-xs",
+        accent: "bg-primary text-primary-foreground font-semibold shadow-xs",
         outline: "border border-border-subtle bg-transparent",
-        // Teal outline that fills teal (white text) on hover. For standalone
-        // secondary actions such as "Add Feature"; not for dense lists.
+        // Primary outline that fills on hover.
         sweep:
           SWEEP_BASE +
-          " border border-teal-600 bg-transparent text-teal-700 before:bg-teal-600 active:before:bg-teal-700 [@media(hover:hover)]:hover:text-white dark:border-teal-400 dark:text-teal-300 dark:before:bg-teal-500 dark:active:before:bg-teal-600",
-        // Neutral outline with a soft teal wash (solid tint: Tailwind can't apply
-        // /opacity to our var()-based teal tokens); keeps text and coloured
-        // logos legible (used for the Microsoft / Google sign-in buttons).
+          " border border-primary bg-transparent text-foreground before:bg-secondary active:before:bg-brand-600 [@media(hover:hover)]:hover:text-white dark:border-brand-400 dark:text-brand-300",
+        // Neutral outline with a soft wash
         "sweep-soft":
           SWEEP_BASE +
-          " border border-border-subtle bg-transparent text-foreground before:bg-teal-100 dark:before:bg-white/10 [@media(hover:hover)]:hover:border-teal-400",
+          " border border-border-subtle bg-transparent text-foreground before:bg-brand-100 dark:before:bg-white/10 [@media(hover:hover)]:hover:border-primary",
         ghost:
           "hover:bg-canvas-surface hover:text-foreground dark:hover:bg-canvas-surface",
-        link: "text-teal-600 underline-offset-4 hover:underline dark:text-teal-400",
+        link: "text-primary underline-offset-4 hover:underline dark:text-brand-300",
         destructive: "bg-destructive text-destructive-foreground",
       },
       // Corner-sweep hover (the house style). Pass fx="off" for the plain
@@ -49,28 +44,28 @@ const buttonVariants = cva(
         fx: "on",
         className:
           SWEEP_BASE +
-          " before:bg-teal-600 active:before:bg-teal-700 dark:before:bg-teal-500 dark:active:before:bg-teal-600 [@media(hover:hover)]:hover:text-white",
+          " before:bg-secondary active:before:bg-brand-600 dark:before:bg-secondary dark:active:before:bg-brand-600 [@media(hover:hover)]:hover:text-white",
       },
       {
         variant: "accent",
         fx: "on",
         className:
           SWEEP_BASE +
-          " before:bg-navy-500 active:before:bg-navy-600 dark:before:bg-teal-700 dark:active:before:bg-teal-800 [@media(hover:hover)]:hover:text-white",
+          " before:bg-secondary active:before:bg-brand-600 dark:before:bg-secondary dark:active:before:bg-brand-600 [@media(hover:hover)]:hover:text-white",
       },
       {
         variant: "secondary",
         fx: "on",
         className:
           SWEEP_BASE +
-          " before:bg-teal-600 active:before:bg-teal-700 dark:before:bg-teal-500 dark:active:before:bg-teal-600 [@media(hover:hover)]:hover:text-white",
+          " before:bg-secondary active:before:bg-brand-600 dark:before:bg-secondary dark:active:before:bg-brand-600 [@media(hover:hover)]:hover:text-white",
       },
       {
         variant: "outline",
         fx: "on",
         className:
           SWEEP_BASE +
-          " before:bg-teal-600 active:before:bg-teal-700 dark:before:bg-teal-500 dark:active:before:bg-teal-600 [@media(hover:hover)]:hover:border-teal-600 [@media(hover:hover)]:hover:text-white",
+          " before:bg-secondary active:before:bg-brand-600 dark:before:bg-secondary dark:active:before:bg-brand-600 [@media(hover:hover)]:hover:border-secondary [@media(hover:hover)]:hover:text-white",
       },
       {
         variant: "destructive",
@@ -82,17 +77,17 @@ const buttonVariants = cva(
       {
         variant: "default",
         fx: "off",
-        className: "hover:bg-navy-600 dark:hover:bg-foreground/90",
+        className: "hover:bg-secondary text-primary-foreground",
       },
       {
         variant: "secondary",
         fx: "off",
-        className: "hover:bg-teal-50 dark:hover:bg-teal-950/40",
+        className: "hover:bg-secondary/15 dark:hover:bg-secondary/25",
       },
       {
         variant: "accent",
         fx: "off",
-        className: "hover:bg-gold-600 dark:hover:bg-teal-600",
+        className: "hover:bg-secondary text-primary-foreground",
       },
       {
         variant: "outline",

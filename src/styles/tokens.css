@@ -1,123 +1,213 @@
 @layer base {
   :root {
-    /* Brand Foundation Scale */
-    --navy-50: #f3f5f7;
-    --navy-100: #dee3e8;
-    --navy-200: #bcc7d2;
-    --navy-300: #8e9fb2;
-    --navy-400: #566d85;
-    --navy-500: #17283c;
-    --navy-600: #132233;
-    --navy-700: #0f1b29;
-    --navy-800: #0b131d;
-    --navy-900: #060b10;
+    /* Base Forest Scale (#005944 Anchor) */
+    --brand-50: #edfbf6;
+    --brand-100: #d3f6e9;
+    --brand-200: #abebd5;
+    --brand-300: #74dcba;
+    --brand-400: #2eb897;
+    --brand-500: #1fad8c; /* Secondary Interactive */
+    --brand-600: #008264;
+    --brand-700: #005944; /* Primary Brand Anchor */
+    --brand-800: #024637;
+    --brand-900: #032b22; /* Sidebar Surface */
 
-    --teal-50: #edf7f7;
-    --teal-100: #d2eceb;
-    --teal-200: #a8dada;
-    --teal-300: #71bfc0;
-    --teal-400: #3ea3a4;
-    --teal-500: #1e8f8e;
-    --teal-600: #187372;
-    --teal-700: #135b5a;
-    --teal-800: #0e4241;
-    --teal-900: #082424;
+    /* Neutral Slate Scale */
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+
+    /* Semantic Sidebar Variables (Light Canvas) */
+    --sidebar-bg: var(--brand-900); /* #032B22 */
+    --sidebar-surface: var(--brand-800); /* #024637 */
+    --sidebar-border: rgba(255, 255, 255, 0.08);
+    --sidebar-foreground: #86c5b3; /* Legible soft sage text */
+    --sidebar-foreground-hover: #ffffff;
+    --sidebar-active-bg: rgba(31, 173, 140, 0.22);
+    --sidebar-active-text: #ffffff;
+    --sidebar-active-accent: var(
+      --brand-400
+    ); /* #2EB897 active pill indicator */
+    --sidebar-bg-gradient:
+      radial-gradient(
+        ellipse 130% 60% at 100% 0%,
+        rgba(31, 173, 140, 0.18) 0%,
+        rgba(3, 43, 34, 0.2) 45%,
+        transparent 100%
+      ),
+      linear-gradient(180deg, #032b22 0%, #011a14 100%);
+    --sidebar-glow: rgba(46, 184, 151, 0.25);
+
+    /* Light Theme Base Canvas */
+    --canvas-bg: #f4f7f6;
+    --canvas-surface: #ffffff;
+    --canvas-overlay: #ffffff;
+    --border-subtle: #e2e8f0;
+    --border-strong: #cbd5e1;
+
+    /* shadcn Dynamic HSL Tokens */
+    --background: 160 15% 97%;
+    --foreground: 166 40% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 166 40% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 166 40% 10%;
+
+    /* Primary: Deep Forest Emerald */
+    --primary: 166 100% 17%; /* #005944 */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Vibrant Sage Teal */
+    --secondary: 166 70% 40%; /* #1FAD8C */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 160 10% 92%;
+    --muted-foreground: 166 15% 42%;
+    --accent: 166 40% 94%;
+    --accent-foreground: 166 100% 17%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 166 70% 40%;
+    --radius: 0.5rem;
+
+    /* Legacy Mappings to prevent white-outs */
+    --navy-50: var(--slate-50);
+    --navy-100: var(--slate-100);
+    --navy-200: var(--slate-200);
+    --navy-300: var(--slate-300);
+    --navy-400: var(--slate-400);
+    --navy-500: var(--brand-700);
+    --navy-600: var(--brand-800);
+    --navy-700: var(--brand-900);
+    --navy-800: #021e17;
+    --navy-900: #01140f;
 
     --gold-50: #fef8ec;
     --gold-100: #fdf0d0;
     --gold-200: #fbe2a5;
     --gold-300: #f7ce6f;
     --gold-400: #f3ba38;
-    --gold-500: #f0a500;
+    --gold-500: var(--brand-500);
     --gold-600: #c28500;
     --gold-700: #996900;
     --gold-800: #6b4900;
     --gold-900: #422d00;
 
-    /* Light Theme (Elevated Enterprise Canvas with Enhanced Contrast) */
-    --canvas-bg: #eef1f5;
-    --canvas-surface: #ffffff;
-    --canvas-overlay: #ffffff;
-    --border-subtle: #dce2ea;
-    --border-strong: #c2cbd6;
+    --teal-50: var(--brand-50);
+    --teal-100: var(--brand-100);
+    --teal-200: var(--brand-200);
+    --teal-300: var(--brand-300);
+    --teal-400: var(--brand-400);
+    --teal-500: var(--brand-400);
+    --teal-600: var(--brand-600);
+    --teal-700: var(--brand-700);
+    --teal-800: var(--brand-800);
+    --teal-900: var(--brand-900);
 
-    /* shadcn Dynamic HSL Tokens */
-    --background: 216 24% 95%;
-    --foreground: 213 30% 7%;
-    --card: 0 0% 100%;
-    --card-foreground: 213 30% 7%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 213 30% 7%;
-    --primary: 212 45% 16%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 180 65% 34%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 214 20% 90%;
-    --muted-foreground: 215 16% 45%;
-    /* Generic hover/highlight surface — teal-tinted, never gold. */
-    --accent: 176 45% 95%;
-    --accent-foreground: 213 30% 7%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --ring: 180 65% 34%;
-    --radius: 0.5rem;
+    --lime-50: #f6fdf3;
+    --lime-100: #eafce3;
+    --lime-200: #dbface;
+    --lime-300: #b7f59d;
+    --lime-400: #bef6a6;
+    --lime-500: #8ac07c;
+    --lime-600: #61905e;
+    --lime-700: #365e3e;
+    --lime-800: #22432c;
+    --lime-900: #132a1b;
+
+    /* Warm Bronze Amber Replacement */
+    --warning: 38 92% 50%; /* #D97706 */
+    --warning-foreground: 0 0% 100%;
   }
 
-  /* Dark Theme — near-black moody palette (bg #0A0B0D / surface #16181C /
-border #2A2D33 / text #F2F3F5 / accent #4C8DFF), built as full
-50–900 scales rather than one flat hex per role so existing tint-pair
-usages (e.g. bg-teal-950 + text-teal-300) keep working. The brand
-scales (--teal-*, --gold-*) are overridden here so every existing
-bg-teal-500 / text-gold-400 etc. class site-wide picks up this
-palette's blue/amber instead of the light-mode teal/gold. */
+  /* Cloudflare Dark Mode Equivalent (#0A0B0D / #16181C Palette) */
   .dark {
-    --canvas-bg: #0a0b0d;
-    --canvas-surface: #16181c;
-    --canvas-overlay: #1f222a;
+    --canvas-bg: #090b0a;
+    --canvas-surface: #131715;
+    --canvas-overlay: #1b211e;
+    --border-subtle: #242c28;
+    --border-strong: #333d38;
 
-    --border-subtle: #2a2d33;
-    --border-strong: #3b3f47;
+    --background: 160 10% 4%;
+    --foreground: 160 10% 96%;
+    --card: 160 8% 8%;
+    --card-foreground: 160 10% 96%;
+    --popover: 160 8% 10%;
+    --popover-foreground: 160 10% 96%;
 
-    --background: 220 13% 4%;
-    --foreground: 220 13% 96%;
-    --card: 220 12% 10%;
-    --card-foreground: 220 13% 96%;
-    --popover: 224 15% 14%;
-    --popover-foreground: 220 13% 96%;
-    --primary: 220 13% 96%;
-    --primary-foreground: 220 13% 4%;
-    --secondary: 218 100% 65%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 220 12% 12%;
-    --muted-foreground: 218 12% 62%;
-    --accent: 218 40% 18%;
-    --accent-foreground: 220 13% 96%;
-    --destructive: 4 85% 62%;
+    /* Primary: Lifted Emerald for dark canvas contrast */
+    --primary: 166 65% 45%; /* #28bf97 */
+    --primary-foreground: 166 100% 5%;
+
+    /* Secondary: Deep forest green container */
+    --secondary: 166 40% 20%;
+    --secondary-foreground: 166 60% 85%;
+
+    --muted: 160 8% 12%;
+    --muted-foreground: 160 8% 60%;
+    --accent: 166 30% 16%;
+    --accent-foreground: 160 10% 96%;
+    --destructive: 0 75% 58%;
     --destructive-foreground: 0 0% 100%;
-    --ring: 218 100% 65%;
+    --ring: 166 65% 45%;
 
-    /* Brand scale overrides: accent blue (#4C8DFF at 500) in place of teal. */
-    --teal-50: #eaf2ff;
-    --teal-100: #d2e4ff;
-    --teal-200: #a6c8ff;
-    --teal-300: #79acff;
-    --teal-400: #5c9cff;
-    --teal-500: #4c8dff;
-    --teal-600: #3d74d6;
-    --teal-700: #2f5bad;
-    --teal-800: #204285;
-    --teal-900: #142a5c;
+    /* Semantic Sidebar Tokens (Dark Mode) */
+    --sidebar-bg: #060e0b;
+    --sidebar-surface: #0b1713;
+    --sidebar-border: rgba(255, 255, 255, 0.05);
+    --sidebar-foreground: #769a8f;
+    --sidebar-foreground-hover: #f1f5f3;
+    --sidebar-active-bg: rgba(40, 191, 151, 0.18);
+    --sidebar-active-text: #ffffff;
+    --sidebar-active-accent: #28bf97;
+    --sidebar-bg-gradient:
+      radial-gradient(
+        ellipse 130% 60% at 100% 0%,
+        rgba(40, 191, 151, 0.1) 0%,
+        rgba(6, 14, 11, 0.2) 40%,
+        transparent 100%
+      ),
+      linear-gradient(180deg, #060e0b 0%, #030705 100%);
+    --sidebar-glow: rgba(40, 191, 151, 0.2);
 
-    /* Brand scale overrides: warn amber (#F5A623 at 500) in place of gold. */
-    --gold-50: #fff6e8;
-    --gold-100: #feeac7;
-    --gold-200: #fdd48e;
-    --gold-300: #fbbc57;
-    --gold-400: #f8ae3c;
-    --gold-500: #f5a623;
-    --gold-600: #cc8712;
-    --gold-700: #a36a0d;
-    --gold-800: #7a4f09;
-    --gold-900: #4a2f05;
+    --brand-50: #060e0b;
+    --brand-100: #0b1713;
+    --brand-200: #12241e;
+    --brand-300: #1b352c;
+    --brand-400: #23483b;
+    --brand-500: #28bf97;
+    --brand-600: #38cfa7;
+    --brand-700: #5fe0bd;
+    --brand-800: #a1ebd6;
+    --brand-900: #edfbf6;
+
+    --navy-50: var(--brand-50);
+    --navy-100: var(--brand-100);
+    --navy-200: var(--brand-200);
+    --navy-300: var(--brand-300);
+    --navy-400: var(--brand-400);
+    --navy-500: var(--brand-500);
+    --navy-600: var(--brand-600);
+    --navy-700: var(--brand-700);
+    --navy-800: var(--brand-800);
+    --navy-900: var(--brand-900);
+
+    --teal-50: var(--brand-50);
+    --teal-100: var(--brand-100);
+    --teal-200: var(--brand-200);
+    --teal-300: var(--brand-300);
+    --teal-400: var(--brand-400);
+    --teal-500: var(--brand-500);
+    --teal-600: var(--brand-600);
+    --teal-700: var(--brand-700);
+    --teal-800: var(--brand-800);
+    --teal-900: var(--brand-900);
   }
 }
