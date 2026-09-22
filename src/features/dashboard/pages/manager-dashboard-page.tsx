@@ -4,7 +4,6 @@ import { Plus, ArrowRight } from "lucide-react";
 import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -20,7 +19,7 @@ import {
   MANAGER_TASKS_TABLE,
   MANAGER_PROJECTS_LIST,
 } from "../api/mock-data";
-import { KpiCard } from "@/components/composed";
+import { KpiCard, StatusIndicator } from "@/components/composed";
 import { UpcomingActivities } from "../components/upcoming-activities";
 import { LogTimeDialog } from "../components/log-time-dialog";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
@@ -206,9 +205,7 @@ export function ManagerDashboardPage() {
                       {proj.subtext}
                     </p>
                   </div>
-                  <Badge variant="success" className="text-4xs px-1.5 py-0">
-                    {proj.status}
-                  </Badge>
+                  <StatusIndicator status={proj.status} />
                 </div>
 
                 <div className="space-y-1">

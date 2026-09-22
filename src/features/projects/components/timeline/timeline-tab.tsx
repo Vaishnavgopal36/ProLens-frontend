@@ -1,8 +1,7 @@
 import * as React from "react";
 import { GanttChartSquare, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { KpiAlertLink } from "@/components/composed/kpi-alert-link";
+import { KpiCard, StatusIndicator } from "@/components/composed";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types/project";
@@ -124,67 +123,60 @@ export function TimelineTab({ project }: TimelineTabProps) {
     <div className="flex flex-col gap-4">
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="p-4 shadow-xs">
-          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
-            Project Window
-          </p>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {project.activeSprint || "Active"}
-          </p>
-          <p className="text-2xs text-muted-foreground mt-0.5">
-            {project.dateRange}
-          </p>
-        </Card>
-        <Card className="p-4 shadow-xs">
-          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
-            Timeline Progress
-          </p>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {avgProgress}%
-          </p>
-          <p className="text-2xs text-muted-foreground mt-0.5">
-            Avg. across {STREAMS.length} streams
-          </p>
-        </Card>
-        <Card className="p-4 shadow-xs">
-          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
-            Scheduled Workstreams
-          </p>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {STREAMS.length}
-          </p>
-          <p className="text-2xs text-muted-foreground mt-0.5">
-            {totalTasks} total tasks on roadmap
-          </p>
-        </Card>
-        <Card className="p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
-              Needs Attention
-            </p>
-            {atRiskStreams.length > 0 && (
-              <Badge
-                variant="destructive"
-                className="text-3xs px-1.5 py-0 font-bold uppercase tracking-wider"
-              >
-                Alert
-              </Badge>
-            )}
-          </div>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {atRiskStreams.length} stream{atRiskStreams.length === 1 ? "" : "s"}
-          </p>
-          <p className="text-2xs text-muted-foreground mt-0.5 truncate">
-            {atRiskStreams.length > 0
+        <KpiCard
+          label="Project Window"
+          value={project.activeSprint || "Active"}
+          subtext={project.dateRange}
+        />
+        <KpiCard
+          label="Timeline Progress"
+          value={`${avgProgress}%`}
+          subtext={`Avg. across ${STREAMS.length} streams`}
+          trend={{
+            value: "+6.5%",
+            direction: "up",
+            timeframe: "this cycle",
+          }}
+          sparklineData={[
+            Math.max(0, avgProgress - 15),
+            Math.max(0, avgProgress - 10),
+            Math.max(0, avgProgress - 5),
+            avgProgress,
+          ]}
+        />
+        <KpiCard
+          label="Scheduled Workstreams"
+          value={STREAMS.length}
+          subtext={`${totalTasks} total tasks on roadmap`}
+          sparklineData={[
+            STREAMS.length,
+            STREAMS.length,
+            STREAMS.length,
+            STREAMS.length,
+          ]}
+        />
+        <KpiCard
+          label="Needs Attention"
+          value={`${atRiskStreams.length} stream${atRiskStreams.length === 1 ? "" : "s"}`}
+          badge={
+            atRiskStreams.length > 0
+              ? { text: "Alert", variant: "destructive" }
+              : undefined
+          }
+          subtext={
+            atRiskStreams.length > 0
               ? atRiskStreams.map((s) => s.name).join(", ")
-              : "All streams on pace"}
-          </p>
-          {atRiskStreams.length > 0 && (
-            <KpiAlertLink to="#timeline-gantt">
-              View at-risk streams
-            </KpiAlertLink>
-          )}
-        </Card>
+              : "All streams on pace"
+          }
+          alertLink={
+            atRiskStreams.length > 0
+              ? { to: "#timeline-gantt", label: "View at-risk streams" }
+              : undefined
+          }
+          isPositiveGood={false}
+          sparklineData={[0, 0, 1, atRiskStreams.length]}
+          strokeColor={atRiskStreams.length > 0 ? "stroke-rose-500" : undefined}
+        />
       </div>
 
       <Card id="timeline-gantt" tabIndex={-1} className="p-5 shadow-xs">
@@ -288,12 +280,7 @@ export function TimelineTab({ project }: TimelineTabProps) {
                               <span className="font-medium text-foreground truncate flex-1">
                                 {task.title}
                               </span>
-                              <Badge
-                                variant="outline"
-                                className="text-4xs px-1.5 py-0 font-semibold shrink-0"
-                              >
-                                {task.status}
-                              </Badge>
+                              <StatusIndicator status={task.status} />
                               <span className="text-muted-foreground shrink-0 w-20 text-right">
                                 {task.loggedHours}h / {task.estimatedHours}h
                               </span>

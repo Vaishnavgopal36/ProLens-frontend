@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { StatusIndicator } from "@/components/composed";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -33,7 +33,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Organization, OrganizationStatus } from "../api/types";
 
@@ -143,17 +142,10 @@ export function OrganizationsTable({
                 </div>
               </TableCell>
               <TableCell className="text-center">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-3xs uppercase font-bold px-2 py-0.5",
-                    org.status === "active"
-                      ? "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800"
-                      : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800",
-                  )}
-                >
-                  {org.status}
-                </Badge>
+                <StatusIndicator
+                  status={org.status}
+                  className="justify-center"
+                />
               </TableCell>
               <TableCell>
                 <div className="space-y-0.5">

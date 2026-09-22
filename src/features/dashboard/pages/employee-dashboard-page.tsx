@@ -19,7 +19,7 @@ import {
   EMPLOYEE_PRIORITIES_TABLE,
   EMPLOYEE_WEEKLY_EFFORT,
 } from "../api/mock-data";
-import { KpiCard } from "@/components/composed";
+import { KpiCard, StatusIndicator } from "@/components/composed";
 import { UpcomingActivities } from "../components/upcoming-activities";
 import { LogTimeDialog } from "../components/log-time-dialog";
 
@@ -134,14 +134,7 @@ export function EmployeeDashboardPage() {
                       {row.dueDate}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Badge
-                        variant={
-                          row.status === "In progress" ? "secondary" : "outline"
-                        }
-                        className="text-3xs uppercase font-semibold px-2 py-0.5"
-                      >
-                        {row.status}
-                      </Badge>
+                      <StatusIndicator status={row.status} />
                     </TableCell>
                   </TableRow>
                 ))}

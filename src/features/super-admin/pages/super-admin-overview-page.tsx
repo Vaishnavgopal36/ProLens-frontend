@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Plus, Building2, Users, FolderKanban, Clock3 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Plus } from "lucide-react";
+import { KpiCard } from "@/components/composed";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
@@ -14,20 +14,56 @@ import { AuditTrailList } from "../components/audit-trail-list";
 import { ProvisionOrganizationSheet } from "../components/provision-organization-sheet";
 import type { ProvisionOrganizationInput } from "../api/types";
 
-const KPI_CARDS = [
+const PLATFORM_KPIS = [
   {
     key: "totalOrganizations",
     label: "Active organizations",
-    icon: Building2,
+    getValue: () => MOCK_PLATFORM_METRICS.totalOrganizations,
+    trend: {
+      value: "+2",
+      direction: "up" as const,
+      timeframe: "vs last quarter",
+      isPositive: true,
+    },
+    sparkline: [8, 9, 10, 10, 11, 12],
   },
-  { key: "totalUsers", label: "Total platform users", icon: Users },
-  { key: "activeProjects", label: "Active projects", icon: FolderKanban },
+  {
+    key: "totalUsers",
+    label: "Total platform users",
+    getValue: () => MOCK_PLATFORM_METRICS.totalUsers.toLocaleString(),
+    trend: {
+      value: "+18",
+      direction: "up" as const,
+      timeframe: "vs last month",
+      isPositive: true,
+    },
+    sparkline: [112, 120, 128, 135, 142, 148],
+  },
+  {
+    key: "activeProjects",
+    label: "Active projects",
+    getValue: () => MOCK_PLATFORM_METRICS.activeProjects,
+    trend: {
+      value: "+5",
+      direction: "up" as const,
+      timeframe: "vs last month",
+      isPositive: true,
+    },
+    sparkline: [24, 27, 29, 31, 32, 34],
+  },
   {
     key: "totalHoursLogged",
     label: "System-wide hours logged",
-    icon: Clock3,
+    getValue: () => `${MOCK_PLATFORM_METRICS.totalHoursLogged.toFixed(1)}h`,
+    trend: {
+      value: "+8.6%",
+      direction: "up" as const,
+      timeframe: "vs previous period",
+      isPositive: true,
+    },
+    sparkline: [4100, 4320, 4580, 4810, 5100, 5280.5],
   },
-] as const;
+];
 
 export function SuperAdminOverviewPage() {
   const isLoading = useSimulatedLoading();
@@ -73,27 +109,14 @@ export function SuperAdminOverviewPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {KPI_CARDS.map((kpi) => (
-          <Card
+        {PLATFORM_KPIS.map((kpi) => (
+          <KpiCard
             key={kpi.key}
-            className="p-4 sm:p-5 border-border-subtle bg-canvas-surface"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">
-                {kpi.label}
-              </span>
-              <Icon
-                icon={kpi.icon}
-                size={15}
-                className="text-muted-foreground"
-              />
-            </div>
-            <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-              {kpi.key === "totalHoursLogged"
-                ? `${MOCK_PLATFORM_METRICS[kpi.key].toFixed(1)}h`
-                : MOCK_PLATFORM_METRICS[kpi.key].toLocaleString()}
-            </p>
-          </Card>
+            label={kpi.label}
+            value={kpi.getValue()}
+            trend={kpi.trend}
+            sparklineData={kpi.sparkline}
+          />
         ))}
       </div>
 

@@ -20,12 +20,15 @@ function getStatusConfig(status: string, customLabel?: string): StatusConfig {
     case "active":
     case "ongoing":
     case "in progress":
+    case "on track":
       return {
         label:
           customLabel ??
           (normalized === "in progress"
             ? "In Progress"
-            : normalized.charAt(0).toUpperCase() + normalized.slice(1)),
+            : normalized === "on track"
+              ? "On Track"
+              : normalized.charAt(0).toUpperCase() + normalized.slice(1)),
         colorClass: "bg-emerald-500",
       };
 
@@ -33,6 +36,7 @@ function getStatusConfig(status: string, customLabel?: string): StatusConfig {
     case "on hold":
     case "to do":
     case "backlog":
+    case "inactive":
       return {
         label:
           customLabel ??

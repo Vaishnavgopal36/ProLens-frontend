@@ -4,12 +4,10 @@ import {
   ChevronRight,
   CalendarDays,
   AlertTriangle,
-  Flag,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { KpiAlertLink } from "@/components/composed/kpi-alert-link";
+import { KpiCard } from "@/components/composed";
 import {
   FilterBar,
   useFilters,
@@ -230,66 +228,51 @@ export function CalendarTab({ project }: CalendarTabProps) {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="p-4 shadow-xs">
-          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
-            Active Sprint Cycle
-          </p>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {project.activeSprint || "—"}
-          </p>
-          <p className="text-2xs text-muted-foreground mt-0.5">
-            {project.dueDate ? `Target: ${project.dueDate}` : project.dateRange}
-          </p>
-        </Card>
-        <Card className="p-4 shadow-xs">
-          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
-            Scheduled Events
-          </p>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {monthEvents.length} events
-          </p>
-          <p className="text-2xs text-muted-foreground mt-0.5">
-            In {monthLabel}
-          </p>
-        </Card>
-        <Card className="p-4 shadow-xs">
-          <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
-            <Icon icon={Flag} size={11} />
-            Milestone Deadlines
-          </p>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {deadlineCount}
-          </p>
-          <p className="text-2xs text-muted-foreground mt-0.5">This month</p>
-        </Card>
-        <Card className="p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <p className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
-              Schedule Conflicts
-            </p>
-            {conflictDays.length > 0 && (
-              <Badge
-                variant="destructive"
-                className="text-3xs px-1.5 py-0 font-bold uppercase tracking-wider"
-              >
-                Alert
-              </Badge>
-            )}
-          </div>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {conflictDays.length} overlapping
-          </p>
-          <p className="text-2xs text-muted-foreground mt-0.5">
-            {conflictDays.length > 0
+        <KpiCard
+          label="Active Sprint Cycle"
+          value={project.activeSprint || "—"}
+          subtext={
+            project.dueDate ? `Target: ${project.dueDate}` : project.dateRange
+          }
+        />
+        <KpiCard
+          label="Scheduled Events"
+          value={`${monthEvents.length} events`}
+          subtext={`In ${monthLabel}`}
+          sparklineData={[
+            Math.max(1, monthEvents.length - 4),
+            Math.max(2, monthEvents.length - 2),
+            monthEvents.length,
+          ]}
+        />
+        <KpiCard
+          label="Milestone Deadlines"
+          value={deadlineCount}
+          subtext="This month"
+          sparklineData={[1, 1, 2, deadlineCount]}
+        />
+        <KpiCard
+          label="Schedule Conflicts"
+          value={`${conflictDays.length} overlapping`}
+          badge={
+            conflictDays.length > 0
+              ? { text: "Alert", variant: "destructive" }
+              : undefined
+          }
+          subtext={
+            conflictDays.length > 0
               ? `Sep ${conflictDays[0][0]}: ${conflictDays[0][1].length} events same day`
-              : "No conflicts this month"}
-          </p>
-          {conflictDays.length > 0 && (
-            <KpiAlertLink to="#project-calendar-grid">
-              View conflicting days
-            </KpiAlertLink>
-          )}
-        </Card>
+              : "No conflicts this month"
+          }
+          alertLink={
+            conflictDays.length > 0
+              ? { to: "#project-calendar-grid", label: "View conflicting days" }
+              : undefined
+          }
+          isPositiveGood={false}
+          sparklineData={[0, 0, conflictDays.length]}
+          strokeColor={conflictDays.length > 0 ? "stroke-rose-500" : undefined}
+        />
       </div>
 
       <Card id="project-calendar-grid" tabIndex={-1} className="p-5 shadow-xs">

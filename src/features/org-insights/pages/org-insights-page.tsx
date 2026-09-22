@@ -1,8 +1,7 @@
 import * as React from "react";
 import { CalendarDays } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { KpiAlertLink } from "@/components/composed/kpi-alert-link";
+import { KpiCard, StatusIndicator } from "@/components/composed";
 import { Icon } from "@/components/ui/icon";
 import {
   Select,
@@ -111,16 +110,6 @@ const PROJECTS: ProjectPerf[] = [
     bottleneck: "Final archive migration",
   },
 ];
-
-const HEALTH_BADGE_CLASSES: Record<ProjectHealth, string> = {
-  "On track":
-    "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800",
-  "At risk":
-    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800",
-  Delayed:
-    "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800",
-  Completed: "bg-canvas-bg text-muted-foreground border-border-subtle",
-};
 
 const HEALTH_BAR_CLASSES: Record<ProjectHealth, string> = {
   "On track": "bg-teal-500",
@@ -265,61 +254,64 @@ export function OrgInsightsPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
-          <p className="text-xs font-medium text-muted-foreground">
-            Active projects
-          </p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {activeProjects}
-          </p>
-        </Card>
+        <KpiCard
+          label="Active projects"
+          value={activeProjects}
+          trend={{
+            value: "+1",
+            direction: "up",
+            timeframe: "vs last cycle",
+          }}
+          sparklineData={[5, 5, 6, 6, 6, 6]}
+        />
 
-        <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
-          <p className="text-xs font-medium text-muted-foreground">
-            Avg. completion
-          </p>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-              {avgCompletion}%
-            </span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Avg. completion"
+          value={`${avgCompletion}%`}
+          trend={{
+            value: "+4.1%",
+            direction: "up",
+            timeframe: "vs last cycle",
+          }}
+          sparklineData={[58, 61, 63, 65, 67, 68.4]}
+        />
 
-        <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
-          <p className="text-xs font-medium text-muted-foreground">
-            Total hours logged
-          </p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {totalHoursLogged.toFixed(1)}h
-          </p>
-        </Card>
+        <KpiCard
+          label="Total hours logged"
+          value={`${totalHoursLogged.toFixed(1)}h`}
+          trend={{
+            value: "+12.4%",
+            direction: "up",
+            timeframe: "vs previous 30d",
+          }}
+          sparklineData={[720, 755, 790, 830, 860, 886.5]}
+        />
 
-        <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-muted-foreground">
-              Needs attention
-            </p>
-            {needsAttention > 0 && (
-              <Badge
-                variant="destructive"
-                className="text-3xs px-1.5 py-0 font-bold uppercase tracking-wider"
-              >
-                Alert
-              </Badge>
-            )}
-          </div>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {needsAttention}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {delayed} delayed, {atRisk} at risk
-          </p>
-          {needsAttention > 0 && (
-            <KpiAlertLink to="#project-performance">
-              View at-risk projects
-            </KpiAlertLink>
-          )}
-        </Card>
+        <KpiCard
+          label="Needs attention"
+          value={`${needsAttention} projects`}
+          badge={
+            needsAttention > 0
+              ? { text: "Alert", variant: "destructive" }
+              : undefined
+          }
+          trend={{
+            value: `${delayed} delayed, ${atRisk} at risk`,
+            direction: "up",
+            timeframe: "require triage",
+          }}
+          isPositiveGood={false}
+          sparklineData={[0, 1, 0, 1, 1, needsAttention]}
+          strokeColor="stroke-rose-500"
+          alertLink={
+            needsAttention > 0
+              ? {
+                  to: "#project-performance",
+                  label: "View at-risk projects",
+                }
+              : undefined
+          }
+        />
       </div>
 
       {/* Charts */}
@@ -397,15 +389,7 @@ export function OrgInsightsPage() {
                     {project.name}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-3xs font-bold",
-                        HEALTH_BADGE_CLASSES[project.health],
-                      )}
-                    >
-                      {project.health}
-                    </Badge>
+                    <StatusIndicator status={project.health} />
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 w-32">

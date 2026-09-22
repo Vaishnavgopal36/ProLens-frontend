@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Search, MoreHorizontal, UserMinus, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { StatusIndicator } from "@/components/composed";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -138,12 +138,10 @@ export function TeamMembersTable({
                 </span>
               </TableCell>
               <TableCell className="text-center">
-                <Badge
-                  variant="outline"
-                  className="text-3xs uppercase font-bold text-teal-600 bg-teal-500/10 border-teal-500/30 dark:text-teal-400 px-2 py-0.5"
-                >
-                  {member.status}
-                </Badge>
+                <StatusIndicator
+                  status={member.status}
+                  className="justify-center"
+                />
               </TableCell>
               {isManager && (
                 <TableCell className="text-right">

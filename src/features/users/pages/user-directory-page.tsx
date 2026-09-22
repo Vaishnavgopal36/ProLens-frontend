@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { StatusIndicator } from "@/components/composed";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -27,7 +27,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/composed/confirm-dialog";
-import { FilterBar, useFilters, type FilterFieldDef } from "@/components/composed/filters";
+import {
+  FilterBar,
+  useFilters,
+  type FilterFieldDef,
+} from "@/components/composed/filters";
 import {
   PageHeaderSkeleton,
   TableSkeleton,
@@ -334,7 +338,6 @@ export function UserDirectoryPage() {
           )}
           {shown.map((u) => {
             const isSelf = u.email === me?.email;
-            const active = u.status === "active";
             return (
               <TableRow key={u.id} className="hover:bg-canvas-overlay/40">
                 <TableCell>
@@ -369,17 +372,10 @@ export function UserDirectoryPage() {
                       : `${u.projects.slice(0, 2).join(", ")} +${u.projects.length - 2}`}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "px-2 py-0.5 text-3xs font-bold uppercase",
-                      active
-                        ? "border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-400"
-                        : "text-muted-foreground",
-                    )}
-                  >
-                    {u.status}
-                  </Badge>
+                  <StatusIndicator
+                    status={u.status}
+                    className="justify-center"
+                  />
                 </TableCell>
                 <TableCell className="text-right">
                   {!isSelf && (
