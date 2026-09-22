@@ -16,16 +16,19 @@ export function PageHeaderSkeleton({ withAction }: { withAction?: boolean }) {
   );
 }
 
-/** Matches MetricCard / KPI tile: label, big value, subtext. */
+/** Matches MetricCard / KPI tile: label, big value, sparkline, subtext. */
 function MetricCardSkeleton() {
   return (
-    <Card className="p-4 sm:p-5 border-border-subtle bg-canvas-surface space-y-3">
+    <div className="rounded-lg border border-border/70 bg-card p-4 flex flex-col justify-between h-[132px]">
       <div className="flex items-center justify-between">
         <Skeleton className="h-3 w-20" />
       </div>
-      <Skeleton className="h-7 w-16" />
-      <Skeleton className="h-3 w-24" />
-    </Card>
+      <div className="flex items-baseline justify-between">
+        <Skeleton className="h-7 w-20" />
+        <Skeleton className="h-3.5 w-16" />
+      </div>
+      <Skeleton className="h-10 w-full rounded" />
+    </div>
   );
 }
 

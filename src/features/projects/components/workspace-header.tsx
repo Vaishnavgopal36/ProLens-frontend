@@ -14,7 +14,6 @@ import { DeleteProjectDialog } from "./delete-project-dialog";
 import { ProjectSettingsDialog } from "./project-settings-dialog";
 import { SprintSettingsDialog } from "./sprint-settings-dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import {
   DropdownMenu,
@@ -23,7 +22,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Project } from "@/types/project";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface WorkspaceHeaderProps {
@@ -49,8 +47,6 @@ export function WorkspaceHeader({
   // the project itself is portfolio-lifecycle ownership, reserved for admins.
   const canManageWork = hasMinimumRole("manager");
   const canDeleteProject = hasMinimumRole("admin");
-
-  const isOngoing = project.status === "ongoing";
 
   const handleDelete = () => {
     setDeleteDialogOpen(false);
@@ -102,32 +98,9 @@ export function WorkspaceHeader({
           </div>
 
           <div className="min-w-0 space-y-1.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
-                {project.name}
-              </h1>
-
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-3xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border shrink-0",
-                  isOngoing
-                    ? "border-teal-500/40 text-teal-600 bg-teal-500/10 dark:text-teal-400"
-                    : "border-gold-500/40 text-gold-600 bg-gold-500/10 dark:text-gold-400",
-                )}
-              >
-                {project.status}
-              </Badge>
-
-              {project.activeSprint && (
-                <Badge
-                  variant="outline"
-                  className="text-3xs font-medium px-2 py-0.5 rounded-full border-border-subtle bg-canvas-surface text-muted-foreground shrink-0"
-                >
-                  {project.activeSprint}
-                </Badge>
-              )}
-            </div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
+              {project.name}
+            </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 max-w-2xl leading-relaxed">
               {project.description}

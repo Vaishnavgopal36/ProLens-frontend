@@ -20,7 +20,7 @@ import {
   MANAGER_TASKS_TABLE,
   MANAGER_PROJECTS_LIST,
 } from "../api/mock-data";
-import { MetricCard } from "../components/metric-card";
+import { KpiCard } from "@/components/composed";
 import { UpcomingActivities } from "../components/upcoming-activities";
 import { LogTimeDialog } from "../components/log-time-dialog";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
@@ -87,7 +87,7 @@ export function ManagerDashboardPage() {
       {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {MANAGER_METRICS.map((metric) => (
-          <MetricCard key={metric.id} data={metric} />
+          <KpiCard key={metric.id} data={metric} />
         ))}
       </div>
 

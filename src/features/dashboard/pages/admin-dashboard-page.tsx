@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useModalHotkey } from "@/hooks/use-hotkey";
 import { Plus, Users, CheckCircle2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { KpiCard, StatusIndicator } from "@/components/composed";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -24,7 +24,6 @@ import {
   ADMIN_PROJECTS_TABLE,
   ADMIN_TEAM_DISTRIBUTION,
 } from "../api/mock-data";
-import { MetricCard } from "../components/metric-card";
 import { UpcomingActivities } from "../components/upcoming-activities";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import {
@@ -136,7 +135,7 @@ export function AdminDashboardPage() {
       {/* 4 Top Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {ADMIN_METRICS.map((metric) => (
-          <MetricCard key={metric.id} data={metric} />
+          <KpiCard key={metric.id} data={metric} />
         ))}
       </div>
 
@@ -195,18 +194,7 @@ export function AdminDashboardPage() {
                       {row.manager}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          row.status === "Active"
-                            ? "success"
-                            : row.status === "On-hold"
-                              ? "warning"
-                              : "destructive"
-                        }
-                        className="text-3xs uppercase font-bold px-2 py-0.5"
-                      >
-                        {row.status}
-                      </Badge>
+                      <StatusIndicator status={row.status} />
                     </TableCell>
                     <TableCell className="text-right text-xs tabular-nums font-medium">
                       {row.hoursLogged.toFixed(1)}h
@@ -304,12 +292,11 @@ export function AdminDashboardPage() {
             </div>
 
             <Link
-  to="/teams"
-  className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline block"
->
-  Manage user directory →
-</Link>
-
+              to="/teams"
+              className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline block"
+            >
+              Manage user directory →
+            </Link>
           </div>
         </Card>
       </div>

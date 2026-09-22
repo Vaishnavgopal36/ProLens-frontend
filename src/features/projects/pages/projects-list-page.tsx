@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Plus } from "lucide-react";
+import { Plus, ChevronRight } from "lucide-react";
 import { useAuth } from "@/app/providers";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useModalHotkey } from "@/hooks/use-hotkey";
@@ -136,11 +136,12 @@ export function ProjectsListPage() {
       {/* Top Header & Breadcrumb Context */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium mb-1">
             <span>Projects</span>
-            <span>&gt;</span>
+            <Icon icon={ChevronRight} size={12} className="opacity-50" />
+            <span className="text-foreground font-semibold">Portfolio</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Enterprise Projects
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">

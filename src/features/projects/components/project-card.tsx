@@ -4,7 +4,6 @@ import { Folder, MoreVertical, Settings, Timer, Trash2 } from "lucide-react";
 import type { Project } from "@/types/project";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -144,22 +143,8 @@ export function ProjectCard({
         className="group relative flex flex-col justify-between overflow-hidden cursor-pointer border-border-subtle bg-canvas-surface p-5 transition-all duration-150 hover:border-border-strong hover:shadow-md min-w-0"
       >
         <div>
-          {/* Top Row: Status Badge & 3-Dot Action Menu */}
-          <div className="flex items-center justify-between gap-2">
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-3xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border shrink-0",
-                isOngoing
-                  ? "border-teal-500/40 text-teal-600 bg-teal-500/10 dark:text-teal-400"
-                  : "border-gold-500/40 text-gold-600 bg-gold-500/10 dark:text-gold-400",
-              )}
-            >
-              {project.status}
-            </Badge>
-
-            {actionsMenu}
-          </div>
+          {/* Top Row: 3-Dot Action Menu */}
+          <div className="flex items-center justify-end">{actionsMenu}</div>
 
           {/* Project Title: Clamped to 2 lines max with break-words */}
           <div className="mt-3 space-y-1 min-w-0">
@@ -308,19 +293,7 @@ function ProjectRow({
         </div>
       </div>
 
-      <div className="order-last col-span-2 flex items-center justify-between gap-3 lg:order-none lg:contents">
-        <Badge
-          variant="outline"
-          className={cn(
-            "w-fit shrink-0 rounded-full border px-2 py-0.5 text-3xs font-bold uppercase tracking-wider",
-            isOngoing
-              ? "border-teal-500/40 bg-teal-500/10 text-teal-600 dark:text-teal-400"
-              : "border-gold-500/40 bg-gold-500/10 text-gold-600 dark:text-gold-400",
-          )}
-        >
-          {project.status}
-        </Badge>
-
+      <div className="order-last col-span-2 flex items-center justify-end gap-3 lg:order-none lg:contents">
         <div className="hidden min-w-0 space-y-1 lg:block">
           <div className="flex justify-between text-2xs">
             <span className="font-medium text-muted-foreground">

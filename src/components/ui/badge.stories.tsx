@@ -9,15 +9,25 @@ const meta: Meta<typeof Badge> = {
     variant: {
       control: "select",
       options: [
+        "surface",
+        "muted",
+        "teal",
+        "primary",
+        "red",
+        "yellow",
+        "plain",
         "default",
         "secondary",
-        "accent",
-        "outline",
         "destructive",
         "success",
         "warning",
         "neutral",
+        "outline",
       ],
+    },
+    size: {
+      control: "select",
+      options: ["default", "sm", "xs"],
     },
   },
 };
@@ -25,41 +35,65 @@ const meta: Meta<typeof Badge> = {
 export default meta;
 type Story = StoryObj<typeof Badge>;
 
-export const PrimaryNavy: Story = {
+export const Surface: Story = {
   args: {
-    children: "Admin",
-    variant: "default",
+    children: "Badge",
+    variant: "surface",
   },
 };
 
-export const SecondaryTeal: Story = {
+export const Muted: Story = {
   args: {
-    children: "In Progress",
-    variant: "secondary",
+    children: "Badge",
+    variant: "muted",
   },
 };
 
-export const AccentGold: Story = {
+export const Teal: Story = {
   args: {
-    children: "High Priority",
-    variant: "accent",
+    children: "Badge",
+    variant: "teal",
   },
 };
 
-export const Critical: Story = {
+export const Primary: Story = {
   args: {
-    children: "Critical",
-    variant: "destructive",
+    children: "Badge",
+    variant: "primary",
   },
 };
 
-export const StatusPills: Story = {
+export const Red: Story = {
+  args: {
+    children: "Badge",
+    variant: "red",
+  },
+};
+
+export const Yellow: Story = {
+  args: {
+    children: "Badge",
+    variant: "yellow",
+  },
+};
+
+export const Plain: Story = {
+  args: {
+    children: "Badge",
+    variant: "plain",
+  },
+};
+
+export const BadgeGroup: Story = {
   render: () => (
-    <div className="flex gap-2">
-      <Badge variant="success">Active</Badge>
-      <Badge variant="warning">Pending Review</Badge>
-      <Badge variant="neutral">Backlog</Badge>
-      <Badge variant="destructive">Blocked</Badge>
+    <div className="inline-flex flex-wrap gap-2">
+      <Badge variant="surface">Badge</Badge>
+      <Badge variant="muted">Badge</Badge>
+      <Badge variant="teal">Badge</Badge>
+      <Badge variant="primary">Badge</Badge>
+      <Badge variant="red">Badge</Badge>
+      <Badge variant="yellow">Badge</Badge>
+      <Badge variant="plain">Badge</Badge>
     </div>
   ),
 };

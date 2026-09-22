@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FilterBar, useFilters, type FilterFieldDef } from "@/components/composed/filters";
+import { StatusIndicator } from "@/components/composed";
+import {
+  FilterBar,
+  useFilters,
+  type FilterFieldDef,
+} from "@/components/composed/filters";
 import { useProjectViewer } from "../../hooks/use-project-filter-fields";
 import {
   Table,
@@ -13,12 +18,7 @@ import {
 } from "@/components/ui/table";
 import type { Project } from "@/types/project";
 import { AddTaskDialog, type TaskFormValues } from "../add-task-dialog";
-import {
-  MOCK_LIST_TASKS,
-  type ListTask,
-  type TaskPriority,
-  type TaskStatus,
-} from "./mock-data";
+import { MOCK_LIST_TASKS, type ListTask, type TaskPriority } from "./mock-data";
 import { api } from "@/lib/api";
 import { mapTaskToListTask } from "@/lib/mappers";
 import { toast } from "sonner";
@@ -31,13 +31,6 @@ const PRIORITY_BADGE_CLASS: Record<TaskPriority, string> = {
   High: "bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400",
   Medium: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
   Low: "bg-muted text-muted-foreground",
-};
-
-const STATUS_BADGE_CLASS: Record<TaskStatus, string> = {
-  "In Progress":
-    "bg-teal-500/10 text-teal-600 dark:bg-teal-500/10 dark:text-teal-400",
-  Delivered: "bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400",
-  Backlog: "bg-muted text-muted-foreground",
 };
 
 const LIST_FEATURES = ["Design System", "Authentication", "Reporting"];
@@ -274,14 +267,7 @@ export function ListTab({ project }: ListTabProps) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`border-transparent px-2 py-0.5 text-2xs font-semibold ${
-                          STATUS_BADGE_CLASS[task.status]
-                        }`}
-                      >
-                        {task.status}
-                      </Badge>
+                      <StatusIndicator status={task.status} />
                     </TableCell>
                     <TableCell
                       className={`text-xs font-medium ${

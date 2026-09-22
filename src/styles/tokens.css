@@ -64,12 +64,12 @@
   }
 
   /* Dark Theme — near-black moody palette (bg #0A0B0D / surface #16181C /
-     border #2A2D33 / text #F2F3F5 / accent #4C8DFF), built as full
-     50–900 scales rather than one flat hex per role so existing tint-pair
-     usages (e.g. bg-teal-950 + text-teal-300) keep working. The brand
-     scales (--teal-*, --gold-*) are overridden here so every existing
-     bg-teal-500 / text-gold-400 etc. class site-wide picks up this
-     palette's blue/amber instead of the light-mode teal/gold. */
+border #2A2D33 / text #F2F3F5 / accent #4C8DFF), built as full
+50–900 scales rather than one flat hex per role so existing tint-pair
+usages (e.g. bg-teal-950 + text-teal-300) keep working. The brand
+scales (--teal-*, --gold-*) are overridden here so every existing
+bg-teal-500 / text-gold-400 etc. class site-wide picks up this
+palette's blue/amber instead of the light-mode teal/gold. */
   .dark {
     --canvas-bg: #0a0b0d;
     --canvas-surface: #16181c;

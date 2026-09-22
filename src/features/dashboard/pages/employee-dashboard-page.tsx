@@ -19,7 +19,7 @@ import {
   EMPLOYEE_PRIORITIES_TABLE,
   EMPLOYEE_WEEKLY_EFFORT,
 } from "../api/mock-data";
-import { MetricCard } from "../components/metric-card";
+import { KpiCard } from "@/components/composed";
 import { UpcomingActivities } from "../components/upcoming-activities";
 import { LogTimeDialog } from "../components/log-time-dialog";
 
@@ -63,7 +63,7 @@ export function EmployeeDashboardPage() {
       {/* Top Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {EMPLOYEE_METRICS.map((metric) => (
-          <MetricCard key={metric.id} data={metric} />
+          <KpiCard key={metric.id} data={metric} />
         ))}
       </div>
 
@@ -105,7 +105,7 @@ export function EmployeeDashboardPage() {
                       navigate(
                         row.project.toLowerCase().includes("nova")
                           ? "/projects/proj-2"
-                          : "/projects/proj-1"
+                          : "/projects/proj-1",
                       )
                     }
                     className="cursor-pointer hover:bg-canvas-overlay/60 transition-colors"

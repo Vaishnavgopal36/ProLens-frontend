@@ -1,8 +1,7 @@
 import * as React from "react";
 import { ChevronRight, CalendarDays, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { KpiAlertLink } from "@/components/composed/kpi-alert-link";
+import { KpiCard, StatusIndicator } from "@/components/composed";
 import { Icon } from "@/components/ui/icon";
 import {
   Select,
@@ -19,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/app/providers";
 import { useSimulatedLoading } from "@/lib/use-simulated-loading";
 import {
@@ -29,7 +27,6 @@ import {
   TableSkeleton,
 } from "@/components/composed/skeletons";
 import { MOCK_PROJECTS } from "@/features/projects/api/mock-data";
-import type { ProjectStatus } from "@/types/project";
 import { BurndownChart } from "@/components/composed/burndown-chart";
 import {
   BASE_DAILY_DELTAS,
@@ -38,14 +35,6 @@ import {
   SPRINT_TODAY_DAY,
   SPRINT_TOTAL_DAYS,
 } from "../api/burndown-mock";
-
-const STATUS_BADGE_CLASSES: Record<ProjectStatus, string> = {
-  ongoing:
-    "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800",
-  pending:
-    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800",
-  completed: "bg-canvas-bg text-muted-foreground border-border-subtle",
-};
 
 export function MyInsightsPage() {
   const { user } = useAuth();
@@ -152,61 +141,64 @@ export function MyInsightsPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
-          <p className="text-xs font-medium text-muted-foreground">
-            My active projects
-          </p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {activeProjects}
-          </p>
-        </Card>
+        <KpiCard
+          label="My active projects"
+          value={activeProjects}
+          subtext="Assigned portfolio"
+          sparklineData={[
+            Math.max(0, activeProjects - 2),
+            Math.max(0, activeProjects - 1),
+            activeProjects,
+          ]}
+        />
 
-        <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
-          <p className="text-xs font-medium text-muted-foreground">
-            My avg. completion
-          </p>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-              {avgCompletion}%
-            </span>
-          </div>
-        </Card>
+        <KpiCard
+          label="My avg. completion"
+          value={`${avgCompletion}%`}
+          trend={{
+            value: "+3.2%",
+            direction: "up",
+            timeframe: "vs last sprint",
+          }}
+          sparklineData={[58, 62, 65, avgCompletion]}
+          strokeColor="text-teal-500 dark:text-teal-400 stroke-teal-500 dark:stroke-teal-400"
+        />
 
-        <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
-          <p className="text-xs font-medium text-muted-foreground">
-            My hours logged
-          </p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {totalHoursLogged.toFixed(1)}h
-          </p>
-        </Card>
+        <KpiCard
+          label="My hours logged"
+          value={`${totalHoursLogged.toFixed(1)}h`}
+          trend={{ value: "+8.5h", direction: "up", timeframe: "this cycle" }}
+          sparklineData={[
+            Math.round(totalHoursLogged * 0.35),
+            Math.round(totalHoursLogged * 0.6),
+            Math.round(totalHoursLogged * 0.85),
+            totalHoursLogged,
+          ]}
+          strokeColor="text-teal-500 dark:text-teal-400 stroke-teal-500 dark:stroke-teal-400"
+        />
 
-        <Card className="p-4 shadow-xs border-border-subtle bg-canvas-surface">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-muted-foreground">
-              Needs my attention
-            </p>
-            {overBudget > 0 && (
-              <Badge
-                variant="destructive"
-                className="text-3xs px-1.5 py-0 font-bold uppercase tracking-wider"
-              >
-                Alert
-              </Badge>
-            )}
-          </div>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {overBudget}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {overBudget > 0 ? "over logged hours" : "all on budget"}
-          </p>
-          {overBudget > 0 && (
-            <KpiAlertLink to="#my-projects">
-              View projects over budget
-            </KpiAlertLink>
-          )}
-        </Card>
+        <KpiCard
+          label="Needs my attention"
+          value={overBudget}
+          isPositiveGood={false}
+          subtext={overBudget > 0 ? "over logged hours" : "all on budget"}
+          badge={
+            overBudget > 0
+              ? { text: "Alert", variant: "destructive" }
+              : undefined
+          }
+          alertLink={
+            overBudget > 0
+              ? { to: "#my-projects", label: "View projects" }
+              : undefined
+          }
+          sparklineData={overBudget > 0 ? [0, 1, overBudget] : [0, 0, 0, 0]}
+          strokeColor={
+            overBudget > 0
+              ? "text-rose-500 dark:text-rose-400 stroke-rose-500 dark:stroke-rose-400"
+              : undefined
+          }
+        />
       </div>
 
       {/* My projects table */}
@@ -233,24 +225,16 @@ export function MyInsightsPage() {
                   {project.name}
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-3xs uppercase font-bold",
-                      STATUS_BADGE_CLASSES[project.status],
-                    )}
-                  >
-                    {project.status}
-                  </Badge>
+                  <StatusIndicator status={project.status} />
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2 w-32">
-                    <span className="text-xs text-muted-foreground w-9 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground w-8 tabular-nums shrink-0">
                       {project.completionPercentage}%
                     </span>
-                    <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+                    <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden shrink-0">
                       <div
-                        className="h-full rounded-full bg-teal-500"
+                        className="h-full rounded-full bg-teal-500 transition-all"
                         style={{ width: `${project.completionPercentage}%` }}
                       />
                     </div>

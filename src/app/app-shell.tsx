@@ -1,8 +1,33 @@
-import { useRef } from "react";
-import { Outlet } from "react-router-dom";
+import { useRef, useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import { AppHeader } from "@/components/composed/app-header";
 import { AppSidebar } from "@/components/composed/app-sidebar";
-import { SmoothScrollProvider } from "@/components/composed/smooth-scroll-provider";
+import {
+  SmoothScrollProvider,
+  useSmoothScroll,
+} from "@/components/composed/smooth-scroll-provider";
+
+/**
+ * Resets viewport scroll to top upon route transitions,
+ * preventing previous scroll offsets from slicing off page headers.
+ */
+function ScrollResetWatcher({
+  mainRef,
+}: {
+  mainRef: React.RefObject<HTMLElement | null>;
+}) {
+  const { scrollTo } = useSmoothScroll();
+  const location = useLocation();
+
+  useEffect(() => {
+    scrollTo(0, { immediate: true });
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+  }, [location.pathname, scrollTo, mainRef]);
+
+  return null;
+}
 
 export function AppShell() {
   const mainRef = useRef<HTMLElement | null>(null);
@@ -16,10 +41,11 @@ export function AppShell() {
       <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
         <AppHeader />
         <SmoothScrollProvider containerRef={mainRef}>
+          <ScrollResetWatcher mainRef={mainRef} />
           <main
             ref={mainRef}
             tabIndex={-1}
-            className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 outline-none"
+            className="flex-1 overflow-y-auto overflow-x-hidden pt-8 pb-12 px-6 sm:px-8 outline-none"
           >
             <Outlet />
           </main>

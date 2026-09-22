@@ -39,10 +39,30 @@ export default {
         input: withAlpha("--border-subtle"),
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        foreground: {
+          DEFAULT: "hsl(var(--foreground))",
+          inverse: "var(--foreground-inverse)",
+        },
+        surface: {
+          DEFAULT: "var(--surface)",
+          foreground: "var(--surface-foreground)",
+        },
+        plain: {
+          DEFAULT: "var(--plain)",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          50: "#eff6ff",
+          100: "#dbeafe",
+          200: "#bfdbfe",
+          300: "#93c5fd",
+          400: "#60a5fa",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
+          800: "#1e40af",
+          900: "#1e3a8a",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -55,6 +75,7 @@ export default {
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
+          "foreground-1": "var(--muted-foreground-1)",
         },
         accent: {
           DEFAULT: "hsl(var(--accent))",

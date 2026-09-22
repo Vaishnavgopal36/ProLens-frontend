@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import { KpiCard } from "@/components/composed";
 import type { Project, ProjectMember } from "@/types/project";
 import type { UserRole } from "@/app/providers";
 
@@ -56,104 +56,86 @@ export function SummaryKpiBar({
       ? selectedMember.assignedTasksCount
       : project.tasksCount;
 
+  const coreFeatures =
+    isEmployeeMode && selectedMember
+      ? selectedMember.assignedFeaturesCount
+      : project.coreFeaturesCount || 5;
+
   return (
-    <Card className="border-border-subtle bg-canvas-surface p-5 shadow-xs">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 sm:divide-x divide-border-subtle gap-y-4 sm:gap-y-0">
-        {/* 1. PROGRESS */}
-        <div className="flex flex-col justify-between pr-4">
-          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
-            {isEmployeeMode ? "My Progress" : "Progress"}
-          </span>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-              {project.completionPercentage}%
-            </span>
-          </div>
-          <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full bg-teal-500 transition-all duration-500"
-              style={{ width: `${project.completionPercentage}%` }}
-            />
-          </div>
-        </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      {/* 1. PROGRESS */}
+      <KpiCard
+        label={isEmployeeMode ? "My Progress" : "Progress"}
+        value={`${project.completionPercentage}%`}
+        subtext={`${project.completionPercentage}% complete`}
+        sparklineData={[
+          Math.max(0, project.completionPercentage - 20),
+          Math.max(0, project.completionPercentage - 12),
+          Math.max(0, project.completionPercentage - 5),
+          project.completionPercentage,
+        ]}
+        strokeColor="text-teal-500 dark:text-teal-400 stroke-teal-500 dark:stroke-teal-400"
+      />
 
-        {/* 2. FEATURES */}
-        <div className="flex flex-col justify-between px-0 sm:px-4 pt-3 sm:pt-0">
-          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
-            Features
-          </span>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-              {isEmployeeMode && selectedMember
-                ? selectedMember.assignedFeaturesCount
-                : project.coreFeaturesCount || 5}
-            </span>
-          </div>
-          <p className="mt-2 text-2xs text-muted-foreground truncate">
-            {isEmployeeMode ? "Assigned tracks" : "4 Active • 1 Planning"}
-          </p>
-        </div>
+      {/* 2. FEATURES */}
+      <KpiCard
+        label="Features"
+        value={coreFeatures}
+        subtext={isEmployeeMode ? "Assigned tracks" : "4 Active • 1 Planning"}
+        hasTelemetry={false}
+      />
 
-        {/* 3. TASKS BREAKDOWN */}
-        <div className="flex flex-col justify-between px-0 sm:px-4 pt-3 sm:pt-0">
-          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
-            Tasks
-          </span>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-              {totalTasks}
-            </span>
-          </div>
-          <p className="mt-2 text-2xs text-muted-foreground truncate">
-            {totalTasks} sprint assignments
-          </p>
-        </div>
+      {/* 3. TASKS */}
+      <KpiCard
+        label="Tasks"
+        value={totalTasks}
+        subtext={`${totalTasks} sprint items`}
+        sparklineData={[
+          Math.max(0, totalTasks - 4),
+          Math.max(0, totalTasks - 2),
+          totalTasks,
+        ]}
+      />
 
-        {/* 4. ESTIMATED */}
-        <div className="flex flex-col justify-between px-0 sm:px-4 pt-3 sm:pt-0">
-          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
-            Estimated
-          </span>
-          <div className="mt-1">
-            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-              {estimatedHours}h
-            </span>
-          </div>
-          <p className="mt-2 text-2xs text-muted-foreground truncate">
-            Scoped by {project.activeSprint || "Sprint 4"}
-          </p>
-        </div>
+      {/* 4. ESTIMATED */}
+      <KpiCard
+        label="Estimated"
+        value={`${estimatedHours}h`}
+        subtext={project.activeSprint || "Sprint 4"}
+        hasTelemetry={false}
+      />
 
-        {/* 5. LOGGED EFFORT */}
-        <div className="flex flex-col justify-between px-0 sm:px-4 pt-3 sm:pt-0">
-          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
-            Logged Effort
-          </span>
-          <div className="mt-1">
-            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-              {loggedHours.toFixed(1)}h
-            </span>
-          </div>
-          <p className="mt-2 text-2xs text-muted-foreground truncate">
-            {burnedPercent}% burned
-          </p>
-        </div>
+      {/* 5. LOGGED EFFORT */}
+      <KpiCard
+        label="Logged Effort"
+        value={`${loggedHours.toFixed(1)}h`}
+        subtext={`${burnedPercent}% burned`}
+        sparklineData={[
+          Math.round(loggedHours * 0.35),
+          Math.round(loggedHours * 0.6),
+          Math.round(loggedHours * 0.85),
+          loggedHours,
+        ]}
+        strokeColor="text-teal-500 dark:text-teal-400 stroke-teal-500 dark:stroke-teal-400"
+      />
 
-        {/* 6. REMAINING */}
-        <div className="flex flex-col justify-between pl-0 sm:pl-4 pt-3 sm:pt-0">
-          <span className="text-3xs font-bold tracking-wider text-muted-foreground uppercase">
-            Remaining
-          </span>
-          <div className="mt-1">
-            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-              {remainingHours.toFixed(1)}h
-            </span>
-          </div>
-          <p className="mt-2 text-2xs text-muted-foreground truncate">
-            On schedule for {project.dueDate}
-          </p>
-        </div>
-      </div>
-    </Card>
+      {/* 6. REMAINING */}
+      <KpiCard
+        label="Remaining"
+        value={`${remainingHours.toFixed(1)}h`}
+        subtext={`Due ${project.dueDate}`}
+        sparklineData={[
+          estimatedHours,
+          Math.round(estimatedHours * 0.7),
+          Math.round(remainingHours * 1.1),
+          remainingHours,
+        ]}
+        strokeColor={
+          remainingHours === 0
+            ? "text-emerald-500 dark:text-emerald-400 stroke-emerald-500 dark:stroke-emerald-400"
+            : "text-amber-500 dark:text-amber-400 stroke-amber-500 dark:stroke-amber-400"
+        }
+      />
+    </div>
   );
 }

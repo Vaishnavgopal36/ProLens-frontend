@@ -1,4 +1,16 @@
 // 1. Top metric summary card
+export interface MetricTrend {
+  value: number | string; // e.g., 2.4, "+2.4%", 3, "+3"
+  direction?: "up" | "down" | "neutral";
+  timeframe?: string; // e.g., "vs last 24h", "vs last cycle"
+  /**
+   * If true, an upward trend is positive (e.g. delivery rate, revenue).
+   * If false, an upward trend is negative (e.g. 5xx errors, latency, defects).
+   * Defaults to true for "up", false for "down".
+   */
+  isPositive?: boolean;
+}
+
 export interface MetricCardData {
   id: string;
   label: string; // e.g., "Active projects", "Org delivery rate"
@@ -10,6 +22,21 @@ export interface MetricCardData {
     text: string; // e.g., "+2.4%", "Alert"
     variant: "success" | "warning" | "destructive" | "neutral";
   };
+  /**
+   * Telemetry series for the sparkline chart.
+   * - number[]: renders smooth Catmull-Rom cubic Bezier curve with area gradient.
+   * - all zeros: renders grounded flatline baseline.
+   * - null / undefined / empty: renders graceful empty state.
+   */
+  sparkline?: number[] | null;
+  /**
+   * Comparative trend indicator (delta + timeframe context).
+   */
+  trend?: MetricTrend;
+  /**
+   * Explicit theme variant for sparkline colors.
+   */
+  sparklineVariant?: "success" | "warning" | "destructive" | "neutral";
 }
 
 // 2. Upcoming activity item (bottom row in all views)

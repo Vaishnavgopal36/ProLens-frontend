@@ -4,42 +4,65 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 select-none",
+  "inline-flex shrink-0 items-center gap-x-1.5 whitespace-nowrap rounded-full py-1.5 px-3 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 select-none",
   {
     variants: {
       variant: {
+        surface:
+          "bg-surface text-surface-foreground dark:bg-canvas-surface dark:text-foreground",
+        muted:
+          "bg-muted text-muted-foreground-1 dark:bg-muted dark:text-muted-foreground",
+        teal: "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-400",
+        primary:
+          "bg-primary-100 text-primary-800 dark:bg-primary-500/20 dark:text-primary-400",
+        red: "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400",
+        yellow:
+          "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400",
+        plain:
+          "bg-plain/10 text-foreground-inverse dark:bg-white/10 dark:text-white",
+
+        // Codebase backwards-compatibility variants mapped to the new soft pastel pill styles
         default:
-          "border-transparent bg-navy-500 text-white shadow hover:bg-navy-600 dark:bg-foreground dark:text-background",
+          "bg-primary-100 text-primary-800 dark:bg-primary-500/20 dark:text-primary-400",
         secondary:
-          "border-transparent bg-teal-500 text-white hover:bg-teal-600",
-        accent:
-          "border-transparent bg-gold-500 text-navy-900 font-bold hover:bg-gold-600 dark:bg-teal-500 dark:text-white dark:hover:bg-teal-600",
-        outline:
-          "text-foreground border-border-subtle dark:border-border-strong",
+          "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-400",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
+          "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400",
         success:
-          "border-transparent bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300",
+          "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-400",
         warning:
-          "border-transparent bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+          "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400",
         neutral:
-          "border-transparent bg-navy-50 text-navy-700 dark:bg-navy-900 dark:text-navy-200",
+          "bg-surface text-surface-foreground dark:bg-canvas-surface dark:text-foreground",
+        accent:
+          "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400",
+        outline:
+          "border border-border-subtle bg-transparent text-foreground dark:border-border-strong",
+      },
+      size: {
+        default: "py-1.5 px-3 text-xs",
+        sm: "py-1 px-2.5 text-2xs",
+        xs: "py-0.5 px-2 text-3xs",
       },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   },
 );
 
 export interface BadgeProps
   extends
-    React.HTMLAttributes<HTMLDivElement>,
+    React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+function Badge({ className, variant, size, ...props }: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <span
+      className={cn(badgeVariants({ variant, size }), className)}
+      {...props}
+    />
   );
 }
 
