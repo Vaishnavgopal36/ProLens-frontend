@@ -2,536 +2,445 @@ import * as React from "react";
 import {
   Plus,
   Search,
-  Calendar as CalendarIcon,
-  LayoutList,
+  Calendar,
+  FolderOpen,
   LayoutGrid,
+  LayoutList,
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { useModalHotkey } from "@/hooks/use-hotkey";
+
 import { ActivityCard } from "../components/activity-card";
-import { ActivityDetailsDialog } from "../components/activity-details-dialog";
+import { ActivityDetailPage } from "./activity-detail-page";
 import { AddActivityDialog } from "../components/add-activity-dialog";
-import type { ActivityCategory, ActivityItem } from "@/types/activity";
-import { api } from "@/lib/api";
-
-function toISODate(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-const now = new Date();
-const todayISO = toISODate(now);
-
-const tomorrowDate = new Date(now);
-tomorrowDate.setDate(now.getDate() + 1);
-const tomorrowISO = toISODate(tomorrowDate);
-
-const dayAfterDate = new Date(now);
-dayAfterDate.setDate(now.getDate() + 2);
-const dayAfterISO = toISODate(dayAfterDate);
-
-const laterDate = new Date(now);
-laterDate.setDate(now.getDate() + 5);
-const laterISO = toISODate(laterDate);
-
-const INITIAL_ACTIVITIES: ActivityItem[] = [
-  {
-    id: "act-today-1",
-    category: "project",
-    categoryLabel: "Sprint Review",
-    projectName: "Apex Analytics Platform",
-    title: "Client Quarterly Architecture Review",
-    description:
-      "Executive presentation with client stakeholders discussing migration phases.",
-    date: todayISO,
-    timeWindow: "2:00 PM – 3:30 PM",
-    durationHours: "1 hour 30 minutes",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    pinColor: "teal",
-    loggedBy: "Alex Morgan",
-  },
-  {
-    id: "act-today-2",
-    category: "non-project",
-    categoryLabel: "Internal Session",
-    title: "Engineering Guild: Frontend State Management",
-    description:
-      "Knowledge sharing and patterns review on modern React performance.",
-    date: todayISO,
-    timeWindow: "4:00 PM – 5:00 PM",
-    durationHours: "1 hour",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    pinColor: "navy",
-    loggedBy: "Elena Rostova",
-  },
-  {
-    id: "act-tomorrow-1",
-    category: "project",
-    categoryLabel: "Client Meeting",
-    projectName: "Nova Mobile Dev",
-    title: "Biometrics SDK Demo & Security Audit",
-    description:
-      "Walkthrough of authentication token exchanges and mobile fallback flows.",
-    date: tomorrowISO,
-    timeWindow: "10:30 AM – 11:30 AM",
-    durationHours: "1 hour",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    pinColor: "teal",
-    loggedBy: "Alex Morgan",
-  },
-  {
-    id: "act-dayafter-1",
-    category: "project",
-    categoryLabel: "Release Sprint",
-    projectName: "Apex Analytics Platform",
-    title: "Staging Pipeline Verification & Sign-off",
-    description:
-      "Regression test suite run and integration testing before main branch merge.",
-    date: dayAfterISO,
-    timeWindow: "3:00 PM – 4:30 PM",
-    durationHours: "1 hour 30 minutes",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    pinColor: "teal",
-    loggedBy: "David Kim",
-  },
-  {
-    id: "act-upcoming-1",
-    category: "project",
-    categoryLabel: "Sprint Kickoff",
-    projectName: "Apex Analytics Platform",
-    title: "Next Quarter Milestone Planning",
-    description: "Sprint velocity estimation and resource reallocations.",
-    date: laterISO,
-    timeWindow: "11:00 AM – 12:30 PM",
-    durationHours: "1 hour 30 minutes",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    pinColor: "teal",
-    loggedBy: "Alex Morgan",
-  },
-];
+import { MOCK_ACTIVITY_ITEMS } from "../api/mock-data";
+import type { ActivityCardItem, ActivityType } from "@/types/activity";
 
 export function ActivityPage() {
-  const [activeFilter, setActiveFilter] = React.useState<
-    "all" | ActivityCategory
-  >("all");
+  const [items, setItems] = React.useState<ActivityCardItem[]>(MOCK_ACTIVITY_ITEMS);
+  const [filterType, setFilterType] = React.useState<"all" | ActivityType>("all");
+  const [selectedProject, setSelectedProject] = React.useState<string>("all");
+  const [selectedDateFilter, setSelectedDateFilter] = React.useState<string>("Sep 2026");
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [viewMode, setViewMode] = React.useState<"compact" | "expanded">(
-    "expanded",
-  );
+  const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
+
+  // Detailed view selection state
+  const [selectedActivity, setSelectedActivity] = React.useState<ActivityCardItem | null>(null);
+
+  // Add modal state
   const [addOpen, setAddOpen] = React.useState(false);
 
-  // Ctrl/⌘ + K toggles "add activity".
   useModalHotkey({
     open: addOpen,
     onOpen: () => setAddOpen(true),
     onClose: () => setAddOpen(false),
   });
-  const [activities, setActivities] =
-    React.useState<ActivityItem[]>(INITIAL_ACTIVITIES);
 
-  React.useEffect(() => {
-    let isMounted = true;
-    api.activities
-      .list()
-      .then((res) => {
-        if (!isMounted) return;
-        if (res.length > 0) {
-          const mapped: ActivityItem[] = res.map((a) => {
-            const isProj = Boolean(a.project_id);
-            return {
-              id: a.id,
-              category: isProj ? "project" : "non-project",
-              categoryLabel: isProj ? "Project Activity" : "General Activity",
-              title: a.name,
-              description: a.description || "",
-              date: todayISO,
-              timeWindow: "Flexible",
-              durationHours: "1 hour",
-              statusBadge: {
-                label: a.status === "done" ? "Archived" : "Active",
-                variant: a.status === "done" ? "neutral" : "success",
-              },
-              pinColor: "teal",
-              loggedBy: "Team Member",
-            };
-          });
-          setActivities(mapped);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  // Filter calculations
+  const filteredItems = React.useMemo(() => {
+    return items.filter((item) => {
+      const matchesType = filterType === "all" || item.type === filterType;
+      const matchesProject =
+        selectedProject === "all" ||
+        (item.projectName && item.projectName === selectedProject) ||
+        (selectedProject === "Internal" && !item.projectName);
 
-  // Selected Activity State for Details/Edit Modal
-  const [selectedActivity, setSelectedActivity] =
-    React.useState<ActivityItem | null>(null);
-  const [detailsOpen, setDetailsOpen] = React.useState(false);
-
-  const handleUpdateActivity = async (updated: ActivityItem) => {
-    setActivities((prev) =>
-      prev.map((item) => (item.id === updated.id ? updated : item)),
-    );
-    setSelectedActivity(updated);
-    try {
-      await api.activities.update(updated.id, {
-        name: updated.title,
-        description: updated.description || undefined,
-      });
-    } catch {
-      /* ignore */
-    }
-  };
-
-  const handleOpenDetails = (item: ActivityItem) => {
-    setSelectedActivity(item);
-    setDetailsOpen(true);
-  };
-
-  const handleEditClick = (item: ActivityItem) => {
-    setSelectedActivity(item);
-    setDetailsOpen(true);
-  };
-
-  const handleDeleteActivity = async (id: string) => {
-    try {
-      await api.activities.delete(id);
-      toast.success("Activity deleted successfully.");
-    } catch {
-      /* ignore */
-    }
-    setActivities((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const handleAddNewActivity = async (newItem: ActivityItem) => {
-    setActivities((prev) => [newItem, ...prev]);
-    try {
-      await api.activities.create({
-        name: newItem.title,
-        description: newItem.description || undefined,
-        status: "to_do",
-      });
-      toast.success("Activity created successfully.");
-    } catch {
-      /* ignore */
-    }
-  };
-
-  const counts = React.useMemo(
-    () => ({
-      all: activities.length,
-      project: activities.filter((i) => i.category === "project").length,
-      nonProject: activities.filter((i) => i.category === "non-project").length,
-    }),
-    [activities],
-  );
-
-  const filteredActivities = React.useMemo(() => {
-    return activities.filter((item) => {
-      const matchesCategory =
-        activeFilter === "all" || item.category === activeFilter;
-      const query = searchQuery.toLowerCase().trim();
+      const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
-        !query ||
-        item.title.toLowerCase().includes(query) ||
-        (item.description && item.description.toLowerCase().includes(query)) ||
-        (item.projectName && item.projectName.toLowerCase().includes(query));
+        !q ||
+        item.title.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        (item.projectName && item.projectName.toLowerCase().includes(q)) ||
+        (item.streamName && item.streamName.toLowerCase().includes(q));
 
-      return matchesCategory && matchesSearch;
+      return matchesType && matchesProject && matchesSearch;
     });
-  }, [activities, activeFilter, searchQuery]);
+  }, [items, filterType, selectedProject, searchQuery]);
 
-  // Calendar difference grouping
-  const groupedSections = React.useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const getDayDifference = (dateStr: string) => {
-      if (!dateStr) return 999;
-      const [y, m, d] = dateStr.split("-").map(Number);
-      const target = new Date(y, m - 1, d);
-      target.setHours(0, 0, 0, 0);
-      const diffTime = target.getTime() - today.getTime();
-      return Math.round(diffTime / (1000 * 60 * 60 * 24));
+  const counts = React.useMemo(() => {
+    return {
+      all: items.length,
+      project: items.filter((i) => i.type === "project").length,
+      nonProject: items.filter((i) => i.type === "non-project").length,
     };
+  }, [items]);
 
-    const todayItems: ActivityItem[] = [];
-    const tomorrowItems: ActivityItem[] = [];
-    const dayAfterItems: ActivityItem[] = [];
-    const upcomingItems: ActivityItem[] = [];
+  const handleDelete = (id: string) => {
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    toast.success("Activity deleted successfully.");
+  };
 
-    const sorted = [...filteredActivities].sort((a, b) => {
-      if (a.date === b.date) {
-        return (a.timeWindow || "").localeCompare(b.timeWindow || "");
-      }
-      return (a.date || "").localeCompare(b.date || "");
-    });
+  const handleUpdate = (updated: ActivityCardItem) => {
+    setItems((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+  };
 
-    sorted.forEach((item) => {
-      const diff = getDayDifference(item.date);
-      if (diff <= 0) {
-        todayItems.push(item);
-      } else if (diff === 1) {
-        tomorrowItems.push(item);
-      } else if (diff === 2) {
-        dayAfterItems.push(item);
-      } else {
-        upcomingItems.push(item);
-      }
-    });
+  const handleAddNew = (newItem: any) => {
+    const cardItem: ActivityCardItem = {
+      id: newItem.id || `act-${Date.now()}`,
+      type: newItem.category === "project" ? "project" : "non-project",
+      title: newItem.title,
+      projectName: newItem.category === "project" ? newItem.projectName : undefined,
+      streamName: newItem.category !== "project" ? "Operations" : undefined,
+      date: "Sep 22, 2026",
+      description: newItem.description || "Activity recorded in workspace.",
+      duration: newItem.durationHours || "1h 00m",
+      loggedHours: newItem.durationHours || "1h 00m",
+      tasksCount: newItem.tasks?.length || 1,
+      taskTag: newItem.categoryLabel || "Sprint Activity",
+      members: ["LK"],
+      tasks: newItem.tasks || [],
+    };
+    setItems((prev) => [cardItem, ...prev]);
+  };
 
-    const formatHeaderDate = (d: Date) =>
-      d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+  // IF AN ACTIVITY IS SELECTED -> RENDER DETAIL VIEW
+  if (selectedActivity) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6">
+        <ActivityDetailPage
+          activity={selectedActivity}
+          onBack={() => setSelectedActivity(null)}
+          onUpdate={(updated) => {
+            handleUpdate(updated);
+            setSelectedActivity(updated);
+          }}
+          onDelete={(id) => {
+            handleDelete(id);
+            setSelectedActivity(null);
+          }}
+        />
+      </div>
+    );
+  }
 
-    return [
-      {
-        key: "today",
-        title: "Today",
-        dateSubtitle: formatHeaderDate(now),
-        items: todayItems,
-      },
-      {
-        key: "tomorrow",
-        title: "Tomorrow",
-        dateSubtitle: formatHeaderDate(tomorrowDate),
-        items: tomorrowItems,
-      },
-      {
-        key: "dayAfter",
-        title: "Day After Tomorrow",
-        dateSubtitle: formatHeaderDate(dayAfterDate),
-        items: dayAfterItems,
-      },
-      ...(upcomingItems.length > 0
-        ? [
-            {
-              key: "upcoming",
-              title: "Upcoming",
-              dateSubtitle: "Later",
-              items: upcomingItems,
-            },
-          ]
-        : []),
-    ];
-  }, [filteredActivities]);
-
+  // DEFAULT -> RENDER ACTIVITY DIRECTORY (CARDS / LIST)
   return (
-    <div className="w-full max-w-[1280px] mx-auto space-y-6">
+    <div className="w-full max-w-[1280px] mx-auto space-y-6 pb-12">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            Activity Schedule
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Organized timeline for Today, Tomorrow, Day After Tomorrow, and
-            Upcoming initiatives.
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+            <span className="hover:text-foreground transition-colors cursor-pointer"></span>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              My Activity
+            </h1>
+          </div>
+
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Track, categorize, and report your project allocations and internal operations.
           </p>
         </div>
 
-        {/* Reusable Accent Button (Gold) */}
-        <Button
-          variant="accent"
-          size="sm"
-          title="Add activity (Ctrl+K)"
-          onClick={() => setAddOpen(true)}
-          className="gap-1.5 font-semibold text-xs h-9 self-start sm:self-auto"
-        >
-          <Icon icon={Plus} size={16} />
-          <span>Add Activity</span>
-        </Button>
+        {/* Top Right: Logged metric badge + Add button */}
+        <div className="flex items-center gap-3 self-start md:self-auto">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setAddOpen(true)}
+            className="gap-1.5 font-semibold bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-500 dark:hover:bg-teal-600 h-9"
+          >
+            <Icon icon={Plus} size={16} />
+            <span>Add Activity</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Toolbar Controls */}
-      <Card className="p-3 border-border-subtle bg-canvas-surface shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* Category Pills */}
-        <div className="flex items-center gap-1 p-1 bg-canvas-bg/60 rounded-lg overflow-x-auto select-none">
+      {/* Control Bar: Filter Tabs on left, Search & Dropdowns on right */}
+      <div className="rounded-xl border border-border-subtle bg-canvas-surface p-2 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 select-none">
           <button
             type="button"
-            onClick={() => setActiveFilter("all")}
+            onClick={() => setFilterType("all")}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all outline-none",
-              activeFilter === "all"
-                ? "bg-navy-500 text-white dark:bg-foreground dark:text-background shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface",
+              "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors outline-none",
+              filterType === "all"
+                ? "bg-canvas-bg text-foreground shadow-xs font-bold"
+                : "text-muted-foreground hover:bg-canvas-overlay hover:text-foreground"
             )}
           >
             <span>All</span>
-            <span className="px-1.5 py-0.2 rounded-full tabular-nums text-3xs bg-white/20">
+            <span
+              className={cn(
+                "rounded-full px-1.5 py-0.2 text-[10px] font-mono",
+                filterType === "all"
+                  ? "bg-muted text-foreground font-bold"
+                  : "bg-muted/60 text-muted-foreground"
+              )}
+            >
               {counts.all}
             </span>
           </button>
 
           <button
             type="button"
-            onClick={() => setActiveFilter("project")}
+            onClick={() => setFilterType("project")}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all outline-none",
-              activeFilter === "project"
-                ? "bg-navy-500 text-white dark:bg-foreground dark:text-background shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface",
+              "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors outline-none",
+              filterType === "project"
+                ? "bg-canvas-bg text-foreground shadow-xs font-bold"
+                : "text-muted-foreground hover:bg-canvas-overlay hover:text-foreground"
             )}
           >
             <span>Project Activities</span>
-            <span className="px-1.5 py-0.2 rounded-full tabular-nums text-3xs bg-muted">
+            <span
+              className={cn(
+                "rounded-full px-1.5 py-0.2 text-[10px] font-mono",
+                filterType === "project"
+                  ? "bg-muted text-foreground font-bold"
+                  : "bg-muted/60 text-muted-foreground"
+              )}
+            >
               {counts.project}
             </span>
           </button>
 
           <button
             type="button"
-            onClick={() => setActiveFilter("non-project")}
+            onClick={() => setFilterType("non-project")}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all outline-none",
-              activeFilter === "non-project"
-                ? "bg-navy-500 text-white dark:bg-foreground dark:text-background shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-canvas-surface",
+              "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors outline-none",
+              filterType === "non-project"
+                ? "bg-canvas-bg text-foreground shadow-xs font-bold"
+                : "text-muted-foreground hover:bg-canvas-overlay hover:text-foreground"
             )}
           >
             <span>Non-Project Activities</span>
-            <span className="px-1.5 py-0.2 rounded-full tabular-nums text-3xs bg-muted">
+            <span
+              className={cn(
+                "rounded-full px-1.5 py-0.2 text-[10px] font-mono",
+                filterType === "non-project"
+                  ? "bg-muted text-foreground font-bold"
+                  : "bg-muted/60 text-muted-foreground"
+              )}
+            >
               {counts.nonProject}
             </span>
           </button>
         </div>
 
-        {/* View Switcher & Search Bar */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1 rounded-lg border border-border-subtle bg-canvas-bg/50 p-1">
-            <Button
-              type="button"
-              variant={viewMode === "compact" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("compact")}
-              className="h-7 px-2.5 text-xs gap-1.5 font-medium"
-            >
-              <Icon icon={LayoutList} size={13} />
-            </Button>
-            <Button
-              type="button"
-              variant={viewMode === "expanded" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("expanded")}
-              className="h-7 px-2.5 text-xs gap-1.5 font-medium"
-            >
-              <Icon icon={LayoutGrid} size={13} />
-            </Button>
-          </div>
-
-          <div className="relative flex-1 sm:w-64">
+        {/* Search, Dropdowns, and View Switcher */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Search box */}
+          <div className="relative min-w-[190px] flex-1 sm:flex-initial">
             <Icon
               icon={Search}
-              size={15}
+              size={14}
               className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
             />
             <Input
               type="text"
-              placeholder="Search title, project..."
+              placeholder="Search activities or tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 text-xs bg-canvas-surface border-border-subtle"
+              className="h-8 pl-8 text-xs bg-canvas-bg border-border-subtle"
             />
+          </div>
+
+          {/* Date Selector Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-border-subtle bg-canvas-bg hover:bg-canvas-overlay text-xs text-foreground font-medium transition-colors"
+              >
+                <Icon icon={Calendar} size={14} className="text-muted-foreground" />
+                <span>{selectedDateFilter}</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-36">
+              <DropdownMenuItem onClick={() => setSelectedDateFilter("Sep 2026")}>
+                Sep 2026 (Current)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSelectedDateFilter("Aug 2026")}>
+                Aug 2026
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSelectedDateFilter("All Time")}>
+                All Time
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Project Selector Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-border-subtle bg-canvas-bg hover:bg-canvas-overlay text-xs text-foreground font-medium transition-colors"
+              >
+                <Icon icon={FolderOpen} size={14} className="text-muted-foreground" />
+                <span>{selectedProject === "all" ? "All Projects" : selectedProject}</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={() => setSelectedProject("all")}>
+                All Projects &amp; Ops
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSelectedProject("Website Redesign")}>
+                Website Redesign
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSelectedProject("Mobile App v2.0")}>
+                Mobile App v2.0
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSelectedProject("Internal")}>
+                Internal Operations
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* View Switcher */}
+          <div className="flex items-center rounded-md border border-border-subtle bg-canvas-bg p-0.5">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "p-1 rounded transition-colors",
+                viewMode === "grid"
+                  ? "bg-canvas-surface text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              title="Grid View"
+            >
+              <Icon icon={LayoutGrid} size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "p-1 rounded transition-colors",
+                viewMode === "list"
+                  ? "bg-canvas-surface text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              title="List View"
+            >
+              <Icon icon={LayoutList} size={15} />
+            </button>
           </div>
         </div>
-      </Card>
-
-      {/* Sections */}
-      <div className="space-y-6">
-        {filteredActivities.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 border border-dashed border-border-subtle rounded-xl text-center bg-canvas-surface/40">
-            <Icon
-              icon={Clock}
-              size={24}
-              className="text-muted-foreground mb-2"
-            />
-            <p className="text-sm font-semibold text-foreground">
-              No activities found
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Try adjusting your search query or switching category filters.
-            </p>
-          </div>
-        ) : (
-          groupedSections.map((section) => (
-            <div key={section.key} className="space-y-3">
-              <div className="flex items-center gap-2.5">
-                <Icon
-                  icon={CalendarIcon}
-                  size={15}
-                  className="text-teal-600 dark:text-teal-400"
-                />
-                <div className="flex items-baseline gap-2">
-                  <h2 className="text-sm font-bold text-foreground">
-                    {section.title}
-                  </h2>
-                  <span className="text-xs text-muted-foreground font-medium">
-                    ({section.dateSubtitle})
-                  </span>
-                </div>
-                <div className="flex-1 h-px bg-border-subtle" />
-                <span className="text-[11px] text-muted-foreground font-mono">
-                  {section.items.length}{" "}
-                  {section.items.length === 1 ? "activity" : "activities"}
-                </span>
-              </div>
-
-              {section.items.length === 0 ? (
-                <div className="p-4 rounded-lg border border-dashed border-border-subtle text-center text-xs text-muted-foreground bg-canvas-surface/20">
-                  No activities scheduled for {section.title.toLowerCase()}.
-                </div>
-              ) : (
-                <div
-                  className={cn(
-                    "grid gap-3",
-                    viewMode === "compact"
-                      ? "grid-cols-1 md:grid-cols-2"
-                      : "grid-cols-1",
-                  )}
-                >
-                  {section.items.map((item) => (
-                    <ActivityCard
-                      key={item.id}
-                      item={item}
-                      viewMode={viewMode}
-                      onSelect={handleOpenDetails}
-                      onEdit={handleEditClick}
-                      onDelete={handleDeleteActivity}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          ))
-        )}
       </div>
 
-      {/* Activity Details & In-Place Edit Modal */}
-      <ActivityDetailsDialog
-        item={selectedActivity}
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-        onSave={handleUpdateActivity}
-        onDelete={handleDeleteActivity}
-      />
+      {/* Main Content Area */}
+      {filteredItems.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-14 border border-dashed border-border-subtle rounded-xl text-center bg-canvas-surface/40">
+          <Icon icon={FolderOpen} size={28} className="text-muted-foreground/60 mb-2" />
+          <h3 className="text-sm font-semibold text-foreground">No matching activities found</h3>
+          <p className="text-xs text-muted-foreground mt-0.5 max-w-sm">
+            Try adjusting your active filter or search keywords.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setFilterType("all");
+              setSelectedProject("all");
+              setSearchQuery("");
+            }}
+            className="mt-3 text-xs"
+          >
+            Clear all filters
+          </Button>
+        </div>
+      ) : viewMode === "grid" ? (
+        /* 3-COLUMN CARD GRID */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredItems.map((item) => (
+            <ActivityCard
+              key={item.id}
+              item={item}
+              onView={(it) => setSelectedActivity(it)}
+              onEdit={(it) => setSelectedActivity(it)}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      ) : (
+        /* LIST / TABLE VIEW */
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Activity Name</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Project / Stream</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="text-center">Duration</TableHead>
+              <TableHead className="text-center">Logged</TableHead>
+              <TableHead>Associated Scope</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredItems.map((item) => (
+              <TableRow
+                key={item.id}
+                onClick={() => setSelectedActivity(item)}
+                className="cursor-pointer hover:bg-canvas-bg/60"
+              >
+                <TableCell className="font-semibold text-xs text-foreground">
+                  {item.title}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={item.type === "project" ? "secondary" : "neutral"}
+                    className="text-[10px] uppercase font-bold"
+                  >
+                    {item.type === "project" ? "Project" : "Non-Project"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {item.projectName || item.streamName || "—"}
+                </TableCell>
+                <TableCell className="text-xs font-mono text-muted-foreground">
+                  {item.date}
+                </TableCell>
+                <TableCell className="text-center text-xs font-mono">
+                  {item.duration}
+                </TableCell>
+                <TableCell className="text-center text-xs font-mono font-semibold text-teal-600 dark:text-teal-400">
+                  {item.loggedHours}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {item.taskTag || item.scope || "—"}
+                </TableCell>
+                <TableCell className="text-right">
+                  <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline">
+                    View &rarr;
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
-      {/* Add Activity Dialog */}
+      {/* Add Activity Modal */}
       <AddActivityDialog
         open={addOpen}
         onOpenChange={setAddOpen}
-        onAdd={handleAddNewActivity}
+        onAdd={handleAddNew}
       />
     </div>
   );

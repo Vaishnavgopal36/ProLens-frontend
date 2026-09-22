@@ -38,9 +38,6 @@ export function EmployeeDashboardPage() {
       {/* Top Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span className="text-xs text-muted-foreground">
-            Workspace / My overview
-          </span>
           <h1 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
             Good morning, Elena
           </h1>

@@ -1,40 +1,62 @@
-import type { LucideIcon } from "lucide-react";
-
+export type ActivityType = "project" | "non-project";
 export type ActivityCategory = "project" | "non-project";
 
-export interface ActivityMetric {
+export interface ActivitySubtask {
   id: string;
-  label: string;
-  value: string | number;
-  unit?: string;
-  subtext?: string;
-  icon: LucideIcon;
-  progressPercent?: number;
-  highlight?: boolean;
+  title: string;
+  completed: boolean;
 }
 
-export interface ActivityItem {
+export interface ActivityModuleSpec {
   id: string;
-  category: ActivityCategory;
-  categoryLabel?: string;
-  projectName?: string;
   title: string;
-  description?: string;
-  date: string; // "YYYY-MM-DD"
-  timeWindow: string; // e.g. "2:00 PM – 3:30 PM"
-  durationHours: string;
+  status: "verified" | "pending" | "none";
+  specs: string[];
+}
+
+export interface ActivityDetailTask {
+  id: string;
+  title: string;
+  duration?: string;
+  scope?: string;
+  completed: boolean;
+  subtasks?: ActivitySubtask[];
+  modules?: ActivityModuleSpec[];
+}
+
+// Backward compatibility alias so any other imports don't break
+export type ActivityTask = ActivityDetailTask;
+
+export interface ActivityCardItem {
+  id: string;
+  type: ActivityType;
+  title: string;
+  projectName?: string;
+  streamName?: string;
+  date: string;
+  scheduledTime?: string;
+  description: string;
+  duration: string;
+  loggedHours: string;
+  tasksCount?: number;
+  scope?: string;
+  taskTag?: string;
+  assignedLead?: {
+    name: string;
+    initials: string;
+    role?: string;
+  };
+  priority?: "High" | "Medium" | "Low";
+  referenceCode?: string;
+  members: string[];
+  moreMembersCount?: number;
+  tasks?: ActivityDetailTask[];
+  // Optional badge for backward compatibility
   statusBadge?: {
     label: string;
-    variant:
-      | "default"
-      | "secondary"
-      | "accent"
-      | "outline"
-      | "destructive"
-      | "success"
-      | "warning"
-      | "neutral";
+    variant: "neutral" | "secondary" | "success" | "warning" | "destructive";
   };
-  pinColor?: "teal" | "navy" | "gold";
-  loggedBy?: string;
 }
+
+// Backward compatibility alias
+export type ActivityItem = ActivityCardItem;

@@ -1,207 +1,167 @@
 import * as React from "react";
-import { Trash2, Pencil, Clock, Calendar, Briefcase, User } from "lucide-react";
+import { Folder, MoreVertical, Eye, Pencil, Trash2, Layers } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
-import type { ActivityItem } from "@/types/activity";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { ActivityCardItem } from "@/types/activity";
 
 interface ActivityCardProps {
-  item: ActivityItem;
-  viewMode: "compact" | "expanded";
-  onSelect: (item: ActivityItem) => void;
-  onEdit: (item: ActivityItem) => void;
+  item: ActivityCardItem;
+  onView: (item: ActivityCardItem) => void;
+  onEdit: (item: ActivityCardItem) => void;
   onDelete: (id: string) => void;
 }
 
-function formatDisplayDate(dateStr: string) {
-  if (!dateStr) return "";
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-export function ActivityCard({
-  item,
-  viewMode,
-  onSelect,
-  onEdit,
-  onDelete,
-}: ActivityCardProps) {
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
-  const isProject = item.category === "project";
-
-  const handleDeleteConfirm = () => {
-    onDelete(item.id);
-    setDeleteOpen(false);
-  };
-
-  const formattedDate = formatDisplayDate(item.date);
+export function ActivityCard({ item, onView, onEdit, onDelete }: ActivityCardProps) {
+  const isProject = item.type === "project";
 
   return (
-    <>
-      <Card
-        onClick={() => onSelect(item)}
-        className={cn(
-          "group relative cursor-pointer border-border-subtle bg-canvas-surface transition-all duration-150 hover:border-border-strong hover:shadow-xs",
-          viewMode === "compact" ? "p-3.5" : "p-5",
-        )}
-      >
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant={isProject ? "secondary" : "neutral"}
-              className="text-3xs px-2 py-0.5 uppercase tracking-wider font-bold"
-            >
-              {item.categoryLabel ||
-                (isProject ? "Project Activity" : "Non-Project")}
-            </Badge>
-
-            {item.projectName && (
-              <span className="flex items-center gap-1 text-2xs font-medium text-muted-foreground">
-                <Icon icon={Briefcase} size={12} className="opacity-70" />
-                <span>{item.projectName}</span>
-              </span>
-            )}
-          </div>
-
-          <div
-            className="flex items-center gap-1"
-            onClick={(e) => e.stopPropagation()}
+    <Card className="border-border-subtle bg-canvas-surface hover:border-border-strong hover:shadow-md transition-all p-5 flex flex-col justify-between group">
+      <div>
+        {/* Top Badges & 3-Dot Action */}
+        <div className="flex items-center justify-between mb-3">
+          <Badge
+            variant="outline"
+            className={
+              isProject
+                ? "border-teal-500/40 text-teal-600 bg-teal-500/10 dark:text-teal-400 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full"
+                : "border-border-subtle text-muted-foreground bg-canvas-bg/80 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full"
+            }
           >
-            {item.statusBadge && (
-              <Badge
-                variant={item.statusBadge.variant}
-                className="text-[10px] px-2 py-0 font-medium mr-1"
+            {isProject ? "Project Activity" : "Non-Project Activity"}
+          </Badge>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="text-muted-foreground/60 hover:text-foreground p-1 rounded-md transition-colors"
+                aria-label="Activity options"
               >
-                {item.statusBadge.label}
-              </Badge>
-            )}
-
-            {/* Edit Pen Button */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(item)}
-              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-canvas-bg transition-colors"
-              title="Edit activity"
-            >
-              <Icon icon={Pencil} size={13} />
-            </Button>
-
-            {/* Delete Button */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setDeleteOpen(true)}
-              className="h-7 w-7 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors"
-              title="Delete activity"
-            >
-              <Icon icon={Trash2} size={13} />
-            </Button>
-          </div>
+                <Icon icon={MoreVertical} size={16} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-36">
+              <DropdownMenuItem onClick={() => onView(item)} className="gap-2 text-xs cursor-pointer">
+                <Icon icon={Eye} size={14} />
+                <span>View</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onEdit(item)} className="gap-2 text-xs cursor-pointer">
+                <Icon icon={Pencil} size={14} />
+                <span>Edit</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDelete(item.id)}
+                className="gap-2 text-xs cursor-pointer text-destructive focus:text-destructive"
+              >
+                <Icon icon={Trash2} size={14} />
+                <span>Delete</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
+        {/* Title */}
         <h3
-          className={cn(
-            "font-semibold text-foreground mt-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors",
-            viewMode === "compact" ? "text-xs" : "text-sm",
-          )}
+          onClick={() => onView(item)}
+          className="text-base font-semibold text-foreground hover:text-teal-600 dark:hover:text-teal-400 cursor-pointer transition-colors"
         >
           {item.title}
         </h3>
 
-        {viewMode === "expanded" && item.description && (
-          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-            {item.description}
-          </p>
-        )}
+        {/* Metadata sub-row */}
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1 mb-2.5">
+          <Icon
+            icon={isProject ? Folder : Layers}
+            size={13}
+            className={isProject ? "text-teal-600 dark:text-teal-400" : "text-muted-foreground"}
+          />
+          <span className="font-medium text-foreground">
+            {isProject ? item.projectName : item.streamName}
+          </span>
+          <span>•</span>
+          <span>{item.date}</span>
+        </div>
 
-        {/* Formatted Date Display */}
-        <div
-          className={cn(
-            "flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle/60 text-2xs text-muted-foreground",
-            viewMode === "compact" ? "mt-2.5 pt-2" : "mt-3.5 pt-2.5",
-          )}
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 font-medium text-foreground">
-              <Icon
-                icon={Calendar}
-                size={12}
-                className="text-teal-600 dark:text-teal-400"
-              />
-              <span>
-                {formattedDate} • {item.timeWindow}
-              </span>
-            </span>
+        {/* Description snippet */}
+        <p className="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+          {item.description}
+        </p>
+      </div>
 
-            <span className="flex items-center gap-1">
-              <Icon icon={Clock} size={12} className="opacity-70" />
-              <span className="font-semibold text-foreground">
-                {item.durationHours}
-              </span>
-            </span>
+      <div>
+        {/* 3-Cell Metrics Box */}
+        <div className="grid grid-cols-3 divide-x divide-border-subtle rounded-lg border border-border-subtle bg-canvas-bg/50 py-2.5 text-center mb-4">
+          <div>
+            <p className="text-[10px] uppercase font-semibold text-muted-foreground">
+              Duration
+            </p>
+            <p className="text-xs font-semibold text-foreground mt-0.5 font-mono">
+              {item.duration}
+            </p>
           </div>
 
-          {item.loggedBy && viewMode === "expanded" && (
-            <span className="flex items-center gap-1 text-3xs">
-              <Icon icon={User} size={11} className="opacity-70" />
-              <span>{item.loggedBy}</span>
-            </span>
-          )}
-        </div>
-      </Card>
+          <div>
+            <p className="text-[10px] uppercase font-semibold text-muted-foreground">
+              Logged
+            </p>
+            <p className="text-xs font-semibold text-teal-600 dark:text-teal-400 mt-0.5 font-mono">
+              {item.loggedHours}
+            </p>
+          </div>
 
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent
-          className="sm:max-w-[400px]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <DialogHeader>
-            <DialogTitle>Delete Activity</DialogTitle>
-            <DialogDescription className="text-xs">
-              Are you sure you want to remove{" "}
-              <strong className="text-foreground">{item.title}</strong>? This
-              action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setDeleteOpen(false)}
-              className="text-xs"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDeleteConfirm}
-              className="text-xs gap-1.5"
-            >
-              <Icon icon={Trash2} size={14} />
-              <span>Delete</span>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          <div>
+            <p className="text-[10px] uppercase font-semibold text-muted-foreground">
+              {isProject ? "Tasks" : "Scope"}
+            </p>
+            <p className="text-xs font-semibold text-foreground mt-0.5">
+              {isProject ? `${item.tasksCount} Tasks` : item.scope}
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Row: Pill tag + Avatar stack */}
+        <div className="flex items-center justify-between border-t border-border-subtle pt-3">
+          <div className="flex items-center gap-1.5 overflow-hidden">
+            {isProject && item.tasksCount ? (
+              <span className="text-xs font-semibold text-foreground">
+                {item.tasksCount} Tasks
+              </span>
+            ) : null}
+
+            {item.taskTag ? (
+              <span className="text-[11px] bg-canvas-bg border border-border-subtle text-muted-foreground px-2 py-0.5 rounded-md truncate max-w-[140px]">
+                {item.taskTag}
+              </span>
+            ) : null}
+          </div>
+
+          {/* Overlapping member avatars */}
+          <div className="flex -space-x-1.5 overflow-hidden shrink-0">
+            {item.members.map((initial, i) => (
+              <div
+                key={i}
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-navy-500 text-white dark:bg-foreground dark:text-background text-[9px] font-bold ring-2 ring-canvas-surface"
+              >
+                {initial}
+              </div>
+            ))}
+            {item.moreMembersCount ? (
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground ring-2 ring-canvas-surface">
+                +{item.moreMembersCount}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 }

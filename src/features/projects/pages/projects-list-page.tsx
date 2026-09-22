@@ -137,9 +137,6 @@ export function ProjectsListPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium mb-1">
-            <span>Projects</span>
-            <Icon icon={ChevronRight} size={12} className="opacity-50" />
-            <span className="text-foreground font-semibold">Portfolio</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Enterprise Projects

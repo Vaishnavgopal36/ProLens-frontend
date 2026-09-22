@@ -1,210 +1,417 @@
-import { History, Layers, GraduationCap, ClockAlert } from "lucide-react";
-import type { ActivityItem, ActivityMetric } from "@/types/activity";
+import type { ActivityCardItem } from "@/types/activity";
 
-// Helper: Format Date object to "YYYY-MM-DD"
-function toISODate(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-// Compute dynamic reference dates based on today's calendar date
-const now = new Date();
-const todayISO = toISODate(now);
-
-const tomorrowDate = new Date(now);
-tomorrowDate.setDate(now.getDate() + 1);
-const tomorrowISO = toISODate(tomorrowDate);
-
-const dayAfterDate = new Date(now);
-dayAfterDate.setDate(now.getDate() + 2);
-const dayAfterISO = toISODate(dayAfterDate);
-
-const laterDate1 = new Date(now);
-laterDate1.setDate(now.getDate() + 4);
-const laterISO1 = toISODate(laterDate1);
-
-const laterDate2 = new Date(now);
-laterDate2.setDate(now.getDate() + 6);
-const laterISO2 = toISODate(laterDate2);
-
-export const ACTIVITY_METRICS: ActivityMetric[] = [
-  {
-    id: "m-1",
-    label: "Total / Month",
-    value: 38,
-    unit: "activities",
-    subtext: "22 Project • 16 Non-Project",
-    icon: History,
-    progressPercent: 78,
-  },
-  {
-    id: "m-2",
-    label: "Project Workstreams",
-    value: 24,
-    unit: "items",
-    subtext: "Apex Analytics & Nova Mobile",
-    icon: Layers,
-    progressPercent: 63,
-  },
-  {
-    id: "m-3",
-    label: "Professional & External",
-    value: 14,
-    unit: "events",
-    subtext: "Trainings, Toastmasters, Client",
-    icon: GraduationCap,
-    progressPercent: 37,
-  },
-  {
-    id: "m-4",
-    label: "Pending Verification",
-    value: 2,
-    unit: "items",
-    subtext: "Requires manager note",
-    icon: ClockAlert,
-    highlight: true,
-  },
-];
-
-export const INITIAL_ACTIVITIES: ActivityItem[] = [
-  // ------------------- TODAY -------------------
+export const MOCK_ACTIVITY_ITEMS: ActivityCardItem[] = [
+  // -------------------------------------------------------------
+  // 1. NON-PROJECT: POSH Compliance & Workplace Sensitivity Training
+  // -------------------------------------------------------------
   {
     id: "act-1",
-    category: "non-project",
-    categoryLabel: "External / Professional",
-    title: "Toastmasters Leadership & Public Speaking Session",
+    type: "non-project",
+    title: "POSH Compliance Training",
+    streamName: "Compliance & HR",
+    referenceCode: "OPS-POSH-2026-Q3",
+    date: "Sep 22, 2026",
+    scheduledTime: "10:00 AM – 11:30 AM",
     description:
-      "Weekly lunchtime speech evaluation and executive impromptu presentation workshop.",
-    date: todayISO,
-    timeWindow: "12:30 PM – 1:30 PM",
-    durationHours: "1.0 hr",
-    statusBadge: { label: "Completed", variant: "success" },
-    loggedBy: "Alex Morgan",
-    pinColor: "navy",
+      "Mandatory annual Prevention of Sexual Harassment (POSH) certification session covering legal frameworks, internal complaints committee (ICC) protocols, workplace harassment redressal, and case study assessments.",
+    duration: "1h 30m",
+    loggedHours: "1h 30m",
+    tasksCount: 4,
+    scope: "Compliance",
+    taskTag: "Mandatory HR",
+    priority: "High",
+    assignedLead: {
+      name: "Lakshitha",
+      initials: "LK",
+      role: "Software Engineer",
+    },
+    members: ["LK", "SJ", "AM"],
+    tasks: [
+      {
+        id: "task-posh-1",
+        title: "Legal Framework & Policy Overview",
+        duration: "30m",
+        scope:
+          "Review statutory legal definitions, behavioral guidelines, and organization redressal escalation paths.",
+        completed: true,
+        subtasks: [
+          {
+            id: "st-p1",
+            title: "Review employee code of conduct addendum",
+            completed: true,
+          },
+          {
+            id: "st-p2",
+            title: "Review ICC committee directory & contact lines",
+            completed: true,
+          },
+        ],
+        modules: [
+          {
+            id: "mod-p1",
+            title: "Module 1: Statutory Guidelines",
+            status: "verified",
+            specs: [
+              "Workplace boundaries & physical/virtual code",
+              "Bystander intervention protocols",
+            ],
+          },
+        ],
+      },
+      {
+        id: "task-posh-2",
+        title: "Interactive Scenario Case Studies",
+        duration: "35m",
+        scope:
+          "Complete guided walkthroughs on real-world scenarios and micro-aggressions.",
+        completed: true,
+        subtasks: [
+          {
+            id: "st-p3",
+            title: "Complete Scenario 1: Digital workspace decorum",
+            completed: true,
+          },
+          {
+            id: "st-p4",
+            title: "Complete Scenario 2: Remote communication norms",
+            completed: true,
+          },
+        ],
+      },
+      {
+        id: "task-posh-3",
+        title: "Policy Acknowledgement & Sign-off",
+        duration: "10m",
+        scope:
+          "Sign the digital compliance document through the HRMS employee portal.",
+        completed: false,
+        subtasks: [
+          {
+            id: "st-p5",
+            title: "Complete e-signature on HRMS acknowledgment slip",
+            completed: false,
+          },
+        ],
+      },
+      {
+        id: "task-posh-4",
+        title: "Post-Session Assessment Quiz",
+        duration: "15m",
+        scope:
+          "Achieve minimum 80% passing grade on the certification exam.",
+        completed: false,
+        subtasks: [
+          {
+            id: "st-p6",
+            title: "Submit 20-question quiz",
+            completed: false,
+          },
+          {
+            id: "st-p7",
+            title: "Download completion certificate",
+            completed: false,
+          },
+        ],
+      },
+    ],
   },
+
+  // -------------------------------------------------------------
+  // 2. NON-PROJECT: Internal Upskilling & ClickHouse Training
+  // -------------------------------------------------------------
   {
     id: "act-2",
-    category: "project",
-    categoryLabel: "Project Task Completed",
-    projectName: "Apex Analytics Platform",
-    title: "PostgreSQL connection pooling configuration deployed",
+    type: "non-project",
+    title: "ClickHouse & OLAP Architecture Workshop",
+    streamName: "Internal Learning",
+    referenceCode: "OPS-TRN-2026-09",
+    date: "Sep 22, 2026",
+    scheduledTime: "3:00 PM – 4:30 PM",
     description:
-      "Merged PR #342 and verified zero-downtime failover with infra routing team.",
-    date: todayISO,
-    timeWindow: "10:15 AM – 12:45 PM",
-    durationHours: "2.5 hrs",
-    statusBadge: { label: "Completed", variant: "success" },
-    loggedBy: "Elena Rostova",
-    pinColor: "teal",
+      "Hands-on technical workshop exploring ClickHouse columnar storage, vector engine optimization, partition key indexing, and real-time analytical pipeline configurations.",
+    duration: "1h 30m",
+    loggedHours: "1h 30m",
+    tasksCount: 3,
+    scope: "Upskilling",
+    taskTag: "Technical Training",
+    priority: "Medium",
+    assignedLead: {
+      name: "Marcus Chen",
+      initials: "MC",
+      role: "Data Platform Lead",
+    },
+    members: ["MC", "ER", "LK"],
+    tasks: [
+      {
+        id: "task-clk-1",
+        title: "Columnar Storage Fundamentals Lab",
+        duration: "30m",
+        scope:
+          "Benchmark row-oriented PostgreSQL reads against ClickHouse columnar storage on a 5M row dataset.",
+        completed: true,
+        subtasks: [
+          { id: "st-c1", title: "Configure local docker-compose ClickHouse node", completed: true },
+          { id: "st-c2", title: "Ingest synthetic metrics dataset", completed: true },
+        ],
+        modules: [
+          {
+            id: "mod-c1",
+            title: "Module 1: MergeTree Engine",
+            status: "verified",
+            specs: ["Primary key indexing rules", "Data part compression ratios"],
+          },
+        ],
+      },
+      {
+        id: "task-clk-2",
+        title: "Materialized Views & Aggregations",
+        duration: "40m",
+        scope:
+          "Construct materialized views for sub-second dashboard rollups.",
+        completed: false,
+        subtasks: [
+          { id: "st-c3", title: "Write real-time SummingMergeTree query", completed: true },
+          { id: "st-c4", title: "Validate query cache hits under load", completed: false },
+        ],
+      },
+      {
+        id: "task-clk-3",
+        title: "Internal Sandbox Exercise",
+        duration: "20m",
+        scope:
+          "Complete hands-on exercise and commit repository code samples.",
+        completed: false,
+        subtasks: [
+          { id: "st-c5", title: "Push benchmark results to knowledge repo", completed: false },
+        ],
+      },
+    ],
   },
+
+  // -------------------------------------------------------------
+  // 3. PROJECT: Apex Platform API & Performance Optimization
+  // -------------------------------------------------------------
   {
     id: "act-3",
-    category: "project",
-    categoryLabel: "Client Meeting",
+    type: "project",
+    title: "Telemetry Ingestion Optimization",
     projectName: "Apex Analytics Platform",
-    title: "Urgent telemetry sync with FinTech Partner lead",
+    referenceCode: "PRJ-APX-2026-11",
+    date: "Sep 21, 2026",
+    scheduledTime: "1:30 PM – 4:30 PM",
     description:
-      "Addressed webhook retry rate-limiting issues raised during high-volume APAC morning peak.",
-    date: todayISO,
-    timeWindow: "9:00 AM – 9:45 AM",
-    durationHours: "45 mins",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    loggedBy: "FinTech Partner (APAC Ops)",
-    pinColor: "gold",
+      "Engineered high-throughput event buffer batching for real-time telemetry streaming, resolved connection pooling bottlenecks, and tuned database indexes.",
+    duration: "3h 00m",
+    loggedHours: "3h 00m",
+    tasksCount: 3,
+    taskTag: "Core Engineering",
+    priority: "High",
+    assignedLead: {
+      name: "Alex Morgan",
+      initials: "AM",
+      role: "Engineering Lead",
+    },
+    members: ["AM", "LK", "ER"],
+    tasks: [
+      {
+        id: "task-eng-1",
+        title: "Connection Pooler Tuning",
+        duration: "1h 15m",
+        scope:
+          "Audit connection leak telemetry and reconfigure PgBouncer limits.",
+        completed: true,
+        subtasks: [
+          { id: "st-e1", title: "Profile idle connection latency", completed: true },
+          { id: "st-e2", title: "Deploy tuned max_client_conn threshold", completed: true },
+        ],
+      },
+      {
+        id: "task-eng-2",
+        title: "Batch Buffer Dispatcher",
+        duration: "1h 15m",
+        scope:
+          "Implement micro-batch queue dispatcher for metric payloads.",
+        completed: true,
+        subtasks: [
+          { id: "st-e3", title: "Implement backpressure back-off logic", completed: true },
+          { id: "st-e4", title: "Run end-to-end stress test at 10k req/sec", completed: true },
+        ],
+      },
+      {
+        id: "task-eng-3",
+        title: "Production Release Staging",
+        duration: "30m",
+        scope:
+          "Prepare deployment manifest and sign-off on staging verification.",
+        completed: false,
+        subtasks: [
+          { id: "st-e5", title: "Validate staging rollout telemetry", completed: false },
+        ],
+      },
+    ],
   },
 
-  // ------------------- TOMORROW -------------------
+  // -------------------------------------------------------------
+  // 4. NON-PROJECT: Group Health Insurance & Benefits Enrollment
+  // -------------------------------------------------------------
   {
     id: "act-4",
-    category: "project",
-    categoryLabel: "Project Task Started",
-    projectName: "Nova Mobile Dev",
-    title: "Biometric auth SDK wrapper sprint kickoff",
+    type: "non-project",
+    title: "Group Health Insurance Enrolment",
+    streamName: "People & Benefits",
+    referenceCode: "OPS-BEN-2026-Q3",
+    date: "Sep 21, 2026",
+    scheduledTime: "11:00 AM – 11:45 AM",
     description:
-      "Outlined iOS & Android baseline interface contracts and sprint deliverable milestones.",
-    date: tomorrowISO,
-    timeWindow: "3:30 PM – 5:00 PM",
-    durationHours: "1.5 hrs",
-    statusBadge: { label: "In Progress", variant: "secondary" },
-    loggedBy: "Marcus Chen",
-    pinColor: "teal",
+      "Annual insurance policy update session covering corporate medical insurance coverage, parental add-on schemes, cashless hospital networks, and Flexi-benefit claims.",
+    duration: "45m",
+    loggedHours: "45m",
+    tasksCount: 2,
+    scope: "Benefits",
+    taskTag: "HR & Wellness",
+    priority: "Low",
+    assignedLead: {
+      name: "Sarah Jenkins",
+      initials: "SJ",
+      role: "People Ops Lead",
+    },
+    members: ["SJ", "LK"],
+    tasks: [
+      {
+        id: "task-ins-1",
+        title: "Policy Schedule & Dependant Verification",
+        duration: "25m",
+        scope:
+          "Verify personal and dependant nominee data against insurer records.",
+        completed: true,
+        subtasks: [
+          { id: "st-i1", title: "Verify nominee identification details", completed: true },
+          { id: "st-i2", title: "Confirm parental coverage add-on tier", completed: true },
+        ],
+      },
+      {
+        id: "task-ins-2",
+        title: "TPA Portal Registration & Digital Card",
+        duration: "20m",
+        scope:
+          "Log in to the third-party administrator (TPA) application to fetch electronic health cards.",
+        completed: true,
+        subtasks: [
+          { id: "st-i3", title: "Download e-insurance medical card", completed: true },
+        ],
+      },
+    ],
   },
+
+  // -------------------------------------------------------------
+  // 5. PROJECT: Nova Mobile App Authentication Migration
+  // -------------------------------------------------------------
   {
     id: "act-5",
-    category: "non-project",
-    categoryLabel: "Training / Workshop",
-    title: "AWS Certified Solutions Architect Deep-Dive Module 4",
+    type: "project",
+    title: "Biometric Auth SDK Integration",
+    projectName: "Nova Mobile Dev",
+    referenceCode: "PRJ-NOV-2026-04",
+    date: "Sep 20, 2026",
+    scheduledTime: "9:00 AM – 10:45 AM",
     description:
-      "Attended corporate sponsored continuous learning workshop on multi-region DynamoDB replication.",
-    date: tomorrowISO,
-    timeWindow: "1:00 PM – 2:30 PM",
-    durationHours: "1.5 hrs",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    loggedBy: "Elena Rostova",
-    pinColor: "navy",
+      "Implemented FaceID/Fingerprint biometric fallback flows, integrated keychain secure enclave wrappers, and validated edge failure modes on iOS and Android test devices.",
+    duration: "1h 45m",
+    loggedHours: "1h 45m",
+    tasksCount: 3,
+    taskTag: "Mobile Engineering",
+    priority: "High",
+    assignedLead: {
+      name: "Marcus Chen",
+      initials: "MC",
+      role: "Mobile Specialist",
+    },
+    members: ["MC", "AM"],
+    tasks: [
+      {
+        id: "task-bio-1",
+        title: "iOS LocalAuthentication Wrapper",
+        duration: "45m",
+        scope:
+          "Integrate FaceID token handoff with Secure Enclave verification.",
+        completed: true,
+        subtasks: [
+          { id: "st-b1", title: "Handle user cancel & PIN fallback triggers", completed: true },
+        ],
+      },
+      {
+        id: "task-bio-2",
+        title: "Android BiometricPrompt Implementation",
+        duration: "45m",
+        scope:
+          "Implement AndroidX Biometric library with cryptographic cipher validation.",
+        completed: true,
+        subtasks: [
+          { id: "st-b2", title: "Implement cipher decryption on keystore unlock", completed: true },
+        ],
+      },
+      {
+        id: "task-bio-3",
+        title: "Security Token Invalidation Testing",
+        duration: "15m",
+        scope:
+          "Ensure tokens revoke immediately upon device enrollment change.",
+        completed: true,
+        subtasks: [
+          { id: "st-b3", title: "Trigger biometric reset audit hook", completed: true },
+        ],
+      },
+    ],
   },
 
-  // ------------------- DAY AFTER TOMORROW -------------------
+  // -------------------------------------------------------------
+  // 6. NON-PROJECT: Architecture Documentation & API Guides
+  // -------------------------------------------------------------
   {
     id: "act-6",
-    category: "non-project",
-    categoryLabel: "Team Meeting",
-    title: "Quarterly People & Culture Cross-Team Retrospective",
+    type: "non-project",
+    title: "Service Catalog & API Architecture Docs",
+    streamName: "Knowledge Base",
+    referenceCode: "OPS-DOC-2026-09",
+    date: "Sep 20, 2026",
+    scheduledTime: "2:00 PM – 3:15 PM",
     description:
-      "All-hands engineering management sync on onboarding processes and Q4 career coaching goals.",
-    date: dayAfterISO,
-    timeWindow: "10:00 AM – 11:00 AM",
-    durationHours: "1.0 hr",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    loggedBy: "Alex Morgan",
-    pinColor: "navy",
-  },
-  {
-    id: "act-7",
-    category: "project",
-    categoryLabel: "Release Sprint",
-    projectName: "Apex Analytics Platform",
-    title: "Staging Pipeline Verification & Sign-off",
-    description:
-      "Regression test suite run and integration testing before main branch merge.",
-    date: dayAfterISO,
-    timeWindow: "3:00 PM – 4:30 PM",
-    durationHours: "1.5 hrs",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    loggedBy: "David Kim",
-    pinColor: "teal",
-  },
-
-  // ------------------- UPCOMING (4+ DAYS LATER) -------------------
-  {
-    id: "act-8",
-    category: "non-project",
-    categoryLabel: "Presentation / Event",
-    title: "Executive Keynote: Product Delivery Architecture 2026",
-    description:
-      "Internal company event presentation given to senior leadership regarding modular micro-frontends.",
-    date: laterISO1,
-    timeWindow: "2:00 PM – 3:15 PM",
-    durationHours: "1h 15m",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    loggedBy: "Sarah Jenkins",
-    pinColor: "teal",
-  },
-  {
-    id: "act-9",
-    category: "project",
-    categoryLabel: "Client Meeting",
-    projectName: "Nova Mobile Dev",
-    title: "Nova Mobile Client Feedback & Milestone Sign-off",
-    description:
-      "Presented weekly sprint demo to client stakeholders; approved beta build distribution.",
-    date: laterISO2,
-    timeWindow: "11:00 AM – 12:00 PM",
-    durationHours: "1.0 hr",
-    statusBadge: { label: "Scheduled", variant: "neutral" },
-    loggedBy: "Alex Morgan",
-    pinColor: "teal",
+      "Authored OpenAPI 3.1 specifications, updated schema entity diagrams in Confluence, and documented internal microservice authentication header requirements.",
+    duration: "1h 15m",
+    loggedHours: "1h 15m",
+    tasksCount: 2,
+    scope: "Docs",
+    taskTag: "Engineering Docs",
+    priority: "Low",
+    assignedLead: {
+      name: "Elena Rostova",
+      initials: "ER",
+      role: "Backend Engineer",
+    },
+    members: ["ER", "LK"],
+    tasks: [
+      {
+        id: "task-doc-1",
+        title: "OpenAPI Specification Consolidation",
+        duration: "45m",
+        scope:
+          "Generate unified Swagger UI specifications across auth and analytics microservices.",
+        completed: true,
+        subtasks: [
+          { id: "st-d1", title: "Validate endpoint response codes & error envelopes", completed: true },
+        ],
+      },
+      {
+        id: "task-doc-2",
+        title: "Runbook & Onboarding Guide Updates",
+        duration: "30m",
+        scope:
+          "Update step-by-step local development bootstrap documentation for incoming engineers.",
+        completed: true,
+        subtasks: [
+          { id: "st-d2", title: "Verify local Docker Compose setup script", completed: true },
+        ],
+      },
+    ],
   },
 ];
